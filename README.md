@@ -1,6 +1,6 @@
 # Foster Youth Swans
 
-## Safe Spaces
+## Pitch
 
 🔧 Think about your README as a warm hug to your visitors. Have you ever been frustrated by Ikea instructions because they are unclear? Let's make sure we aren't frustrating our peers and most importantly recruiters when visting our repos.
 
@@ -9,6 +9,8 @@
 💭 At MINIMUM it should include `what the project does`, I don't know anyone who can look at a fullstack and confidently describe what the app does and all the features. It's your job to let your visitor know what they are looking at.
 
 The next thing we want to include is `how to run`. If I wanted to clone your repo, what would I need to do to get the project running? Do we have to run `npm install` and where? How do we start our server? Do we need to add an `.env` file and what keys do I need to provide?
+
+## What the project does:
 
 ## Templates are nice so use one!
 
@@ -66,15 +68,9 @@ Here's a blank template to get started. Tell me about the project and features i
 ### Built With 
 (*Note: scroll down in the markdown view of this readme to configure the syntax and switch out tech stacks.)
 
-- [![Next][Next.js]][Next-url]
 - [![React][React.js]][React-url]
 - [![Vue][Vue.js]][Vue-url]
-- [![Angular][Angular.io]][Angular-url]
-- [![Svelte][Svelte.dev]][Svelte-url]
-- [![Laravel][Laravel.com]][Laravel-url]
-- [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-- [![JQuery][JQuery.com]][JQuery-url]
-
+- [![Expo Go][Expo Go]][https://expo.dev/go]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
@@ -117,6 +113,9 @@ This is an example of how to list things you need to use the software and how to
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
+
+
+## Contributions
 
 ## Usage
 
@@ -169,9 +168,9 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 - make pr -> commit pr. Ensure you are on our project branch as main, and push from your dev branch
 - git swtich main
 - git pull origin main
-(IF YOU ARE NOT THE ONE WHO COMMITED THE CHANGE)
-- git swtich dev branch name 
-- git merge main
+
+- git swtich dev branch name (IF YOU ARE NOT THE ONE WHO COMMITED THE CHANGE)
+- git merge main (IF YOU ARE NOT THE ONE WHO COMMITED THE CHANGE)
 
 
 ## Fin!
