@@ -159,3 +159,16 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 ## Let's talk resouces
 
 🌳 If you want to implement a table or bold text or even bullet point, use this [documentation](https://google.github.io/styleguide/docguide/style.html) to get the right syntax. Don't be afraid to look at other templates and pull the parts and types you like! Sharing is caring.
+
+
+## git directions:
+- git switch dev branch
+- git git add "specific files". DON'T DO "."
+- git commit -m "name, what you did, files you modified"
+- git push origin dev branch name
+- make pr -> commit pr. Ensure you are on our project branch as main, and push from your dev branch
+- git swtich main
+- git pull origin main
+(IF YOU ARE NOT THE ONE WHO COMMITED THE CHANGE)
+- git swtich dev branch name 
+- git merge main
