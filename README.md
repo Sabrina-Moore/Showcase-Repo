@@ -65,7 +65,7 @@ Here's a blank template to get started. Tell me about the project and features i
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Built With 
+### Tech Stack 
 (*Note: scroll down in the markdown view of this readme to configure the syntax and switch out tech stacks.)
 
 - [![React][React.js]][React-url]
