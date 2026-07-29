@@ -1,6 +1,6 @@
 # Foster Youth Swans
 
-## Why README ??
+## Safe Spaces
 
 🔧 Think about your README as a warm hug to your visitors. Have you ever been frustrated by Ikea instructions because they are unclear? Let's make sure we aren't frustrating our peers and most importantly recruiters when visting our repos.
 
