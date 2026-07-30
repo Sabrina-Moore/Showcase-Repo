@@ -4,32 +4,25 @@
 
 🔧 Think about your README as a warm hug to your visitors. Have you ever been frustrated by Ikea instructions because they are unclear? Let's make sure we aren't frustrating our peers and most importantly recruiters when visting our repos.
 
-## Let's talk about the most viable Readme
-
-💭 At MINIMUM it should include `what the project does`, I don't know anyone who can look at a fullstack and confidently describe what the app does and all the features. It's your job to let your visitor know what they are looking at.
-
-The next thing we want to include is `how to run`. If I wanted to clone your repo, what would I need to do to get the project running? Do we have to run `npm install` and where? How do we start our server? Do we need to add an `.env` file and what keys do I need to provide?
-
-## Templates are nice so use one!
 
 <a id="readme-top"></a>
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/repo_name">
+  <a href="https://github.com/Sabrina-Moore/Showcase-Repo">
     <img src="./SEA Logomark.png" alt="Logo" width="180" height="80">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">Snap Safe Space</h3>
 
   <p align="center">
-    SHORT project_description (Ex. Todo App)
+    React Native feature for integration into Snapchat
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the Docs Link»</strong></a>
+    <a href="https://github.com/Sabrina-Moore/Showcase-Repo"><strong>Explore the Docs Link»</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo Link</a>
+    <a href="https://github.com/Sabrina-Moore/Showcase-Repo">View Demo Link</a>
   </p>
 </div>
 
@@ -40,7 +33,8 @@ The next thing we want to include is `how to run`. If I wanted to clone your rep
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#built-with">Built With</a></li>
+         <li><a href="#features">Features</a></li>
+        <li><a href="#tech-stack">Tech Stack</a></li>
       </ul>
     </li>
     <li>
@@ -63,17 +57,20 @@ Here's a blank template to get started. Tell me about the project and features i
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Built With 
-(*Note: scroll down in the markdown view of this readme to configure the syntax and switch out tech stacks.)
+### Features
+-
+-
 
-- [![Next][Next.js]][Next-url]
+
+### Tech Stack
+
+- React Native with Expo (version)
 - [![React][React.js]][React-url]
-- [![Vue][Vue.js]][Vue-url]
-- [![Angular][Angular.io]][Angular-url]
-- [![Svelte][Svelte.dev]][Svelte-url]
-- [![Laravel][Laravel.com]][Laravel-url]
-- [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-- [![JQuery][JQuery.com]][JQuery-url]
+- [![Expo][Expo]][Expo] <StackIcon name="expo" />
+- AsyncStorage for Supabase integration
+- Supabase for database storage <StackIcon name="supabase" />
+- OpenAI API key for chat topic prompts
+- Javascript 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -81,17 +78,12 @@ Here's a blank template to get started. Tell me about the project and features i
 
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running, follow these simple example steps.
-
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
+To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computers. 
 
-- npm
-  ```sh
-  npm install npm@latest -g
-  ```
+How to connect running the app to the running code? 
+
 
 ### Installation
 
@@ -174,4 +166,4 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 - git merge main
 
 
-## Fin!
+

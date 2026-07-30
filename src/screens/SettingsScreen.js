@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Button, StyleSheet, TextInput, Image } from "react-native";
+import { Text, View, Button, StyleSheet, TextInput, Image, ScrollView } from "react-native";
 import { supabase } from "../../utils/hooks/supabase";
 import { useAuthentication } from "../../utils/hooks/useAuthentication";
 
@@ -28,7 +28,7 @@ export default function SettingsScreen() {
       const { data, error } = await supabase
         .from("profiles") // Replace with your table name
         .select("*")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .single();
 
       if (error) throw error;
@@ -54,7 +54,7 @@ export default function SettingsScreen() {
       const { error } = await supabase
         .from("profiles") // Replace with your table name
         .update({ avatar_url: profilePictureUrl })
-        .eq("id", user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -70,7 +70,7 @@ export default function SettingsScreen() {
       const { error } = await supabase
         .from("profiles") // Replace with your table name
         .update({ username: displayName })
-        .eq("id", user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -86,7 +86,7 @@ export default function SettingsScreen() {
       const { error } = await supabase
         .from("profiles") // Replace with your table name
         .update({ email })
-        .eq("id", user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -102,7 +102,7 @@ export default function SettingsScreen() {
       const { error } = await supabase
         .from("profiles") // Replace with your table name
         .update({ birthday: dateOfBirth })
-        .eq("id", user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -151,133 +151,58 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Account Settings</Text>
+      <ScrollView
+      style={styles.container}
+      >
+        {/* Header */}
 
-      {/* Profile Picture */}
-      <View style={styles.settingBar}>
-        <Text>Profile Picture</Text>
-        {editingProfilePicture ? (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={profilePictureUrl}
-              onChangeText={setProfilePictureUrl}
-              placeholder="Enter profile picture URL"
-            />
-            <View style={styles.buttonContainer}>
-              <Button onPress={saveProfilePicture} title="Save" />
-              <Button onPress={cancelEditProfilePicture} title="Cancel" />
-            </View>
-          </View>
-        ) : (
-          <View style={styles.profilePictureContainer}>
-            <Image
-              source={{ uri: profilePictureUrl }}
-              style={styles.profilePicture}
-            />
-            <Button
-              onPress={() => setEditingProfilePicture(true)}
-              title="Edit"
-            />
-          </View>
-        )}
-      </View>
+      <Text> Settings here </Text>
 
-      {/* Display Name */}
-      <View style={styles.settingBar}>
-        <Text>Display Name</Text>
-        {editingDisplayName ? (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={displayName}
-              onChangeText={setDisplayName}
-              placeholder="Enter your display name"
-            />
-            <View style={styles.buttonContainer}>
-              <Button onPress={saveDisplayName} title="Save" />
-              <Button onPress={cancelEditDisplayName} title="Cancel" />
-            </View>
-          </View>
-        ) : (
-          <Text style={styles.databaseData}>{displayName}</Text>
-        )}
-        {!editingDisplayName && (
-          <Button onPress={() => setEditingDisplayName(true)} title="Edit" />
-        )}
-      </View>
+        {/* Avatar Picture */}
 
-      {/* Email */}
-      <View style={styles.settingBar}>
-        <Text>Email</Text>
-        {editingEmail ? (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-            />
-            <View style={styles.buttonContainer}>
-              <Button onPress={saveEmail} title="Save" />
-              <Button onPress={cancelEditEmail} title="Cancel" />
-            </View>
-          </View>
-        ) : (
-          <Text style={styles.databaseData}>{email}</Text>
-        )}
-        {!editingEmail && (
-          <Button onPress={() => setEditingEmail(true)} title="Edit" />
-        )}
-      </View>
 
-      {/* Date of Birth */}
-      <View style={styles.settingBar}>
-        <Text>Date of Birth</Text>
-        {editingDateOfBirth ? (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={dateOfBirth}
-              onChangeText={setDateOfBirth}
-              placeholder="MM/DD/YYYY"
-            />
-            <View style={styles.buttonContainer}>
-              <Button onPress={saveDateOfBirth} title="Save" />
-              <Button onPress={cancelEditDateOfBirth} title="Cancel" />
-            </View>
-          </View>
-        ) : (
-          <Text style={styles.databaseData}>{dateOfBirth}</Text>
-        )}
-        {!editingDateOfBirth && (
-          <Button onPress={() => setEditingDateOfBirth(true)} title="Edit" />
-        )}
-      </View>
 
-      {/* Log Out Button */}
-      <Button onPress={handleSignOut} title="Log Out" style={styles.button} />
+
+        {/* Profile tags with info like birthday */}
+
+      <Button onPress={handleSignOut} title="Log Out" />
+
+      </ScrollView>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  banner:{
+    height: 320,
+    backgroundColor: "#1f2b24",
+    justifyContent: "flex-start",
+  },
+  topBar:{
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 30,
     paddingTop: 15,
   },
   title: {
-    fontSize: 18,
+    fontSize: 30,
     marginBottom: 10,
+  },
+  text: {
+    fontSize: 14,
   },
   settingBar: {
     marginTop: 10,
   },
-  databaseData: {
-    color: "grey",
-    marginTop: 5,
-  },
+
+  //input
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -292,19 +217,50 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
+
+  //buttons and icons
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
   },
-  profilePictureContainer: {
+
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
-    marginBottom: 10,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
-  profilePicture: {
+  iconText: { 
+    color: "#fff", 
+    fontSize: 20 
+  },
+ 
+  //signout button
+   signOutButton: {
+    marginHorizontal: 16,
+    marginTop: 28,
+    paddingVertical: 14,
+    borderRadius: 22,
+    alignItems: "center",
+  },
+  //profile
+avatarWrapper: { 
+  width: 100, 
+  height: 100 
+},
+  avatarPlaceholder: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 10,
+    backgroundColor: "#3a3a3c",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
   },
 });
+
+
+
