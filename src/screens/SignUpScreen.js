@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
+  Alert,
 } from "react-native";
 import { useState } from "react";
 import { supabase } from "../../utils/hooks/supabase";
@@ -17,7 +18,7 @@ export default function SignupScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("");
   const [alreadyInUseButton, setAlreadyInUseButton] = useState(false);
-  //major dubbing here to figure out why auth doesnt work
+  //major debugging here to figure out why auth doesnt work
   const [alreadyInUseMessage, setAlreadyInUseMessage] = useState("");
 
   function isValidDateFormat(input) {
@@ -25,8 +26,9 @@ export default function SignupScreen({ navigation }) {
     return dateRegex.test(input);
   }
 
+
   async function handleSubmit() {
-    // console.log("handle submit invoked!!");
+    console.log("handle submit invoked!!");
 
     try {
       // sign up with additional user metadata
@@ -35,11 +37,8 @@ export default function SignupScreen({ navigation }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-
         options: {
-          data: {
-            userName: email.split("@")[0],
-          },
+          data: { username: email.split("@")[0],},
         },
       });
 
@@ -54,25 +53,39 @@ export default function SignupScreen({ navigation }) {
           setAlreadyInUseMessage("");
         }
       } else {
-        // console.log("User signed up:", data);
+        console.log("User signed up:", data);
         // Navigate to a different screen or handle successful signup
 
         console.log("User signed up:", JSON.stringify(data, null, 4));
 
+        const user = data.user;
+        const username = email.split("@")[0];
+
+        if(!user){
+          Alert.alert("No user was returned from database.");
+          return;
+        }
+
         try {
           console.log("Now updating profile with birthday");
           const updates = {
-            id: data.user.id,
-            username: data.user.email,
-            birthday: birthday,
-            updated_at: new Date(),
+            user_id: user.id,
+            email,
+            username,
+            birthday,
           };
 
-          const { error } = await supabase.from("profiles").upsert(updates);
+          const { data: profileData, error: profileError } = await supabase
+            .from("profiles")
+            .upsert(updates)
+            .select();
 
-          if (error) {
-            console.log("Error caught");
-            throw error;
+          console.log("Profile data:", profileData);
+          console.log("Profile error:", profileError);
+
+          if (profileError) {
+            Alert.alert(profileError.message);
+            console.error(profileError);
           } else {
             console.log("User profile updated.");
           }
