@@ -1,5 +1,9 @@
 import React, { useEffect } from "react";
-import { FlatList, Image, StyleSheet } from "react-native";
+import { View, FlatList, Image, StyleSheet } from "react-native";
+
+import Header from "../components/Header";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 const RAWDATA = [
   {
@@ -52,12 +56,27 @@ const renderItem = ({ item }) => {
 };
 
 export default function SpotlightScreen() {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+
     useEffect(() => {
       console.log("useEffect ran");
       filterValidImages(RAWDATA);
     }
   );
   return (
+    <View
+            style={[
+              styles.header,
+              {
+                paddingTop: insets.top,
+                marginBottom: tabBarHeight,
+              },
+            ]}
+          >
+            <Header title="Spotlight" />
+
+
     <FlatList
       contentContainerStyle={styles.container}
       pagingEnabled={true}
@@ -65,6 +84,7 @@ export default function SpotlightScreen() {
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
     />
+    </View>
   );
 }
 
@@ -72,6 +92,9 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingBottom: 100,
+  },
+  header: {
+    flex: 1,
   },
   content: {
     padding: 20,
