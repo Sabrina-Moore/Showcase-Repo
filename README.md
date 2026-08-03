@@ -51,9 +51,20 @@
 
 ## About The Project
 
+As part of the Snap Academy, an educational program for community college students run by the Snap Philanthropy and Next Shift Learning teams, 
+
+
 ### Pitch
 
-Here's a blank template to get started. Tell me about the project and features it has.
+Foster Youth on average will be placed in three different homes before reaching 18. Each time they move, they start from scratch with their support system. A new home, new guardians, maybe even new friends if they move to a different school zone. From a study by Portland State University that interviewed foster youth in California, they identified “times of transition as disruptive to the stability and longevity of relationships.” 
+
+And when someone doesn’t have these networks, everything including social skills, job security, and housing stability is impacted. We found when researching nonprofits that specialize in providing services to this group that they are shifting their strategies to developing and maintaining support systems to build relational permanence. Having more robust social ties with peers, friends, and trusted adults leads to multidimensional support in the form of emotional, tangible, and informational support. 
+
+So we thought, how might we help foster youth meaningfully connect to people and resources while experiencing a broken support system to deepen already existing connections?
+
+That’s where our feature comes in, Safe Space, a new addition to the chat tab. It’s a toolkit that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and  customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits. 
+
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -61,17 +72,20 @@ Here's a blank template to get started. Tell me about the project and features i
 
 ### Features
 - New UI to represent chats with this feature
-- Notification system called "nudges"
+- Notification system called "nudges" to remind users to reach out when the safe space becomes inactive for too long
+- Nudges can also remind the user of important milestones and birthdays
+- Users needing help to bridge a lull in conversation can get "conversation starting" prompts
+
 
 
 
 ### Tech Stack
 
 <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native with Expo Go**
-- <a href="https://expo.dev/"><img src="assets/techStackLogos/expogo3.png" width="20" height="20" align="center" alt="Expo" /></a> **Expo Go** (v51.0.0)
-- <a href="https://supabase.com/"><img src="assets/techStackLogos/supabase-logo-wordmark--dark.png" height="22" align="center" alt="Supabase" /></a> **Supabase** for database storage
-- <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="20" height="20" align="center" alt="JavaScript" /></a> **JavaScript**
-- 💾 **AsyncStorage** for local session storage
+<a href="https://expo.dev/"><img src="assets/techStackLogos/expogo4.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v51.0.0)
+<a href="https://supabase.com/"><img src="assets/techStackLogos/supabase-logo-wordmark--dark.png" height="22" align="center" alt="Supabase" /></a> for database storage
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="20" height="20" align="center" alt="JavaScript" /></a> **JavaScript**
+💾 **AsyncStorage** for local session storage
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -86,10 +100,9 @@ Here's a blank template to get started. Tell me about the project and features i
 To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computer.
 
 
-
 ### Installation
 
-1. Make your own database in Supabase. 
+1. Make your own database in Supabase, holding data like profiles and chat prompts.
 2. Follow instructions for connecting your project as a Framework for Expo React Native and copy the connection key. 
 3. Clone the repo
    ```sh
