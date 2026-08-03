@@ -48,7 +48,7 @@ export default function ConversationScreen({ route, navigation }) {
         sender: "me",
         name: "ME",
         text: message,
-        color: "#FF2D55",
+        color: "#dd1147",
       },
     ]);
 
@@ -89,10 +89,10 @@ export default function ConversationScreen({ route, navigation }) {
         <View style={styles.header}>
           <View style={styles.leftSection}>
             <Pressable onPress={() => navigation?.goBack()} style={styles.backButton}>
-              <Ionicons name="chevron-back" size={28} color="#000" />
+              <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
-
-            <Image
+          
+            {/* <Image
               source={{ uri: "https://loremflickr.com/140/140" }}
               style={styles.avatarImage}
             />
@@ -100,7 +100,27 @@ export default function ConversationScreen({ route, navigation }) {
             <View style={styles.nameContainer}>
               <Text style={styles.userName}>{chatbotName}</Text>
               <Text style={styles.userStatus}>Pico, Santa Monica · 33m</Text>
-            </View>
+            </View> */}
+
+            {/* added this */}
+            <TouchableOpacity
+              style={styles.profileInfoTouchable}
+              onPress={() =>
+                navigation.navigate("ConversationProfileScreen", { chatbotName })
+              }
+            >
+              <Image
+                source={{ uri: "https://loremflickr.com/140/140" }}
+                style={styles.avatarImage}
+              />
+
+              <View style={styles.nameContainer}>
+                <Text style={styles.userName}>{chatbotName}</Text>
+                <Text style={styles.userStatus}>Pico, Santa Monica · 33m</Text>
+              </View>
+            </TouchableOpacity>
+
+
           </View>
 
           <View style={styles.rightSection}>
@@ -276,4 +296,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  profileInfoTouchable: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  
 });
