@@ -10,6 +10,7 @@ import SettingsScreen from "../screens/SettingsScreen";
 import FriendStory from "../screens/FriendStory";
 import AstrologyScreen from "../screens/AstrologyScreen";
 import MemoryScreen from "../screens/MemoryScreen";
+import MapScreen from "../screens/MapScreen";
 import EventScreen from "../screens/EventScreen"; //New component by Sona and Christian
 
 const Stack = createStackNavigator();
@@ -18,7 +19,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="UserTab" component={UserTab} />
+        <Stack.Screen name="Back" component={UserTab} />
         <Stack.Screen
           name="Profile"
           component={ProfileScreen}
@@ -67,6 +68,11 @@ export default function App() {
         <Stack.Screen
           name="Event"
           component={EventScreen}
+          options={{ headerShown: true }}
+        />
+         <Stack.Screen
+          name="Map"
+          component={MapScreen}
           options={{ headerShown: true }}
         />
       </Stack.Navigator>

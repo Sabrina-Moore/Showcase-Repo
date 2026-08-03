@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import {
-  SafeAreaView,
   View,
   Text,
   FlatList,
@@ -83,7 +82,7 @@ export default function ConversationScreen({ route }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* HEADER */}
 
       {/* <View style={styles.header}>
@@ -155,7 +154,7 @@ export default function ConversationScreen({ route }) {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 const styles = StyleSheet.create({

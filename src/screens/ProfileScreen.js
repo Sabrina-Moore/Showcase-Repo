@@ -48,7 +48,7 @@ export default function ProfileScreen() {
         onPress={() => {
           navigation.navigate("Profile");
         }}
-        title="Profile"
+        title="My Account"
         color="#841584"
       />
       <Pressable>

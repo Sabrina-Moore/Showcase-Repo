@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Header from "../components/Header";
 
 import * as Location from "expo-location";
 
@@ -52,14 +53,23 @@ export default function MapScreen({ navigation }) {
   text = JSON.stringify(location);
 
   return (
-    <View style={[styles.container, { marginBottom: tabBarHeight }]}>
+    <View 
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top,
+            marginBottom: tabBarHeight,
+          },
+        ]}
+      >
+        <Header title="Map" />
+
       <MapView
         style={styles.map}
         region={currentRegion}
         showsUserLocation={true}
         showsMyLocationButton={true}
       />
-
       <View style={[styles.mapFooter]}>
         <View style={styles.locationContainer}>
           <TouchableOpacity
@@ -116,7 +126,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
   },
   mapFooter: {
     width: "100%",
@@ -129,8 +138,10 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   map: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height,
+    //width: Dimensions.get("window").width,
+    //height: Dimensions.get("window").height,
+    flex: 1,
+    width: "100%",
   },
   locationContainer: {
     backgroundColor: "transparent",

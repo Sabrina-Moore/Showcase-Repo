@@ -12,14 +12,26 @@
 
 <h3 align="center">Snap Safe Space</h3>
 
-  <p align="center">
-    React Native chat feature for integration into Snapchat
+ <p align="center">
+    React Native feature for integration into Snapchat
     <br />
-    <a href="https://github.com/Sabrina-Moore/Showcase-Repo"><strong>Explore Design Documentation»</strong></a>
+  </p>
+
+    
+  | Foster Youth   | Members                          |
+  | -------------- | ------------------------------   |
+  |  Storytelling  | Devan Jue and Hadassah Pryor     |
+  |  Design        | Kenner Valentin and              |
+  |                | Christopher Gonon-Maldonado      |
+  |  Engineering   | Sabrina Moore and Shawn Seo      |
+    
+  <p>
+    <a href="https://github.com/Sabrina-Moore/Showcase-Repo"><strong>Explore the Docs Link»</strong></a>
     <br />
     <br />
     <a href="https://github.com/Sabrina-Moore/Showcase-Repo">View Demo Link</a>
   </p>
+
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -51,7 +63,7 @@
 
 ## About The Project
 
-As part of the Snap Academy, an educational program for community college students run by the Snap Philanthropy and Next Shift Learning teams, 
+As part of the Snap Academy, an educational program for community college students run by the Snap Philanthropy and Next Shift Learning teams, our team was given the topic of "Foster Youth" with the goal of helping to solve a need for that target audience. We have a team of two Storytellers, two designers, and two engineers. 
 
 
 ### Pitch
@@ -71,21 +83,45 @@ That’s where our feature comes in, Safe Space, a new addition to the chat tab.
 
 
 ### Features
+
+These features live on either the Chat home screen, each individual conversation screen, or the conversation group profile screen. 
+
+**Chat home screen**
 - New UI to represent chats with this feature
+- can long press already existing conversations to convert to a safe space conversation (adds these features without requiring a new chatroom)
 - Notification system called "nudges" to remind users to reach out when the safe space becomes inactive for too long
 - Nudges can also remind the user of important milestones and birthdays
-- Users needing help to bridge a lull in conversation can get "conversation starting" prompts
 
+
+**conversation creation screen**
+- new tab for starting a safe space conversation
+
+
+**Conversation screen**
+- Users needing help to bridge a lull in conversation can get "conversation starting" prompts
+- Streaks redesign 
+- users can invite friends to their already existing safe space chat, but must be approved by the connections in that safe space
+
+**Conversation group profile screen**
+- users can customize settings for all added features (changing interval if applicable, or turning off and on features)
+- users can choose update their "life banner" status to be seen by their safe space connections
+- users can set their daily mood and need in a widget to be seen by their safe space connections
+- users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
+
+**Supabase**
+- profile table for including dummy data for users
+- Tracks conversation inactivty for notification system
+- prompts table for users to get conversation starting prompts
 
 
 
 ### Tech Stack
 
-<a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native with Expo Go**
-<a href="https://expo.dev/"><img src="assets/techStackLogos/expogo4.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v51.0.0)
-<a href="https://supabase.com/"><img src="assets/techStackLogos/supabase-logo-wordmark--dark.png" height="22" align="center" alt="Supabase" /></a> for database storage
-<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="20" height="20" align="center" alt="JavaScript" /></a> **JavaScript**
-💾 **AsyncStorage** for local session storage
+- <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native** 
+- <a href="https://expo.dev/"><img src="assets/techStackLogos/expogo2.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v51.0.0)
+- <a href="https://supabase.com/"><img src="assets/techStackLogos/supabase-logo1.svg" height="22" align="center" alt="Supabase" /></a> **Supabase** for database storage
+- <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="20" height="20" align="center" alt="JavaScript" /></a> **JavaScript**
+- 💾 **AsyncStorage** for local session storage
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
