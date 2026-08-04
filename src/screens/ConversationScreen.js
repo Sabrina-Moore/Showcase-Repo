@@ -242,7 +242,7 @@ export default function ConversationScreen({ route, navigation }) {
               }
             >
               <Image
-                source={{ uri: "https://loremflickr.com/140/140" }}
+                source={require("/Users/sseo2/sea_proj/Showcase-Repo/assets/snapchat/personalBitmoji.png")}
                 style={styles.avatarImage}
               />
 
@@ -343,8 +343,8 @@ const styles = StyleSheet.create({
     paddingRight: 4,
   },
   avatarImage: {
-    width: 36,
-    height: 36,
+    width: 50,
+    height: 50,
     borderRadius: 18,
     marginRight: 10,
   },
