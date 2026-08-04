@@ -32,7 +32,7 @@ const CHARMS = [
 
 export default function ConversationProfileScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
-  const chatbotName = "Place Holder";
+  const chatbotName = route?.params?.chatbotName || "Place Holder";
 
   return (
     <View style={styles.container}>

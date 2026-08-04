@@ -19,13 +19,11 @@ import { supabase } from "../../utils/hooks/supabase";
 //Adding realtime chat functionality
 
 export default function ConversationScreen({ route, navigation }) {
-
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [participants, setParticipants] = useState([]);
-
 
   const { conversationId } = route.params;
   console.log("Opening conversation:", conversationId);
@@ -33,49 +31,50 @@ export default function ConversationScreen({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
- 
-  
+
   const listRef = useRef();
- 
+
   //event listening for user typing in chat
 
-//--------------------------------------
-// uses hook to store currently logged in users info to database
-    useEffect(() => {
-        const fetchUser = async () => {
-            const { data, error } = await supabase.auth.getUser(); //requests authentication data
-            if (error) {
-                console.error("Error fetching current user:", error);
-                return;
-            }
-            const uid = data?.user?.id ?? null; //extracts the users id or null
-            setCurrentUserId(uid);
-            console.log("Inside data fetch for current user");
+  //--------------------------------------
+  // uses hook to store currently logged in users info to database
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser(); //requests authentication data
+      if (error) {
+        console.error("Error fetching current user:", error);
+        return;
+      }
+      const uid = data?.user?.id ?? null; //extracts the users id or null
+      setCurrentUserId(uid);
+      console.log("Inside data fetch for current user");
 
-            if (uid) { //if authenticated user exists
-                const { data: profile } = await supabase
-                    .from("profiles")
-                    .select("username")
-                    .eq("user_id", uid)
-                    .single();
-                if (profile?.userName) setCurrentUserName(profile.userName); 
-            }
-        };
-        fetchUser();
-    }, []);
+      if (uid) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("user_id", uid)
+          .single();
+        if (profile?.username) setCurrentUserName(profile.username);
+      }
+    };
+    fetchUser();
+  }, []);
 
- //------------------------------
+  //------------------------------
   //fetch conversation participants
   const fetchParticipants = async () => {
     const { data, error } = await supabase
       .from("conversation_members")
-      .select(`
+      .select(
+        `
         user_id,
         profiles (
           username,
           avatar_url
         )
-      `)
+      `,
+      )
       .eq("conversation_id", conversationId);
 
     if (error) {
@@ -89,127 +88,121 @@ export default function ConversationScreen({ route, navigation }) {
   };
 
   useEffect(() => {
-  fetchParticipants();
-}, [conversationId]);
-
+    fetchParticipants();
+  }, [conversationId]);
 
   //------------------------------
   //getting messages from database
- const fetchMessages = async () => {
-  if (!conversationId) return;
+  const fetchMessages = async () => {
+    if (!conversationId) return;
 
-  setIsLoading(true);
-  console.log("Inside message fetch");
+    setIsLoading(true);
+    console.log("Inside message fetch");
 
-  const { data, error } = await supabase
+    const { data, error } = await supabase
       .from("messages")
       .select(
-          `message_id, conversation_id, sender_id, text, created_at,
-          profiles (user_id, username, avatar_url)`
+        `message_id, conversation_id, sender_id, text, created_at,
+          profiles (user_id, username, avatar_url)`,
       )
       .eq("conversation_id", conversationId)
-      .order("created_at", {ascending: true});
+      .order("created_at", { ascending: true });
 
-  if (error) {
+    if (error) {
       console.error("Error fetching chat messages:", error);
       setMessages([]);
-  } else {
-    console.log("Messages fetched:", data);
+    } else {
+      console.log("Messages fetched:", data);
       setMessages(data ?? []);
-  }
+    }
 
-  setIsLoading(false);
-};
+    setIsLoading(false);
+  };
 
-useEffect(() => {
-  fetchMessages();
-}, [conversationId]);
+  useEffect(() => {
+    fetchMessages();
+  }, [conversationId]);
 
-    //-------------------------------------
-   // realtime messaging
-    useEffect(() => {
-        if (!conversationId) return;
+  //-------------------------------------
+  // realtime messaging
+  useEffect(() => {
+    if (!conversationId) return;
 
-        const channel = supabase
-            .channel(`conversation-${conversationId}`)
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "messages",
-                    filter: `conversation_id=eq.${conversationId}`,
-                },
-                () => {
-                    fetchMessages();
-                }
-            )
-            .subscribe();
+    const channel = supabase
+      .channel(`conversation-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => {
+          fetchMessages();
+        },
+      )
+      .subscribe();
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [conversationId]);
-//--------------------------------
-//sending messages
-     const handleSend = async () => {
-        const body = draft.trim();
-        if (!body || !currentUserId) return;
-
-        setIsSending(true);
-        setDraft(""); // clear right away, feels more responsive
-
-        const { error } = await supabase
-        .from("messages")
-        .insert({
-            conversation_id: conversationId,
-            sender_id: currentUserId,
-            text: body,
-        });
-
-        if (error) {
-            console.error("Error sending message:", error);
-            setDraft(body); // put it back so they don't lose what they typed
-        }
-
-        setIsSending(false);
+    return () => {
+      supabase.removeChannel(channel);
     };
+  }, [conversationId]);
+  //--------------------------------
+  //sending messages
+  const handleSend = async () => {
+    const body = draft.trim();
+    if (!body || !currentUserId) return;
+
+    setIsSending(true);
+    setDraft(""); // clear right away, feels more responsive
+
+    const { error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      text: body,
+    });
+
+    if (error) {
+      console.error("Error sending message:", error);
+      setDraft(body); // put it back so they don't lose what they typed
+    }
+
+    setIsSending(false);
+  };
 
   //-----------------------------------
   function renderMessage({ item }) {
-
     const ismMyData = item.sender_id === currentUserId;
 
     return (
       <View
-      style={{
-        alignSelf: ismMyData ? "flex-end" : "flex-start",
-        marginVertical: 8,
-        maxWidth: "80%",
-      }}
-    >
-      {!ismMyData && (
-        <Text style={styles.sender}>
-          {item.profiles?.username}
-        </Text>
-      )}
-
-      <View
         style={{
-          backgroundColor: ismMyData ? "#0A84FF" : "#ECECEC",
-          padding: 12,
-          borderRadius: 18,
+          alignSelf: ismMyData ? "flex-end" : "flex-start",
+          marginVertical: 8,
+          maxWidth: "80%",
         }}
       >
-        <Text
+        {!ismMyData && (
+          <Text style={styles.sender}>{item.profiles?.username}</Text>
+        )}
+
+        <View
           style={{
-            color: ismMyData ? "white" : "black",
+            backgroundColor: ismMyData ? "#0A84FF" : "#ECECEC",
+            padding: 12,
+            borderRadius: 18,
           }}
         >
-          {item.text}
-        </Text>
+          <Text
+            style={{
+              color: ismMyData ? "white" : "black",
+            }}
+          >
+            {item.text}
+          </Text>
+        </View>
       </View>
-    </View>
     );
   }
 
@@ -218,10 +211,13 @@ useEffect(() => {
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
         <View style={styles.header}>
           <View style={styles.leftSection}>
-            <Pressable onPress={() => navigation?.goBack()} style={styles.backButton}>
+            <Pressable
+              onPress={() => navigation?.goBack()}
+              style={styles.backButton}
+            >
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
-          
+
             {/* <Image
               source={{ uri: "https://loremflickr.com/140/140" }}
               style={styles.avatarImage}
@@ -236,7 +232,13 @@ useEffect(() => {
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() =>
-                navigation.navigate("ConversationProfileScreen")
+                navigation.navigate("ConversationProfileScreen", {
+                  chatbotName:
+                    participants
+                      .map((p) => p.profiles?.username)
+                      .filter(Boolean)
+                      .join(", ") || "Best Friend",
+                })
               }
             >
               <Image
@@ -244,13 +246,11 @@ useEffect(() => {
                 style={styles.avatarImage}
               />
 
-            <View style={styles.nameContainer}>
-              <Text style={styles.username}>
-                {participants
-                  .map((p) => p.profiles?.username)
-                  .join(", ")}
-              </Text>
-            </View>
+              <View style={styles.nameContainer}>
+                <Text style={styles.username}>
+                  {participants.map((p) => p.profiles?.username).join(", ")}
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
 
@@ -265,7 +265,7 @@ useEffect(() => {
           </View>
         </View>
       </View>
-{/* Chat area */}
+      {/* Chat area */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -274,14 +274,16 @@ useEffect(() => {
           ref={listRef}
           data={messages}
           renderItem={renderMessage}
-          keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
+          keyExtractor={(item, index) =>
+            item.message_id?.toString() ?? index.toString()
+          }
           contentContainerStyle={styles.messages}
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
         />
-{/* Input bar */}
-        <View style={styles.inputBar}>   
+        {/* Input bar */}
+        <View style={styles.inputBar}>
           <TouchableOpacity>
             <Ionicons name="camera" size={27} color="#000" />
           </TouchableOpacity>
@@ -434,5 +436,4 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  
 });
