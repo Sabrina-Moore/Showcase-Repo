@@ -88,25 +88,25 @@ Haven lives on either the Chat home screen, each individual conversation screen,
 
 **Chat home screen**
 - New UI to represent chats with this feature
-- can long press already existing conversations to convert to a safe space conversation (adds these features without requiring a new chatroom)
-- Notification system called "nudges" to remind users to reach out when the safe space becomes inactive for too long
+- can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
+- Notification system called "nudges" to remind users to reach out when the conversation becomes inactive for too long
 - Nudges can also remind the user of important milestones and birthdays
 
 
 **conversation creation screen**
-- new tab for starting a safe space conversation
+- new tab for starting a Haven conversation
 
 
 **Conversation screen**
 - Users needing help to bridge a lull in conversation can get "conversation starting" prompts
 - Streaks redesign 
-- users can invite friends to their already existing safe space chat, but must be approved by the connections in that safe space
+- users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
 
 
 **Conversation group profile screen**
 - users can customize settings for all added features (changing interval if applicable, or turning off and on features)
-- users can choose update their "life banner" status to be seen by their safe space connections
-- users can set their daily mood and need in a widget to be seen by their safe space connections
+- users can choose update their "life banner" status to be seen by their Haven connections
+- users can set their daily mood and need in a widget to be seen by their Haven connections
 - users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
 
 
