@@ -13,11 +13,24 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
 import { supabase } from "../../utils/hooks/supabase";
 
-//Adding realtime chat functionality
+//global colors for users
+// Color used for the current user's own messages ("ME" label + border).
+const ME_COLOR = "#FF375F";
+// Palette used to color-code other senders (name label + left border).
+const SENDER_COLORS = ["#0A84FF", "#34C759", "#FF9500", "#AF52DE", "#00C7BE", "#FFD60A"];
+ 
+function colorForSender(senderId) {
+  if (!senderId) return SENDER_COLORS[0];
+  let hash = 0;
+  for (let i = 0; i < senderId.length; i++) {
+    hash = senderId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
+}
 
+//Adding realtime chat functionality
 export default function ConversationScreen({ route, navigation }) {
 
   const insets = useSafeAreaInsets();
@@ -25,6 +38,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [participants, setParticipants] = useState([]);
+  const [profiles, setProfiles] = useState(null);
 
 
   const { conversationId } = route.params;
@@ -183,39 +197,57 @@ const sortedMessages = [...messages].sort(
   function renderMessage({ item }) {
 
     const ismMyData = item.sender_id === currentUserId;
+    const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
+    const senderLabel = ismMyData ? "ME" : item.profiles?.username;
 
     return (
-      <View
-      style={{
-        alignSelf: ismMyData ? "flex-end" : "flex-start",
-        marginVertical: 8,
-        maxWidth: "80%",
-      }}
-    >
-      {!ismMyData && (
-        <Text style={styles.sender}>
-          {item.profiles?.username}
+      <View style={styles.messageWrapper}>
+        <Text style={[styles.sender, { color: senderColor }]}>
+          {senderLabel}
         </Text>
-      )}
-
-      <View
-        style={{
-          backgroundColor: ismMyData ? "#0A84FF" : "#ECECEC",
-          padding: 12,
-          borderRadius: 18,
-        }}
-      >
-        <Text
-          style={{
-            color: ismMyData ? "white" : "black",
-          }}
-        >
-          {item.text}
-        </Text>
+ 
+        <View style={[styles.messageRow, { borderLeftColor: senderColor }]}>
+          <Text style={styles.messageText}>{item.text}</Text>
+        </View>
       </View>
-    </View>
     );
-  }
+  };
+ //-----------------------------------
+  //fetching profile avatar
+const [profile, setProfile] = useState(null);
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id) // assuming profiles.id matches auth.users.id
+      .single();
+
+    if (!error) {
+      setProfile(data);
+    }
+  };
+
+  fetchProfile();
+}, []);
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id) // assuming profiles.id matches auth.users.id
+      .single();
+
+    if (!error) {
+      setProfile(data);
+    }
+  };
+
+  fetchProfile();
+}, []);
+ 
 
   return (
     <View style={styles.container}>
@@ -230,7 +262,7 @@ const sortedMessages = [...messages].sort(
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() =>
-                navigation.navigate("ConversationProfileScreen", { conversationId })
+                navigation.navigate("ConversationProfileScreen")
               }
             >
               <Image
