@@ -37,7 +37,6 @@ export default function ConversationScreen({ route, navigation }) {
   
   const listRef = useRef();
  
-  //event listening for user typing in chat
 
 //--------------------------------------
 // uses hook to store currently logged in users info to database
@@ -157,7 +156,7 @@ useEffect(() => {
         if (!body || !currentUserId) return;
 
         setIsSending(true);
-        setDraft(""); // clear right away, feels more responsive
+        setDraft(""); 
 
         const { error } = await supabase
         .from("messages")
@@ -169,13 +168,18 @@ useEffect(() => {
 
         if (error) {
             console.error("Error sending message:", error);
-            setDraft(body); // put it back so they don't lose what they typed
+            setDraft(body); 
         }
 
         setIsSending(false);
     };
 
+//creating an array to sort the messages for rendering
+const sortedMessages = [...messages].sort(
+  (a, b) => new Date(a.created_at) - new Date(b.created_at)
+);
   //-----------------------------------
+  //rendering messages
   function renderMessage({ item }) {
 
     const ismMyData = item.sender_id === currentUserId;
@@ -222,21 +226,11 @@ useEffect(() => {
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
           
-            {/* <Image
-              source={{ uri: "https://loremflickr.com/140/140" }}
-              style={styles.avatarImage}
-            />
-
-            <View style={styles.nameContainer}>
-              <Text style={styles.userName}>{chatbotName}</Text>
-              <Text style={styles.userStatus}>Pico, Santa Monica · 33m</Text>
-            </View> */}
-
             {/* added this */}
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() =>
-                navigation.navigate("ConversationProfileScreen", { chatbotName })
+                navigation.navigate("ConversationProfileScreen", { conversationId })
               }
             >
               <Image
@@ -259,7 +253,7 @@ useEffect(() => {
               <Ionicons name="call" size={18} color="#000" />
             </Pressable>
 
-            <Pressable style={styles.iconCircle}>
+            <Pressable style={[styles.iconCircle, styles.iconCircleDisabled]}>
               <Ionicons name="videocam" size={20} color="#000" />
             </Pressable>
           </View>
@@ -272,20 +266,20 @@ useEffect(() => {
       >
         <FlatList
           ref={listRef}
-          data={messages}
+          data={sortedMessages}
           renderItem={renderMessage}
           keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
           contentContainerStyle={styles.messages}
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
-        />
+        /> 
 {/* Input bar */}
         <View style={styles.inputBar}>   
           <TouchableOpacity>
             <Ionicons name="camera" size={27} color="#000" />
           </TouchableOpacity>
-
+          <View style={styles.inputPill}>
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -293,6 +287,7 @@ useEffect(() => {
             style={styles.input}
             onSubmitEditing={handleSend}
           />
+          </View>
 
           {draft.trim().length > 0 ? (
             <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
@@ -308,8 +303,11 @@ useEffect(() => {
             <Text style={styles.emoji}>🙂</Text>
           </TouchableOpacity>
 
+{/* Drawer effect to open toolkit options */}
           <TouchableOpacity>
-            <Ionicons name="add-circle-outline" size={28} />
+            <Pressable style={styles.iconCircle}>
+              <Ionicons name="add-circle-outline" size={28} />
+            </Pressable>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -322,15 +320,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-
   header: {
     height: 55,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: "#E5E5EA",
     backgroundColor: "#fff",
   },
   leftSection: {
@@ -350,7 +346,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   userName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#000",
   },
@@ -362,63 +358,78 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
   },
   iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "#F2F2F7",
     justifyContent: "center",
     alignItems: "center",
   },
-
-  /* ORIGINAL STYLES */
+  iconCircleDisabled: {
+    backgroundColor: "#F7F7F9",
+  },
+// message list
   messages: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    paddingTop: 4,
     paddingBottom: 20,
   },
-
+  dayDivider: {
+    alignSelf: "center",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: "#A9A9AE",
+    marginVertical: 10,
+  },
   messageWrapper: {
-    marginVertical: 7,
+    marginVertical: 10,
   },
-
   sender: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
-    marginBottom: 3,
+    marginBottom: 4,
   },
-
   messageRow: {
     borderLeftWidth: 3,
-    paddingLeft: 8,
+    paddingLeft: 10,
   },
 
   messageText: {
     fontSize: 18,
+    lineHeight: 24,
     color: "#222",
   },
-
+//input bar
   inputBar: {
     height: 55,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
     gap: 12,
-    borderTopWidth: 1,
-    borderColor: "#eee",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: "#E5E5EA",
     marginBottom: 20,
   },
-
-  input: {
+  inputPill: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     height: 40,
     backgroundColor: "#F1F1F5",
     borderRadius: 20,
-    paddingHorizontal: 18,
-    fontSize: 17,
+    paddingHorizontal: 16,
+    gap: 8,
   },
-
+  input: {
+    flex: 1,
+    fontSize: 17,
+    color: "#000",
+  },
+  //icons and buttons
   emoji: {
     fontSize: 25,
   },
@@ -434,5 +445,4 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  
 });
