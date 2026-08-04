@@ -13,7 +13,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Entypo from '@expo/vector-icons/Entypo'; //for importing happy face emoji
 import { supabase } from "../../utils/hooks/supabase";
+import CameraScreen from "./CameraScreen";
 
 //global colors for users
 // Color used for the current user's own messages ("ME" label + border).
@@ -32,7 +34,6 @@ function colorForSender(senderId) {
 
 //Adding realtime chat functionality
 export default function ConversationScreen({ route, navigation }) {
-
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -47,48 +48,49 @@ export default function ConversationScreen({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
- 
-  
+
   const listRef = useRef();
  
 
-//--------------------------------------
-// uses hook to store currently logged in users info to database
-    useEffect(() => {
-        const fetchUser = async () => {
-            const { data, error } = await supabase.auth.getUser(); //requests authentication data
-            if (error) {
-                console.error("Error fetching current user:", error);
-                return;
-            }
-            const uid = data?.user?.id ?? null; //extracts the users id or null
-            setCurrentUserId(uid);
-            console.log("Inside data fetch for current user");
+  //--------------------------------------
+  // uses hook to store currently logged in users info to database
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser(); //requests authentication data
+      if (error) {
+        console.error("Error fetching current user:", error);
+        return;
+      }
+      const uid = data?.user?.id ?? null; //extracts the users id or null
+      setCurrentUserId(uid);
+      console.log("Inside data fetch for current user");
 
-            if (uid) { //if authenticated user exists
-                const { data: profile } = await supabase
-                    .from("profiles")
-                    .select("username")
-                    .eq("user_id", uid)
-                    .single();
-                if (profile?.userName) setCurrentUserName(profile.userName); 
-            }
-        };
-        fetchUser();
-    }, []);
+      if (uid) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("user_id", uid)
+          .single();
+        if (profile?.username) setCurrentUserName(profile.username);
+      }
+    };
+    fetchUser();
+  }, []);
 
- //------------------------------
+  //------------------------------
   //fetch conversation participants
   const fetchParticipants = async () => {
     const { data, error } = await supabase
       .from("conversation_members")
-      .select(`
+      .select(
+        `
         user_id,
         profiles (
           username,
           avatar_url
         )
-      `)
+      `,
+      )
       .eq("conversation_id", conversationId);
 
     if (error) {
@@ -102,91 +104,88 @@ export default function ConversationScreen({ route, navigation }) {
   };
 
   useEffect(() => {
-  fetchParticipants();
-}, [conversationId]);
-
+    fetchParticipants();
+  }, [conversationId]);
 
   //------------------------------
   //getting messages from database
- const fetchMessages = async () => {
-  if (!conversationId) return;
+  const fetchMessages = async () => {
+    if (!conversationId) return;
 
-  setIsLoading(true);
-  console.log("Inside message fetch");
+    setIsLoading(true);
+    console.log("Inside message fetch");
 
-  const { data, error } = await supabase
+    const { data, error } = await supabase
       .from("messages")
       .select(
-          `message_id, conversation_id, sender_id, text, created_at,
-          profiles (user_id, username, avatar_url)`
+        `message_id, conversation_id, sender_id, text, created_at,
+          profiles (user_id, username, avatar_url)`,
       )
       .eq("conversation_id", conversationId)
-      .order("created_at", {ascending: true});
+      .order("created_at", { ascending: true });
 
-  if (error) {
+    if (error) {
       console.error("Error fetching chat messages:", error);
       setMessages([]);
-  } else {
-    console.log("Messages fetched:", data);
+    } else {
+      console.log("Messages fetched:", data);
       setMessages(data ?? []);
-  }
+    }
 
-  setIsLoading(false);
-};
+    setIsLoading(false);
+  };
 
-useEffect(() => {
-  fetchMessages();
-}, [conversationId]);
+  useEffect(() => {
+    fetchMessages();
+  }, [conversationId]);
 
-    //-------------------------------------
-   // realtime messaging
-    useEffect(() => {
-        if (!conversationId) return;
+  //-------------------------------------
+  // realtime messaging
+  useEffect(() => {
+    if (!conversationId) return;
 
-        const channel = supabase
-            .channel(`conversation-${conversationId}`)
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "messages",
-                    filter: `conversation_id=eq.${conversationId}`,
-                },
-                () => {
-                    fetchMessages();
-                }
-            )
-            .subscribe();
+    const channel = supabase
+      .channel(`conversation-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => {
+          fetchMessages();
+        },
+      )
+      .subscribe();
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [conversationId]);
-//--------------------------------
-//sending messages
-     const handleSend = async () => {
-        const body = draft.trim();
-        if (!body || !currentUserId) return;
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
+  //--------------------------------
+  //sending messages
+  const handleSend = async () => {
+    const body = draft.trim();
+    if (!body || !currentUserId) return;
 
         setIsSending(true);
         setDraft(""); 
 
-        const { error } = await supabase
-        .from("messages")
-        .insert({
-            conversation_id: conversationId,
-            sender_id: currentUserId,
-            text: body,
-        });
+    const { error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      text: body,
+    });
 
         if (error) {
             console.error("Error sending message:", error);
             setDraft(body); 
         }
 
-        setIsSending(false);
-    };
+    setIsSending(false);
+  };
 
 //creating an array to sort the messages for rendering
 const sortedMessages = [...messages].sort(
@@ -195,7 +194,6 @@ const sortedMessages = [...messages].sort(
   //-----------------------------------
   //rendering messages
   function renderMessage({ item }) {
-
     const ismMyData = item.sender_id === currentUserId;
     const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
     const senderLabel = ismMyData ? "ME" : item.profiles?.username;
@@ -254,7 +252,10 @@ useEffect(() => {
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
         <View style={styles.header}>
           <View style={styles.leftSection}>
-            <Pressable onPress={() => navigation?.goBack()} style={styles.backButton}>
+            <Pressable
+              onPress={() => navigation?.goBack()}
+              style={styles.backButton}
+            >
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
           
@@ -262,7 +263,13 @@ useEffect(() => {
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() =>
-                navigation.navigate("ConversationProfileScreen")
+                navigation.navigate("ConversationProfileScreen", {
+                  chatbotName:
+                    participants
+                      .map((p) => p.profiles?.username)
+                      .filter(Boolean)
+                      .join(", ") || "Best Friend",
+                })
               }
             >
               <Image
@@ -270,13 +277,11 @@ useEffect(() => {
                 style={styles.avatarImage}
               />
 
-            <View style={styles.nameContainer}>
-              <Text style={styles.username}>
-                {participants
-                  .map((p) => p.profiles?.username)
-                  .join(", ")}
-              </Text>
-            </View>
+              <View style={styles.nameContainer}>
+                <Text style={styles.username}>
+                  {participants.map((p) => p.profiles?.username).join(", ")}
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
 
@@ -291,7 +296,7 @@ useEffect(() => {
           </View>
         </View>
       </View>
-{/* Chat area */}
+      {/* Chat area */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -300,7 +305,9 @@ useEffect(() => {
           ref={listRef}
           data={sortedMessages}
           renderItem={renderMessage}
-          keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
+          keyExtractor={(item, index) =>
+            item.message_id?.toString() ?? index.toString()
+          }
           contentContainerStyle={styles.messages}
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
@@ -309,8 +316,12 @@ useEffect(() => {
 {/* Input bar */}
         <View style={styles.inputBar}>   
           <TouchableOpacity>
-            <Ionicons name="camera" size={27} color="#000" />
+            <Pressable onPress={() =>
+                navigation.navigate("Camera")} >
+              <Ionicons name="camera" size={27} color="#000" />
+            </Pressable>
           </TouchableOpacity>
+          {/* moved arrow up send and mic into textinput */}
           <View style={styles.inputPill}>
           <TextInput
             value={draft}
@@ -319,9 +330,7 @@ useEffect(() => {
             style={styles.input}
             onSubmitEditing={handleSend}
           />
-          </View>
-
-          {draft.trim().length > 0 ? (
+           {draft.trim().length > 0 ? (
             <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
               <Ionicons name="arrow-up" size={22} color="white" />
             </TouchableOpacity>
@@ -330,15 +339,16 @@ useEffect(() => {
               <Ionicons name="mic" size={24} />
             </TouchableOpacity>
           )}
-
+          </View>
           <TouchableOpacity>
-            <Text style={styles.emoji}>🙂</Text>
+            <Entypo name="emoji-happy" size={24} color="black" />
           </TouchableOpacity>
-
-{/* Drawer effect to open toolkit options */}
+          <TouchableOpacity>
+            <Entypo name="images" size={24} color="black" />
+          </TouchableOpacity>
           <TouchableOpacity>
             <Pressable style={styles.iconCircle}>
-              <Ionicons name="add-circle-outline" size={28} />
+              <Ionicons name="game-controller-outline" size={28} />
             </Pressable>
           </TouchableOpacity>
         </View>
