@@ -10,7 +10,7 @@
   </a>
   <a href="https://www.figma.com/board/KxkdqMKt3bYeVN9LcZAUV0/2026-Snap-Academies-Showcase-%F0%9F%91%BB?node-id=0-1&p=f&t=PlwTk6WeaVxioo26-0">
 
-<h3 align="center">Snap Safe Space</h3>
+<h3 align="center">Snap Haven</h3>
 
  <p align="center">
     React Native feature for integration into Snapchat
@@ -74,7 +74,7 @@ And when someone doesn’t have these networks, everything including social skil
 
 So we thought, how might we help foster youth meaningfully connect to people and resources while experiencing a broken support system to deepen already existing connections?
 
-That’s where our feature comes in, Safe Space, a new addition to the chat tab. It’s a toolkit that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and  customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits. 
+That’s where our feature comes in, Haven, a new addition to the chat tab. It’s a toolkit that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits. 
 
 
 
@@ -84,7 +84,7 @@ That’s where our feature comes in, Safe Space, a new addition to the chat tab.
 
 ### Features
 
-These features live on either the Chat home screen, each individual conversation screen, or the conversation group profile screen. 
+Haven lives on either the Chat home screen, each individual conversation screen, or the conversation group profile screen. 
 
 **Chat home screen**
 - New UI to represent chats with this feature
@@ -102,14 +102,17 @@ These features live on either the Chat home screen, each individual conversation
 - Streaks redesign 
 - users can invite friends to their already existing safe space chat, but must be approved by the connections in that safe space
 
+
 **Conversation group profile screen**
 - users can customize settings for all added features (changing interval if applicable, or turning off and on features)
 - users can choose update their "life banner" status to be seen by their safe space connections
 - users can set their daily mood and need in a widget to be seen by their safe space connections
 - users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
 
+
 **Supabase**
-- profile table for including dummy data for users
+- tracks dummy data for user profiles
+- tracks messages and conversations for realtime chatting
 - Tracks conversation inactivty for notification system
 - prompts table for users to get conversation starting prompts
 
