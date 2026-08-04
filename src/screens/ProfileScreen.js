@@ -22,6 +22,8 @@ export default function ProfileScreen() {
 
   const navigation = useNavigation();
   const { user } = useAuthentication();
+
+  const [userBitmoji, setUserBitmoji] = useState(null);
   
   //fetch user profile from avatar_url in profiles
   useEffect(() => {
@@ -38,22 +40,30 @@ export default function ProfileScreen() {
         if (uid) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("username")
+            .select("avatar_url")
             .eq("user_id", uid)
             .single();
-          if (profile?.username) setCurrentUserName(profile.username);
+          if (profile?.avatar_url) setUserBitmoji(profile.avatar_url);
         }
       };
-      fetchUser();
+      fetchProfileBitmoji();
     }, []);
 
  
   return (
     <View style={{ alignItems: "center" }}>
+      {userBitmoji ? (
       <Image
-        source={{ uri: "https://i.imgur.com/FxsJ3xy.jpg" }}
-        style={{ width: 150, height: 150, borderRadius: 150 / 2 }}
+        source={{ uri: userBitmoji}}
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+        }}
       />
+    ) : (
+      <Text>No avatar</Text>
+    )}
       <Text
         style={{
           justifyContents: "center",
