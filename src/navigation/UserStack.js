@@ -13,6 +13,8 @@ import MemoryScreen from "../screens/MemoryScreen";
 import MapScreen from "../screens/MapScreen";
 import EventScreen from "../screens/EventScreen"; //New component by Sona and Christian
 import CameraScreen from "../screens/CameraScreen.js";
+import ConversationProfileScreen from "../screens/ConversationProfileScreen"
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -81,6 +83,12 @@ export default function App() {
           component={MapScreen}
           options={{ headerShown: true }}
         />
+        <Stack.Screen
+          name="ConversationProfileScreen"
+          component={ConversationProfileScreen}
+          options={{ headerShown: true }}
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
