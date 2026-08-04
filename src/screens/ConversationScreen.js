@@ -236,7 +236,7 @@ useEffect(() => {
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() =>
-                navigation.navigate("ConversationProfileScreen", { chatbotName })
+                navigation.navigate("ConversationProfileScreen")
               }
             >
               <Image

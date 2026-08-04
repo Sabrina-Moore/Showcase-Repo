@@ -86,7 +86,7 @@ export default function App() {
         <Stack.Screen
           name="ConversationProfileScreen"
           component={ConversationProfileScreen}
-          options={{ headerShown: true }}
+          options={{ headerShown: false }}
         />
         
       </Stack.Navigator>
