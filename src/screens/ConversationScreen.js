@@ -251,6 +251,7 @@ useEffect(() => {
                   .join(", ")}
               </Text>
             </View>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.rightSection}>
