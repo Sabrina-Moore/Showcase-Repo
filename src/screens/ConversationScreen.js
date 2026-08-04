@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import Entypo from '@expo/vector-icons/Entypo'; //for importing happy face emoji
+import Entypo from '@expo/vector-icons/Entypo'; //for importing happy face emoji and images icon
 import { supabase } from "../../utils/hooks/supabase";
 import CameraScreen from "./CameraScreen";
 

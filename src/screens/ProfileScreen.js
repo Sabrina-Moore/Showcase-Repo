@@ -22,7 +22,30 @@ export default function ProfileScreen() {
 
   const navigation = useNavigation();
   const { user } = useAuthentication();
-
+  
+  //fetch user profile from avatar_url in profiles
+  useEffect(() => {
+      const fetchProfileBitmoji = async () => {
+        const { data, error } = await supabase.auth.getUser(); //requests authentication data
+        if (error) {
+          console.error("Error fetching current user:", error);
+          return;
+        }
+        const uid = data?.user?.id ?? null; //extracts the users id or null
+        setCurrentUserId(uid);
+        console.log("Inside data fetch for current user");
+  
+        if (uid) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("user_id", uid)
+            .single();
+          if (profile?.username) setCurrentUserName(profile.username);
+        }
+      };
+      fetchUser();
+    }, []);
 
  
   return (
