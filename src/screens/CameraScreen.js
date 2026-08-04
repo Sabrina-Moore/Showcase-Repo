@@ -13,14 +13,15 @@ import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { shareAsync } from "expo-sharing";
 import * as ImagePicker from "expo-image-picker";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs"; //what is this?
+
+import CameraGalleryMenu from "../components/CameraGalleryMenu";
 import CameraActions from "../components/CameraActions";
 import CameraOptions from "../components/CameraOptions";
 import PostcaptureOptions from "../components/PostcaptureActions";
-// Add supabase to store:
+
 import { supabase } from "../../utils/hooks/supabase";
-import CameraGalleryMenu from "../components/CameraGalleryMenu";
 
 export default function CameraScreen({ navigation, focused }) {
   const tabBarHeight = useBottomTabBarHeight();

@@ -13,17 +13,34 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
+import Entypo from '@expo/vector-icons/Entypo'; //for importing happy face emoji
 import { supabase } from "../../utils/hooks/supabase";
+import CameraScreen from "./CameraScreen";
+
+//global colors for users
+// Color used for the current user's own messages ("ME" label + border).
+const ME_COLOR = "#FF375F";
+// Palette used to color-code other senders (name label + left border).
+const SENDER_COLORS = ["#0A84FF", "#34C759", "#FF9500", "#AF52DE", "#00C7BE", "#FFD60A"];
+ 
+function colorForSender(senderId) {
+  if (!senderId) return SENDER_COLORS[0];
+  let hash = 0;
+  for (let i = 0; i < senderId.length; i++) {
+    hash = senderId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
+}
 
 //Adding realtime chat functionality
-
 export default function ConversationScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [participants, setParticipants] = useState([]);
+  const [profiles, setProfiles] = useState(null);
+
 
   const { conversationId } = route.params;
   console.log("Opening conversation:", conversationId);
@@ -33,8 +50,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [isSending, setIsSending] = useState(false);
 
   const listRef = useRef();
-
-  //event listening for user typing in chat
+ 
 
   //--------------------------------------
   // uses hook to store currently logged in users info to database
@@ -154,8 +170,8 @@ export default function ConversationScreen({ route, navigation }) {
     const body = draft.trim();
     if (!body || !currentUserId) return;
 
-    setIsSending(true);
-    setDraft(""); // clear right away, feels more responsive
+        setIsSending(true);
+        setDraft(""); 
 
     const { error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
@@ -163,48 +179,73 @@ export default function ConversationScreen({ route, navigation }) {
       text: body,
     });
 
-    if (error) {
-      console.error("Error sending message:", error);
-      setDraft(body); // put it back so they don't lose what they typed
-    }
+        if (error) {
+            console.error("Error sending message:", error);
+            setDraft(body); 
+        }
 
     setIsSending(false);
   };
 
+//creating an array to sort the messages for rendering
+const sortedMessages = [...messages].sort(
+  (a, b) => new Date(a.created_at) - new Date(b.created_at)
+);
   //-----------------------------------
+  //rendering messages
   function renderMessage({ item }) {
     const ismMyData = item.sender_id === currentUserId;
+    const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
+    const senderLabel = ismMyData ? "ME" : item.profiles?.username;
 
     return (
-      <View
-        style={{
-          alignSelf: ismMyData ? "flex-end" : "flex-start",
-          marginVertical: 8,
-          maxWidth: "80%",
-        }}
-      >
-        {!ismMyData && (
-          <Text style={styles.sender}>{item.profiles?.username}</Text>
-        )}
-
-        <View
-          style={{
-            backgroundColor: ismMyData ? "#0A84FF" : "#ECECEC",
-            padding: 12,
-            borderRadius: 18,
-          }}
-        >
-          <Text
-            style={{
-              color: ismMyData ? "white" : "black",
-            }}
-          >
-            {item.text}
-          </Text>
+      <View style={styles.messageWrapper}>
+        <Text style={[styles.sender, { color: senderColor }]}>
+          {senderLabel}
+        </Text>
+ 
+        <View style={[styles.messageRow, { borderLeftColor: senderColor }]}>
+          <Text style={styles.messageText}>{item.text}</Text>
         </View>
       </View>
     );
-  }
+  };
+ //-----------------------------------
+  //fetching profile avatar
+const [profile, setProfile] = useState(null);
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id) // assuming profiles.id matches auth.users.id
+      .single();
+
+    if (!error) {
+      setProfile(data);
+    }
+  };
+
+  fetchProfile();
+}, []);
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id) // assuming profiles.id matches auth.users.id
+      .single();
+
+    if (!error) {
+      setProfile(data);
+    }
+  };
+
+  fetchProfile();
+}, []);
+ 
 
   return (
     <View style={styles.container}>
@@ -217,17 +258,7 @@ export default function ConversationScreen({ route, navigation }) {
             >
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
-
-            {/* <Image
-              source={{ uri: "https://loremflickr.com/140/140" }}
-              style={styles.avatarImage}
-            />
-
-            <View style={styles.nameContainer}>
-              <Text style={styles.userName}>{chatbotName}</Text>
-              <Text style={styles.userStatus}>Pico, Santa Monica · 33m</Text>
-            </View> */}
-
+          
             {/* added this */}
             <TouchableOpacity
               style={styles.profileInfoTouchable}
@@ -259,7 +290,7 @@ export default function ConversationScreen({ route, navigation }) {
               <Ionicons name="call" size={18} color="#000" />
             </Pressable>
 
-            <Pressable style={styles.iconCircle}>
+            <Pressable style={[styles.iconCircle, styles.iconCircleDisabled]}>
               <Ionicons name="videocam" size={20} color="#000" />
             </Pressable>
           </View>
@@ -272,7 +303,7 @@ export default function ConversationScreen({ route, navigation }) {
       >
         <FlatList
           ref={listRef}
-          data={messages}
+          data={sortedMessages}
           renderItem={renderMessage}
           keyExtractor={(item, index) =>
             item.message_id?.toString() ?? index.toString()
@@ -281,13 +312,17 @@ export default function ConversationScreen({ route, navigation }) {
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
-        />
-        {/* Input bar */}
-        <View style={styles.inputBar}>
+        /> 
+{/* Input bar */}
+        <View style={styles.inputBar}>   
           <TouchableOpacity>
-            <Ionicons name="camera" size={27} color="#000" />
+            <Pressable onPress={() =>
+                navigation.navigate("Camera")} >
+              <Ionicons name="camera" size={27} color="#000" />
+            </Pressable>
           </TouchableOpacity>
-
+          {/* moved arrow up send and mic into textinput */}
+          <View style={styles.inputPill}>
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -295,8 +330,7 @@ export default function ConversationScreen({ route, navigation }) {
             style={styles.input}
             onSubmitEditing={handleSend}
           />
-
-          {draft.trim().length > 0 ? (
+           {draft.trim().length > 0 ? (
             <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
               <Ionicons name="arrow-up" size={22} color="white" />
             </TouchableOpacity>
@@ -305,13 +339,17 @@ export default function ConversationScreen({ route, navigation }) {
               <Ionicons name="mic" size={24} />
             </TouchableOpacity>
           )}
-
+          </View>
           <TouchableOpacity>
-            <Text style={styles.emoji}>🙂</Text>
+            <Entypo name="emoji-happy" size={24} color="black" />
           </TouchableOpacity>
-
           <TouchableOpacity>
-            <Ionicons name="add-circle-outline" size={28} />
+            <Entypo name="images" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Pressable style={styles.iconCircle}>
+              <Ionicons name="game-controller-outline" size={28} />
+            </Pressable>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -324,15 +362,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-
   header: {
     height: 55,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: "#E5E5EA",
     backgroundColor: "#fff",
   },
   leftSection: {
@@ -352,7 +388,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   userName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#000",
   },
@@ -364,63 +400,78 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
   },
   iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "#F2F2F7",
     justifyContent: "center",
     alignItems: "center",
   },
-
-  /* ORIGINAL STYLES */
+  iconCircleDisabled: {
+    backgroundColor: "#F7F7F9",
+  },
+// message list
   messages: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    paddingTop: 4,
     paddingBottom: 20,
   },
-
+  dayDivider: {
+    alignSelf: "center",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: "#A9A9AE",
+    marginVertical: 10,
+  },
   messageWrapper: {
-    marginVertical: 7,
+    marginVertical: 10,
   },
-
   sender: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
-    marginBottom: 3,
+    marginBottom: 4,
   },
-
   messageRow: {
     borderLeftWidth: 3,
-    paddingLeft: 8,
+    paddingLeft: 10,
   },
 
   messageText: {
     fontSize: 18,
+    lineHeight: 24,
     color: "#222",
   },
-
+//input bar
   inputBar: {
     height: 55,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
     gap: 12,
-    borderTopWidth: 1,
-    borderColor: "#eee",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: "#E5E5EA",
     marginBottom: 20,
   },
-
-  input: {
+  inputPill: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     height: 40,
     backgroundColor: "#F1F1F5",
     borderRadius: 20,
-    paddingHorizontal: 18,
-    fontSize: 17,
+    paddingHorizontal: 16,
+    gap: 8,
   },
-
+  input: {
+    flex: 1,
+    fontSize: 17,
+    color: "#000",
+  },
+  //icons and buttons
   emoji: {
     fontSize: 25,
   },
