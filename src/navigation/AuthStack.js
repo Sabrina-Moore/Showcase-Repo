@@ -1,3 +1,4 @@
+//controls screen navigation before login
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -7,6 +8,7 @@ import HomeScreen from "../screens/HomeScreen";
 import LogInScreen from "../screens/LogInScreen";
 import SignUpScreen from "../screens/SignUpScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import CameraScreen from "../screens/CameraScreen";
 
 const Stack = createStackNavigator();
 
@@ -32,6 +34,11 @@ export default function AuthStack() {
         <Stack.Screen
           name="Profile"
           component={ProfileScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Camera"
+          component={CameraScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

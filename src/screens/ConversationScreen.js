@@ -1,94 +1,146 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-    View,
-    Text,
-    Image,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
-    StyleSheet,
-    KeyboardAvoidingView,
-    Platform,
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
 } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 import { supabase } from "../../utils/hooks/supabase";
 
+//Adding realtime chat functionality
+
+export default function ConversationScreen({ route, navigation }) {
+
+  const insets = useSafeAreaInsets();
+  const [messages, setMessages] = useState("");
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserName, setCurrentUserName] = useState("Me");
+  const [participants, setParticipants] = useState([]);
 
 
-export default function ConversationScreen({ route, navigation}) {
+  const { conversationId } = route.params;
+  console.log("Opening conversation:", conversationId);
 
-    const insets = useSafeAreaInsets();
-    const event = route?.params?.event;
-
-    const [currentUserId, setCurrentUserId] = useState(null);
-    const [messages, setMessages] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [draft, setDraft] = useState("");
-    const [isSending, setIsSending] = useState(false);
-
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [draft, setDraft] = useState("");
+  const [isSending, setIsSending] = useState(false);
+ 
+  
   const listRef = useRef();
+ 
+  //event listening for user typing in chat
 
-
-  // who's actually sending messages
+//--------------------------------------
+// uses hook to store currently logged in users info to database
     useEffect(() => {
         const fetchUser = async () => {
-            const { data, error } = await supabase.auth.getUser();
+            const { data, error } = await supabase.auth.getUser(); //requests authentication data
             if (error) {
                 console.error("Error fetching current user:", error);
                 return;
             }
-            setCurrentUserId(data?.user?.id ?? null);
+            const uid = data?.user?.id ?? null; //extracts the users id or null
+            setCurrentUserId(uid);
+            console.log("Inside data fetch for current user");
+
+            if (uid) { //if authenticated user exists
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("username")
+                    .eq("user_id", uid)
+                    .single();
+                if (profile?.userName) setCurrentUserName(profile.userName); 
+            }
         };
         fetchUser();
     }, []);
 
-     const fetchMessages = async () => {
-        if (!event?.id) return;
+ //------------------------------
+  //fetch conversation participants
+  const fetchParticipants = async () => {
+    const { data, error } = await supabase
+      .from("conversation_members")
+      .select(`
+        user_id,
+        profiles (
+          username,
+          avatar_url
+        )
+      `)
+      .eq("conversation_id", conversationId);
 
-        setIsLoading(true);
+    if (error) {
+      console.error("Error fetching participants:", error);
+      return;
+    }
 
-        const { data, error } = await supabase
-            .from("event_chat_messages")
-            .select("id, event, user_id, body, created_at, profiles:user_id(userName, avatar)")
-            .eq("event", Number(event.id))
-            .order("created_at", { ascending: true });
+    console.log("Participants:", JSON.stringify(data, null, 2));
+    console.log("Participant error:", error);
+    setParticipants(data ?? []);
+  };
 
-        if (error) {
-            console.error("Error fetching chat messages:", error);
-            setMessages([]);
-        } else {
-            setMessages(data ?? []);
-        }
-
-        setIsLoading(false);
-    };
+  useEffect(() => {
+  fetchParticipants();
+}, [conversationId]);
 
 
-     useEffect(() => {
-        fetchMessages();
-    }, [event?.id]);
+  //------------------------------
+  //getting messages from database
+ const fetchMessages = async () => {
+  if (!conversationId) return;
 
-    // live updates — new messages from anyone (including other devices)
-    // show up without needing to pull-to-refresh
+  setIsLoading(true);
+  console.log("Inside message fetch");
+
+  const { data, error } = await supabase
+      .from("messages")
+      .select(
+          `message_id, conversation_id, sender_id, text, created_at,
+          profiles (user_id, username, avatar_url)`
+      )
+      .eq("conversation_id", conversationId)
+      .order("created_at", {ascending: true});
+
+  if (error) {
+      console.error("Error fetching chat messages:", error);
+      setMessages([]);
+  } else {
+    console.log("Messages fetched:", data);
+      setMessages(data ?? []);
+  }
+
+  setIsLoading(false);
+};
+
+useEffect(() => {
+  fetchMessages();
+}, [conversationId]);
+
+    //-------------------------------------
+   // realtime messaging
     useEffect(() => {
-        if (!event?.id) return;
+        if (!conversationId) return;
 
         const channel = supabase
-            .channel(`event-chat-${event.id}`)
+            .channel(`conversation-${conversationId}`)
             .on(
                 "postgres_changes",
                 {
                     event: "INSERT",
                     schema: "public",
-                    table: "event_chat_messages",
-                    filter: `event=eq.${event.id}`,
+                    table: "messages",
+                    filter: `conversation_id=eq.${conversationId}`,
                 },
                 () => {
-                    // simplest correct approach: refetch on any insert rather
-                    // than trying to patch the new row's profile join in
-                    // manually from the realtime payload alone
                     fetchMessages();
                 }
             )
@@ -97,19 +149,22 @@ export default function ConversationScreen({ route, navigation}) {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [event?.id]);
-
-    const handleSend = async () => {
+    }, [conversationId]);
+//--------------------------------
+//sending messages
+     const handleSend = async () => {
         const body = draft.trim();
-        if (!body || !currentUserId || !event?.id || isSending) return;
+        if (!body || !currentUserId) return;
 
         setIsSending(true);
         setDraft(""); // clear right away, feels more responsive
 
-        const { error } = await supabase.from("event_chat_messages").insert({
-            event: Number(event.id),
-            user_id: currentUserId,
-            body,
+        const { error } = await supabase
+        .from("messages")
+        .insert({
+            conversation_id: conversationId,
+            sender_id: currentUserId,
+            text: body,
         });
 
         if (error) {
@@ -120,154 +175,130 @@ export default function ConversationScreen({ route, navigation}) {
         setIsSending(false);
     };
 
-
+  //-----------------------------------
   function renderMessage({ item }) {
-    return (
-      <View style={styles.messageWrapper}>
-        <Text
-          style={[
-            styles.sender,
-            {
-              color: item.color,
-            },
-          ]}
-        >
-          {item.name}
-        </Text>
 
-        <View
-          style={[
-            styles.messageRow,
-            {
-              borderLeftColor: item.color,
-            },
-          ]}
+    const ismMyData = item.sender_id === currentUserId;
+
+    return (
+      <View
+      style={{
+        alignSelf: ismMyData ? "flex-end" : "flex-start",
+        marginVertical: 8,
+        maxWidth: "80%",
+      }}
+    >
+      {!ismMyData && (
+        <Text style={styles.sender}>
+          {item.profiles?.username}
+        </Text>
+      )}
+
+      <View
+        style={{
+          backgroundColor: ismMyData ? "#0A84FF" : "#ECECEC",
+          padding: 12,
+          borderRadius: 18,
+        }}
+      >
+        <Text
+          style={{
+            color: ismMyData ? "white" : "black",
+          }}
         >
-          <Text style={styles.messageText}>{item.text}</Text>
-        </View>
+          {item.text}
+        </Text>
       </View>
+    </View>
     );
   }
 
   return (
-           <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            keyboardVerticalOffset={insets.top}
-        >
-            {/* Custom header */}
-            <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-                <TouchableOpacity
-                    style={styles.headerBack}
-                    onPress={() => {
-                        if (navigation.canGoBack()) {
-                            navigation.goBack();
-                        } else {
-                            navigation.navigate("Postcard");
-                        }
-                    }}
-                    hitSlop={8}
-                >
-                    <Ionicons name="chevron-back" size={28} color="#000000" />
-                </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
+        <View style={styles.header}>
+          <View style={styles.leftSection}>
+            <Pressable onPress={() => navigation?.goBack()} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={28} color="#000" />
+            </Pressable>
 
-                <Text style={styles.headerTitle} numberOfLines={1}>
-                    {event?.title ? `${event.title} Chat` : "Event Chat"}
-                </Text>
-            </View>
-            <View style={styles.headerDivider} />
-
-            <FlatList
-                ref={listRef}
-                data={messages}
-                keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={styles.listContent}
-                onContentSizeChange={() =>
-                    listRef.current?.scrollToEnd({ animated: true })
-                }
-                renderItem={({ item }) => {
-                    const isSelf = item.user_id === currentUserId;
-
-                    return (
-                        <View
-                            style={[
-                                styles.messageRow,
-                                isSelf && styles.messageRowSelf,
-                            ]}
-                        >
-                            {!isSelf && (
-                                <Image
-                                    source={{ uri: item.profiles?.avatar }}
-                                    style={styles.avatar}
-                                />
-                            )}
-
-                            <View
-                                style={[
-                                    styles.bubble,
-                                    isSelf ? styles.bubbleSelf : styles.bubbleOther,
-                                ]}
-                            >
-                                {!isSelf && (
-                                    <Text style={styles.author}>
-                                        {item.profiles?.userName ?? "Someone"}
-                                    </Text>
-                                )}
-                                <Text
-                                    style={[
-                                        styles.body,
-                                        isSelf && styles.bodySelf,
-                                    ]}
-                                >
-                                    {item.body}
-                                </Text>
-                                <Text
-                                    style={[
-                                        styles.time,
-                                        isSelf && styles.timeSelf,
-                                    ]}
-                                >
-                                    {new Date(item.created_at).toLocaleTimeString([], {
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                    })}
-                                </Text>
-                            </View>
-                        </View>
-                    );
-                }}
-                ListEmptyComponent={
-                    <Text style={styles.emptyText}>
-                        {isLoading
-                            ? "Loading messages..."
-                            : "No messages yet — say hi 👋"}
-                    </Text>
-                }
+            <Image
+              source={{ uri: "https://loremflickr.com/140/140" }}
+              style={styles.avatarImage}
             />
 
-            <View style={[styles.inputRow, { paddingBottom: insets.bottom + 8 }]}>
-                <TextInput
-                    style={styles.input}
-                    value={draft}
-                    onChangeText={setDraft}
-                    placeholder="Message"
-                    placeholderTextColor="#8E8E93"
-                    multiline
-                />
-                <TouchableOpacity
-                    style={[
-                        styles.sendButton,
-                        !draft.trim() && styles.sendButtonDisabled,
-                    ]}
-                    onPress={handleSend}
-                    disabled={!draft.trim() || isSending}
-                >
-                    <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
+            <View style={styles.nameContainer}>
+              <Text style={styles.username}>
+                {participants
+                  .map((p) => p.profiles?.username)
+                  .join(", ")}
+              </Text>
             </View>
-        </KeyboardAvoidingView>
-    );
+          </View>
+
+          <View style={styles.rightSection}>
+            <Pressable style={styles.iconCircle}>
+              <Ionicons name="call" size={18} color="#000" />
+            </Pressable>
+
+            <Pressable style={styles.iconCircle}>
+              <Ionicons name="videocam" size={20} color="#000" />
+            </Pressable>
+          </View>
+        </View>
+      </View>
+{/* Chat area */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <FlatList
+          ref={listRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
+          contentContainerStyle={styles.messages}
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd({ animated: true })
+          }
+        />
+{/* Input bar */}
+        <View style={styles.inputBar}>   
+          <TouchableOpacity>
+            <Ionicons name="camera" size={27} color="#000" />
+          </TouchableOpacity>
+
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder="Chat"
+            style={styles.input}
+            onSubmitEditing={handleSend}
+          />
+
+          {draft.trim().length > 0 ? (
+            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+              <Ionicons name="arrow-up" size={22} color="white" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity>
+              <Ionicons name="mic" size={24} />
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity>
+            <Text style={styles.emoji}>🙂</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity>
+            <Ionicons name="add-circle-outline" size={28} />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
+  );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -275,34 +306,56 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    height: 65,
+    height: 55,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+    backgroundColor: "#fff",
   },
-
-  avatar: {
-    height: 38,
-    width: 38,
-    borderRadius: 19,
-    backgroundColor: "#FFFC00",
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backButton: {
+    paddingRight: 4,
+  },
+  avatarImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
+  nameContainer: {
+    justifyContent: "center",
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+  },
+  userStatus: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginTop: 1,
+  },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#F2F2F7",
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: 10,
   },
 
-  username: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginLeft: 10,
-    flex: 1,
-  },
-
-  headerIcons: {
-    flexDirection: "row",
-    gap: 18,
-  },
-
+  /* ORIGINAL STYLES */
   messages: {
     paddingHorizontal: 12,
     paddingBottom: 20,
@@ -336,6 +389,7 @@ const styles = StyleSheet.create({
     gap: 12,
     borderTopWidth: 1,
     borderColor: "#eee",
+    marginBottom: 20,
   },
 
   input: {
@@ -359,82 +413,3 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
-
-
-
-
-
-
-// <View style={styles.container}>
-//       {/* HEADER */}
-
-//       {/* <View style={styles.header}>
-//         <Ionicons name="chevron-back" size={32} />
-
-//         <View style={styles.avatar}>
-//           <Text>🙂</Text>
-//         </View>
-
-//         <Text style={styles.username}>{chatbotName}</Text>
-
-//         <View style={styles.headerIcons}>
-//           <Ionicons name="call" size={23} />
-
-//           <Ionicons name="videocam" size={25} />
-//         </View>
-//       </View> */}
-
-//       <KeyboardAvoidingView
-//         style={{ flex: 1 }}
-//         behavior={Platform.OS === "ios" ? "padding" : undefined}
-//       >
-//         <FlatList
-//           ref={listRef}
-//           data={messages}
-//           renderItem={renderMessage}
-//           keyExtractor={(item) => item.id}
-//           contentContainerStyle={styles.messages}
-//         />
-
-//         {/* INPUT AREA */}
-
-//         {/* INPUT AREA */}
-
-//         <View style={styles.inputBar}>
-//           {/* Camera */}
-//           <TouchableOpacity>
-//             <Ionicons name="camera" size={27} color="#000" />
-//           </TouchableOpacity>
-
-//           {/* Text Input */}
-//           <TextInput
-//             value={message}
-//             onChangeText={setMessage}
-//             placeholder="Chat"
-//             style={styles.input}
-//             onSubmitEditing={sendMessage}
-//           />
-
-//           {/* Dynamic Button */}
-//           {message.length > 0 ? (
-//             <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-//               <Ionicons name="arrow-up" size={22} color="white" />
-//             </TouchableOpacity>
-//           ) : (
-//             <TouchableOpacity>
-//               <Ionicons name="mic" size={24} />
-//             </TouchableOpacity>
-//           )}
-
-//           {/* Emoji */}
-//           <TouchableOpacity>
-//             <Text style={styles.emoji}>🙂</Text>
-//           </TouchableOpacity>
-
-//           {/* Plus */}
-//           <TouchableOpacity>
-//             <Ionicons name="add-circle-outline" size={28} />
-//           </TouchableOpacity>
-//         </View>
-//       </KeyboardAvoidingView>
-//     </View>

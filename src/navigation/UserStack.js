@@ -12,7 +12,7 @@ import AstrologyScreen from "../screens/AstrologyScreen";
 import MemoryScreen from "../screens/MemoryScreen";
 import MapScreen from "../screens/MapScreen";
 import EventScreen from "../screens/EventScreen"; //New component by Sona and Christian
-
+import CameraScreen from "../screens/CameraScreen.js";
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -24,6 +24,11 @@ export default function App() {
           name="Profile"
           component={ProfileScreen}
           options={{ headerShown: true }}
+        />
+          <Stack.Screen
+          name="Camera"
+          component={CameraScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="FriendStory"
@@ -38,7 +43,8 @@ export default function App() {
         <Stack.Screen
           name="Conversation"
           component={ConversationScreen}
-          options={{ headerShown: true }}
+          // made this false (below)
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="DiscoverCard"

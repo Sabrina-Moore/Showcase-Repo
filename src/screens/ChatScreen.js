@@ -1,25 +1,73 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Header from "../components/Header";
-import BasicChatbot from "../chatbots/BasicChatbot";
 
-export const CHATBOTS = {
-  BasicChatbot: {
-    id: "BasicChatbot",
-    name: "React Native Chatbot",
-    imageUrl: "https://loremflickr.com/140/140",
-    component: BasicChatbot,
-  },
-};
+import { supabase } from "../../utils/hooks/supabase";
+
+//screen should show all chats that the logged-in. user belongs to
+console.log("ChatScreen file loaded");
 
 export default function ChatScreen({ navigation }) {
+
+  console.log("ChatScreen rendered");
+
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const chats = Object.values(CHATBOTS);
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  
+  //----------------------
+  async function loadConversations() {
+    console.log("loadConversations started");
+
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  console.log("Session:", sessionData.session);
+  console.log("Session error:", sessionError);
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  console.log("Logged in user:", user);
+  console.log("User error:", userError);
+
+  if (!user) return;
+
+  if(!user) return;
+
+  
+  const {data, error } = await supabase
+  .from("conversation_members")
+  .select(`conversation_id, 
+    profiles (user_id, username, avatar_url)` )
+  .eq("user_id", user.id);
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  console.log("Inside loadConversation:", data);
+  setConversations(data);
+  setLoading(false);
+};
+
+  
+
+
 
   return (
     <View
@@ -33,20 +81,21 @@ export default function ChatScreen({ navigation }) {
     >
       <Header title="Chat" />
 
-      {chats.map((chat) => (
+      {conversations.map((chat) => (
         <TouchableOpacity
-          key={chat.id}
+          key={chat.profiles?.username}
           style={styles.userButton}
           onPress={() =>
             navigation.navigate("Conversation", {
-              chatbotName: chat.name,
-              chatId: chat.id,
+              conversationId: chat.conversation_id,
             })
           }
         >
           <Ionicons name="person-circle" size={48} color="#D8D8D8" />
 
-          <Text style={styles.userName}>{chat.name}</Text>
+          <Text style={styles.username}>
+            {chat.profiles?.username}
+          </Text>
 
           <Ionicons name="camera-outline" size={24} color="#999" />
         </TouchableOpacity>
@@ -71,7 +120,7 @@ const styles = StyleSheet.create({
     borderColor: "#EFEFEF",
   },
 
-  userName: {
+  username: {
     flex: 1,
     marginLeft: 15,
     fontSize: 18,

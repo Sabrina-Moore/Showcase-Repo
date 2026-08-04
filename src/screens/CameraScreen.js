@@ -19,7 +19,7 @@ import CameraActions from "../components/CameraActions";
 import CameraOptions from "../components/CameraOptions";
 import PostcaptureOptions from "../components/PostcaptureActions";
 // Add supabase to store:
-import { supabase } from "../utils/hooks/supabase";
+import { supabase } from "../../utils/hooks/supabase";
 import CameraGalleryMenu from "../components/CameraGalleryMenu";
 
 export default function CameraScreen({ navigation, focused }) {
