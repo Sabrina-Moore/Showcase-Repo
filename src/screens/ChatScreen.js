@@ -77,8 +77,8 @@ export default function ChatScreen({ navigation }) {
     setModalVisible(true);
   };
 
-  const username = selectedChat?.profiles?.username || "User";
-  const avatarUrl = selectedChat?.profiles?.avatar_url;
+  const username = selectedChat?.otherParticipant?.username || "User";
+  const avatarUrl = selectedChat?.otherParticipant?.avatar_url;
 
   console.log("Avatar URL:", avatarUrl);
   return (
