@@ -273,7 +273,7 @@ useEffect(() => {
               }
             >
               <Image
-                source={require("/Users/sseo2/sea_proj/Showcase-Repo/assets/snapchat/personalBitmoji.png")}
+                source={require("../../assets/snapchat/personalBitmoji.png")}
                 style={styles.avatarImage}
               />
 

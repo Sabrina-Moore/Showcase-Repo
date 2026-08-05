@@ -129,6 +129,7 @@ import {
   Pressable,
   Image,
   ScrollView,
+  FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -158,19 +159,32 @@ export default function ChatScreen({ navigation }) {
       error: userError,
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (userError || !user) return;
 
     const { data, error } = await supabase
       .from("conversation_members")
-      .select(`conversation_id, profiles (user_id, username, avatar_url)`)
-      .eq("user_id", user.id);
+      .select(`conversation_id, user_id, profiles (user_id, username, avatar_url)`)
+
 
     if (error) {
       console.error(error);
       return;
     }
 
-    setConversations(data);
+    //filtering for other participants in conversation - for conversation name
+    const searchConversations = data.filter((member) => member.user_id === user.id) //filter for conversations user is in
+    .map((myConversation) => {
+      const otherParticipant = data.find((member) => member.conversation_id === myConversation.conversation_id &&
+          member.user_id !== user.id); //find users not me
+
+    return {
+      conversation_id: myConversation.conversation_id,
+      otherParticipant: otherParticipant?.profiles,
+    };
+    });
+
+    setConversations(searchConversations);
+    console.log(JSON.stringify("Set Conversations data:", data, null, 2));
     setLoading(false);
   }
 
@@ -182,6 +196,8 @@ export default function ChatScreen({ navigation }) {
   const username = selectedChat?.profiles?.username || "User";
   const avatarUrl = selectedChat?.profiles?.avatar_url;
 
+
+  console.log("Avatar URL:", avatarUrl);
   return (
     <View
       style={[
@@ -194,9 +210,12 @@ export default function ChatScreen({ navigation }) {
     >
       <Header title="Chat" />
 
-      {conversations.map((chat) => (
+      {/* navigating to conversation profile with press*/} 
+       <FlatList
+      data={conversations}
+      keyExtractor={(item) => item.conversation_id.toString()}
+      renderItem={({ item: chat }) => (
         <TouchableOpacity
-          key={chat.conversation_id}
           style={styles.userButton}
           onPress={() =>
             navigation.navigate("Conversation", {
@@ -207,10 +226,11 @@ export default function ChatScreen({ navigation }) {
           delayLongPress={300}
         >
           <Ionicons name="person-circle" size={48} color="#D8D8D8" />
-          <Text style={styles.username}>{chat.profiles?.username}</Text>
+          <Text style={styles.username}>{chat.otherParticipant?.username}</Text>
           <Ionicons name="camera-outline" size={24} color="#999" />
         </TouchableOpacity>
-      ))}
+      )}
+    />
 
       {/* --- Snapchat Style Modal --- */}
       <Modal
@@ -238,7 +258,7 @@ export default function ChatScreen({ navigation }) {
                       style={styles.avatarImage}
                     />
                   ) : (
-                    <Ionicons name="person-circle" size={44} color="#D8D8D8" />
+                    null
                   )}
 
                   <View style={styles.profileTextContainer}>
@@ -269,7 +289,7 @@ export default function ChatScreen({ navigation }) {
                 </View>
               </View>
 
-              {/* Menu Items Card */}
+              {/* Menu Items Card in modal*/}
               <View style={styles.card}>
                 <TouchableOpacity style={styles.menuItem}>
                   <Text style={styles.menuItemText}>Pin as your #1 BFF ❤️</Text>
