@@ -2,6 +2,7 @@ import { Text, View, StyleSheet, Button, Image } from "react-native";
 import { colors } from "../../assets/themes/colors";
 import { fontHeader } from "../../assets/themes/font";
 import { Followers, More, Search } from "../../assets/snapchat/HeaderIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { createStackNavigator } from "@react-navigation/stack";
 import ProfileScreen from "../screens/ProfileScreen";
 import AddFriendScreen from "../screens/AddFriendScreen";
@@ -17,37 +18,45 @@ import SelectionMenu from "./SelectionMenu";
 const Stack = createStackNavigator();
 
 export default function Header({ title }) {
+
+    const [showMenu, setShowMenu] = useState(false); //what is this template code? 
+
   const navigation = useNavigation();
+  const [profilePic, setProfilePic] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  //const { user } = useAuthentication();
 
-  const [profilePicUrl, setProfilePicUrl] = useState(
-    "https://i.imgur.com/FxsJ3xy.jpg",
-  );
-
-  const { user } = useAuthentication();
-
+    //fetching user avatars
   useEffect(() => {
-    async function fetchProfilePic() {
-      if (user === null) {
-        return;
-      }
+      const fetchAvatar = async () => {
+        const { data, error } = await supabase.auth.getUser(); //requests authentication data
+        if (error) {
+          console.error(error);
+          return;
+        }
+        const uid = data?.user?.id ?? null; //extracts the users id or null
+        setCurrentUserId(uid);
+        console.log("Inside data fetch for current user");
+  
+        if (uid) {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("avatar_url")
+            .eq("user_id", uid) //searching for avatars based on user_id
+            .single();
+          if (profile?.avatar_url) setProfilePic(profile.avatar_url);
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("avatar_url")
-        .eq("id", user.id)
-        .single();
+          console.log("Setting profile pic:", profile.avatar_url);
+          console.log("uid:", uid);
+          console.log("profile:", profile);
+          console.log("error:", error);
+        }
+      };
+      fetchAvatar();
+    }, []);
 
-      if (error) {
-        console.log("Profile pic fetch failure");
-      } else if (data.avatar_url) {
-        setProfilePicUrl(data.avatar_url);
-      }
-    }
 
-    fetchProfilePic();
-  }, [user]);
 
-  const [showMenu, setShowMenu] = useState(false);
   // console.log(showMenu);
 
   // const handleClick = () => {
@@ -64,7 +73,11 @@ export default function Header({ title }) {
             navigation.navigate("Profile");
           }}
         >
-          <Image style={styles.profileImage} source={{ uri: profilePicUrl }} />
+         {profilePic ? (
+            <Image style={styles.profileImage} source={{ uri: profilePic }} />
+          ) : (
+            <Ionicons name="person-circle" size={44} color="#D8D8D8" />
+          )}
         </Pressable>
         <Pressable
           style={[styles.search, styles.buttons]}
