@@ -3,6 +3,7 @@ import {
   View,
   Text,
   FlatList,
+  ScrollView,
   TextInput,
   TouchableOpacity,
   Pressable,
@@ -12,8 +13,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import Entypo from '@expo/vector-icons/Entypo'; //for importing happy face emoji and images icon
+import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
+import AntDesign from '@expo/vector-icons/AntDesign'; 
 import { supabase } from "../../utils/hooks/supabase";
 import CameraScreen from "./CameraScreen";
 
@@ -32,6 +33,13 @@ function colorForSender(senderId) {
   return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
 }
 
+//for Haven feature pills for plus button
+const havenFeatures = [
+  { id: 'games', label: 'Games', library: Ionicons, name: 'game-controller-outline' },
+  { id: 'prompts', label: 'Prompts', library: Entypo, name: 'chat' },
+  { id: 'help', label: 'Need Help?', library: Entypo, name: 'location-pin' },
+];
+
 //Adding realtime chat functionality
 export default function ConversationScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
@@ -40,7 +48,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [participants, setParticipants] = useState([]);
   const [profiles, setProfiles] = useState(null);
-
+  const [showPills, setShowPills] = useState(false);
 
   const { conversationId } = route.params;
   console.log("Opening conversation:", conversationId);
@@ -51,7 +59,6 @@ export default function ConversationScreen({ route, navigation }) {
 
   const listRef = useRef();
  
-
   //--------------------------------------
   // uses hook to store currently logged in users info to database
   useEffect(() => {
@@ -210,41 +217,27 @@ const sortedMessages = [...messages].sort(
       </View>
     );
   };
- //-----------------------------------
+
+  //-----------------------------------
   //fetching profile avatar
-const [profile, setProfile] = useState(null);
 
-useEffect(() => {
-  const fetchProfile = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("avatar_url")
-      .eq("id", user.id) // assuming profiles.id matches auth.users.id
-      .single();
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id) // assuming profiles.id matches auth.users.id
+        .single();
 
-    if (!error) {
-      setProfile(data);
-    }
-  };
+      if (!error) {
+        setProfiles(data);
+      }
+    };
 
-  fetchProfile();
-}, []);
+    fetchProfile();
+  }, []);
 
-useEffect(() => {
-  const fetchProfile = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("avatar_url")
-      .eq("id", user.id) // assuming profiles.id matches auth.users.id
-      .single();
 
-    if (!error) {
-      setProfile(data);
-    }
-  };
-
-  fetchProfile();
-}, []);
  
 
   return (
@@ -272,6 +265,7 @@ useEffect(() => {
                 })
               }
             >
+              {/* need to make this dynamic rendering */}
               <Image
                 source={require("../../assets/snapchat/personalBitmoji.png")}
                 style={styles.avatarImage}
@@ -296,6 +290,7 @@ useEffect(() => {
           </View>
         </View>
       </View>
+
       {/* Chat area */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -313,7 +308,31 @@ useEffect(() => {
             listRef.current?.scrollToEnd({ animated: true })
           }
         /> 
-{/* Input bar */}
+    {/* feature pills from plus symbol Haven */}
+    {/* only renders if showPills is true */}
+    <View style={styles.inputContainer}>
+    {showPills && (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.pillScroll}
+      contentContainerStyle={styles.pillContainer} >
+        {/* rename library to IconLibrary for custom component  */}
+        {havenFeatures.map(({ id, label, library: IconLibrary, name }) => (
+            <TouchableOpacity 
+              key={id} 
+              style={styles.pill}
+              onPress={() => console.log(`Selected ${label}`)}
+            >
+              {/* Dynamically renders whatever icon library was specified */}
+              <IconLibrary name={name} size={18} color="#000" />
+              <Text style={styles.pillText}>{label}</Text>
+            </TouchableOpacity>
+          ))}
+    </ScrollView>
+    )}
+    
+    {/* Input bar */}
         <View style={styles.inputBar}>   
           <TouchableOpacity>
             <Pressable onPress={() =>
@@ -347,11 +366,21 @@ useEffect(() => {
             <Entypo name="images" size={24} color="black" />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Pressable style={styles.iconCircle}>
+
+            {/* game-controller in regular chat, plus in haven */}
+            {/* <Pressable style={styles.iconCircle}>
               <Ionicons name="game-controller-outline" size={28} />
+            </Pressable> */}
+
+            {/* pressable that toggles feature pills*/}
+            <Pressable style={styles.iconCircle} 
+            onPress={() => setShowPills((prev) => !prev)} 
+            >
+              <AntDesign name="plus-circle" size={28} />
             </Pressable>
           </TouchableOpacity>
         </View>
+      </View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -445,6 +474,15 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: "#222",
   },
+
+  //bottom half wrapper
+  inputContainer: {
+    width: '100%',
+    overflow: 'visible',
+    backgroundColor: 'transparent',
+    zIndex: 10,
+    elevation: 10,
+  },
 //input bar
   inputBar: {
     height: 55,
@@ -486,5 +524,34 @@ const styles = StyleSheet.create({
   profileInfoTouchable: {
     flexDirection: "row",
     alignItems: "center",
+  },
+
+  //haven features
+  pillScroll: {
+    backgroundColor: 'transparent',
+    marginBottom: 8,
+    overflow: 'visible',
+  },
+  pillContainer: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    gap: 6,
+    alignItems: 'center',
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#79a78c',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
+    gap: 8, 
+  },
+  pillText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#ffffff',
+    letterSpacing: -0.2,
   },
 });
