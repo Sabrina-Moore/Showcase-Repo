@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
-import AntDesign from '@expo/vector-icons/AntDesign'; 
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
 import CameraScreen from "./CameraScreen";
 
@@ -22,8 +22,15 @@ import CameraScreen from "./CameraScreen";
 // Color used for the current user's own messages ("ME" label + border).
 const ME_COLOR = "#FF375F";
 // Palette used to color-code other senders (name label + left border).
-const SENDER_COLORS = ["#0A84FF", "#34C759", "#FF9500", "#AF52DE", "#00C7BE", "#FFD60A"];
- 
+const SENDER_COLORS = [
+  "#0A84FF",
+  "#34C759",
+  "#FF9500",
+  "#AF52DE",
+  "#00C7BE",
+  "#FFD60A",
+];
+
 function colorForSender(senderId) {
   if (!senderId) return SENDER_COLORS[0];
   let hash = 0;
@@ -35,9 +42,14 @@ function colorForSender(senderId) {
 
 //for Haven feature pills for plus button
 const havenFeatures = [
-  { id: 'games', label: 'Games', library: Ionicons, name: 'game-controller-outline' },
-  { id: 'prompts', label: 'Prompts', library: Entypo, name: 'chat' },
-  { id: 'help', label: 'Need Help?', library: Entypo, name: 'location-pin' },
+  {
+    id: "games",
+    label: "Games",
+    library: Ionicons,
+    name: "game-controller-outline",
+  },
+  { id: "prompts", label: "Prompts", library: Entypo, name: "chat" },
+  { id: "help", label: "Need Help?", library: Entypo, name: "location-pin" },
 ];
 
 //Adding realtime chat functionality
@@ -58,7 +70,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [isSending, setIsSending] = useState(false);
 
   const listRef = useRef();
- 
+
   //--------------------------------------
   // uses hook to store currently logged in users info to database
   useEffect(() => {
@@ -177,8 +189,8 @@ export default function ConversationScreen({ route, navigation }) {
     const body = draft.trim();
     if (!body || !currentUserId) return;
 
-        setIsSending(true);
-        setDraft(""); 
+    setIsSending(true);
+    setDraft("");
 
     const { error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
@@ -186,18 +198,18 @@ export default function ConversationScreen({ route, navigation }) {
       text: body,
     });
 
-        if (error) {
-            console.error("Error sending message:", error);
-            setDraft(body); 
-        }
+    if (error) {
+      console.error("Error sending message:", error);
+      setDraft(body);
+    }
 
     setIsSending(false);
   };
 
-//creating an array to sort the messages for rendering
-const sortedMessages = [...messages].sort(
-  (a, b) => new Date(a.created_at) - new Date(b.created_at)
-);
+  //creating an array to sort the messages for rendering
+  const sortedMessages = [...messages].sort(
+    (a, b) => new Date(a.created_at) - new Date(b.created_at),
+  );
   //-----------------------------------
   //rendering messages
   function renderMessage({ item }) {
@@ -210,13 +222,13 @@ const sortedMessages = [...messages].sort(
         <Text style={[styles.sender, { color: senderColor }]}>
           {senderLabel}
         </Text>
- 
+
         <View style={[styles.messageRow, { borderLeftColor: senderColor }]}>
           <Text style={styles.messageText}>{item.text}</Text>
         </View>
       </View>
     );
-  };
+  }
 
   //-----------------------------------
   //fetching profile avatar
@@ -237,9 +249,6 @@ const sortedMessages = [...messages].sort(
     fetchProfile();
   }, []);
 
-
- 
-
   return (
     <View style={styles.container}>
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
@@ -251,7 +260,7 @@ const sortedMessages = [...messages].sort(
             >
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
-          
+
             {/* added this */}
             <TouchableOpacity
               style={styles.profileInfoTouchable}
@@ -307,80 +316,85 @@ const sortedMessages = [...messages].sort(
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
-        /> 
-    {/* feature pills from plus symbol Haven */}
-    {/* only renders if showPills is true */}
-    <View style={styles.inputContainer}>
-    {showPills && (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.pillScroll}
-      contentContainerStyle={styles.pillContainer} >
-        {/* rename library to IconLibrary for custom component  */}
-        {havenFeatures.map(({ id, label, library: IconLibrary, name }) => (
-            <TouchableOpacity 
-              key={id} 
-              style={styles.pill}
-              onPress={() => console.log(`Selected ${label}`)}
+        />
+        {/* feature pills from plus symbol Haven */}
+        {/* only renders if showPills is true */}
+        <View style={styles.inputContainer}>
+          {showPills && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.pillScroll}
+              contentContainerStyle={styles.pillContainer}
             >
-              {/* Dynamically renders whatever icon library was specified */}
-              <IconLibrary name={name} size={18} color="#000" />
-              <Text style={styles.pillText}>{label}</Text>
-            </TouchableOpacity>
-          ))}
-    </ScrollView>
-    )}
-    
-    {/* Input bar */}
-        <View style={styles.inputBar}>   
-          <TouchableOpacity>
-            <Pressable onPress={() =>
-                navigation.navigate("Camera")} >
-              <Ionicons name="camera" size={27} color="#000" />
-            </Pressable>
-          </TouchableOpacity>
-          {/* moved arrow up send and mic into textinput */}
-          <View style={styles.inputPill}>
-          <TextInput
-            value={draft}
-            onChangeText={setDraft}
-            placeholder="Chat"
-            style={styles.input}
-            onSubmitEditing={handleSend}
-          />
-           {draft.trim().length > 0 ? (
-            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-              <Ionicons name="arrow-up" size={22} color="white" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity>
-              <Ionicons name="mic" size={24} />
-            </TouchableOpacity>
+              {/* rename library to IconLibrary for custom component  */}
+              {havenFeatures.map(
+                ({ id, label, library: IconLibrary, name }) => (
+                  <TouchableOpacity
+                    key={id}
+                    style={styles.pill}
+                    onPress={() => console.log(`Selected ${label}`)}
+                  >
+                    {/* Dynamically renders whatever icon library was specified */}
+                    <IconLibrary name={name} size={18} color="#000" />
+                    <Text style={styles.pillText}>{label}</Text>
+                  </TouchableOpacity>
+                ),
+              )}
+            </ScrollView>
           )}
-          </View>
-          <TouchableOpacity>
-            <Entypo name="emoji-happy" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Entypo name="images" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity>
 
-            {/* game-controller in regular chat, plus in haven */}
-            {/* <Pressable style={styles.iconCircle}>
+          {/* Input bar */}
+          <View style={styles.inputBar}>
+            <TouchableOpacity>
+              <Pressable onPress={() => navigation.navigate("Camera")}>
+                <Ionicons name="camera" size={27} color="#000" />
+              </Pressable>
+            </TouchableOpacity>
+            {/* moved arrow up send and mic into textinput */}
+            <View style={styles.inputPill}>
+              <TextInput
+                value={draft}
+                onChangeText={setDraft}
+                placeholder="Chat"
+                style={styles.input}
+                onSubmitEditing={handleSend}
+              />
+              {draft.trim().length > 0 ? (
+                <TouchableOpacity
+                  onPress={handleSend}
+                  style={styles.sendButton}
+                >
+                  <Ionicons name="arrow-up" size={22} color="white" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity>
+                  <Ionicons name="mic" size={24} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity>
+              <Entypo name="emoji-happy" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Entypo name="images" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              {/* game-controller in regular chat, plus in haven */}
+              {/* <Pressable style={styles.iconCircle}>
               <Ionicons name="game-controller-outline" size={28} />
             </Pressable> */}
 
-            {/* pressable that toggles feature pills*/}
-            <Pressable style={styles.iconCircle} 
-            onPress={() => setShowPills((prev) => !prev)} 
-            >
-              <AntDesign name="plus-circle" size={28} />
-            </Pressable>
-          </TouchableOpacity>
+              {/* pressable that toggles feature pills*/}
+              <Pressable
+                style={styles.iconCircle}
+                onPress={() => setShowPills((prev) => !prev)}
+              >
+                <AntDesign name="plus-circle" size={28} />
+              </Pressable>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -442,7 +456,7 @@ const styles = StyleSheet.create({
   iconCircleDisabled: {
     backgroundColor: "#F7F7F9",
   },
-// message list
+  // message list
   messages: {
     paddingHorizontal: 16,
     paddingTop: 4,
@@ -477,13 +491,13 @@ const styles = StyleSheet.create({
 
   //bottom half wrapper
   inputContainer: {
-    width: '100%',
-    overflow: 'visible',
-    backgroundColor: 'transparent',
+    width: "100%",
+    overflow: "visible",
+    backgroundColor: "transparent",
     zIndex: 10,
     elevation: 10,
   },
-//input bar
+  //input bar
   inputBar: {
     height: 55,
     flexDirection: "row",
@@ -528,30 +542,30 @@ const styles = StyleSheet.create({
 
   //haven features
   pillScroll: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     marginBottom: 8,
-    overflow: 'visible',
+    overflow: "visible",
   },
   pillContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     paddingHorizontal: 6,
     paddingVertical: 4,
     gap: 6,
-    alignItems: 'center',
+    alignItems: "center",
   },
   pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#79a78c',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#79a78c",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 25,
-    gap: 8, 
+    gap: 8,
   },
   pillText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
     letterSpacing: -0.2,
   },
 });

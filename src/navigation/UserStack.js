@@ -13,7 +13,8 @@ import MemoryScreen from "../screens/MemoryScreen";
 import MapScreen from "../screens/MapScreen";
 import EventScreen from "../screens/EventScreen"; //New component by Sona and Christian
 import CameraScreen from "../screens/CameraScreen";
-import ConversationProfileScreen from "../screens/ConversationProfileScreen"
+import ConversationProfileScreen from "../screens/ConversationProfileScreen";
+import WelcomeToHavenScreen from "../screens/WelcomeToHavenScreen";
 
 const Stack = createStackNavigator();
 
@@ -27,7 +28,7 @@ export default function App() {
           component={ProfileScreen}
           options={{ headerShown: true }}
         />
-          <Stack.Screen
+        <Stack.Screen
           name="Camera"
           component={CameraScreen}
           options={{ headerShown: false }}
@@ -78,7 +79,7 @@ export default function App() {
           component={EventScreen}
           options={{ headerShown: true }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="Map"
           component={MapScreen}
           options={{ headerShown: true }}
@@ -88,7 +89,11 @@ export default function App() {
           component={ConversationProfileScreen}
           options={{ headerShown: false }}
         />
-        
+        <Stack.Screen
+          name="WelcomeToHavenScreen"
+          component={WelcomeToHavenScreen}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
