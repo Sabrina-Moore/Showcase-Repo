@@ -119,6 +119,7 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
             if (conversationId) {
               navigation.navigate("Conversation", {
                 conversationId: conversationId,
+                isHaven: true,
               });
             } else {
               navigation.goBack();
