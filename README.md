@@ -13,7 +13,7 @@
 <h3 align="center">Snap Haven</h3>
 
  <p align="center">
-    React Native feature for integration into Snapchat
+    React Native feature for Snapchat
     <br />
   </p>
 
