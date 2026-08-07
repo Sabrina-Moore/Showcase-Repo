@@ -178,7 +178,38 @@ Open the Expo app.
    git remote -v # confirm the changes
    ```
 
+### How to add code changes through the terminal
 
+To run terminal commands, you will need ...
+
+1. Create and switch to a new development branch
+2. Make your code changes on that branch
+3. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
+   ```sh
+   git add "fileName" "otherFileName"
+   ```
+5. Make your commit
+   ```sh
+   git commit -m "Description of code"
+   ```
+7. Push your code
+   ```sh
+   git push origin branch-name
+   ```
+9. On this repository, navigate to the "Pull Requests" tab and create a new request. Be aware that you will need to change the branches to be set to your own forked repo not the original forked repo called "Starter26" or this repo called "Showcase-Repo."
+10. After your Pull request is made and has been merged, you will then want to update your local main. Move from your development branch to main.
+    ```sh
+    git switch main
+    ```
+12. Pull the remote main to your local main.
+    ```sh
+    git pull origin main
+    ```
+14. If you are not the one who made the code changes, you will need to update your local development branch now. Switch to your development branch to merge with main. 
+    ```sh
+    git switch branch-name
+    git merge main
+    ```
 
 ## Usage
 
@@ -223,17 +254,7 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 🌳 If you want to implement a table or bold text or even bullet point, use this [documentation](https://google.github.io/styleguide/docguide/style.html) to get the right syntax. Don't be afraid to look at other templates and pull the parts and types you like! Sharing is caring.
 
 
-## Git Push Instructions:
-- git switch dev branch
-- git git add "specific files". DON'T DO "."
-- git commit -m "name, what you did, files you modified"
-- git push origin dev branch name
-- make pr -> commit pr. Ensure you are on our project branch as main, and push from your dev branch
-- git swtich main
-- git pull origin main
 
-- git swtich dev branch name (IF YOU ARE NOT THE ONE WHO COMMITED THE CHANGE)
-- git merge main (IF YOU ARE NOT THE ONE WHO COMMITED THE CHANGE)
 
 
 
