@@ -16,7 +16,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
-import CameraScreen from "./CameraScreen";
+
+import CameraScreen from "./CameraScreen"; //functionality for camera button
+import HavenTools from "../components/HavenTools";
 
 //global colors for users
 // Color used for the current user's own messages ("ME" label + border).
@@ -40,29 +42,20 @@ function colorForSender(senderId) {
   return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
 }
 
-//for Haven feature pills for plus button
-const havenFeatures = [
-  {
-    id: "games",
-    label: "Games",
-    library: Ionicons,
-    name: "game-controller-outline",
-  },
-  { id: "prompts", label: "Prompts", library: Entypo, name: "chat" },
-  { id: "help", label: "Need Help?", library: Entypo, name: "location-pin" },
-];
 
-//Adding realtime chat functionality
 export default function ConversationScreen({ route, navigation }) {
+  const { conversationId , isHaven: HavenMode } = route.params ?? {};
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [participants, setParticipants] = useState([]);
   const [profiles, setProfiles] = useState(null);
-  const [showPills, setShowPills] = useState(false);
 
-  const { conversationId } = route.params;
+  const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
+  const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
+
+ 
   console.log("Opening conversation:", conversationId);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +64,7 @@ export default function ConversationScreen({ route, navigation }) {
 
   const listRef = useRef();
 
+  //Adding realtime chat functionality
   //--------------------------------------
   // uses hook to store currently logged in users info to database
   useEffect(() => {
@@ -101,22 +95,15 @@ export default function ConversationScreen({ route, navigation }) {
   const fetchParticipants = async () => {
     const { data, error } = await supabase
       .from("conversation_members")
-      .select(
-        `
+      .select(`
         user_id,
-        profiles (
-          username,
-          avatar_url
-        )
-      `,
-      )
+        profiles (username, avatar_url)`,)
       .eq("conversation_id", conversationId);
 
     if (error) {
       console.error("Error fetching participants:", error);
       return;
     }
-
     console.log("Participants:", JSON.stringify(data, null, 2));
     console.log("Participant error:", error);
     setParticipants(data ?? []);
@@ -138,7 +125,7 @@ export default function ConversationScreen({ route, navigation }) {
       .from("messages")
       .select(
         `message_id, conversation_id, sender_id, text, created_at,
-          profiles (user_id, username, avatar_url)`,
+        profiles (user_id, username, avatar_url)`,
       )
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
@@ -197,12 +184,10 @@ export default function ConversationScreen({ route, navigation }) {
       sender_id: currentUserId,
       text: body,
     });
-
     if (error) {
       console.error("Error sending message:", error);
       setDraft(body);
     }
-
     setIsSending(false);
   };
 
@@ -210,6 +195,7 @@ export default function ConversationScreen({ route, navigation }) {
   const sortedMessages = [...messages].sort(
     (a, b) => new Date(a.created_at) - new Date(b.created_at),
   );
+
   //-----------------------------------
   //rendering messages
   function renderMessage({ item }) {
@@ -229,23 +215,19 @@ export default function ConversationScreen({ route, navigation }) {
       </View>
     );
   }
-
   //-----------------------------------
   //fetching profile avatar
-
   useEffect(() => {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("avatar_url")
-        .eq("id", user.id) // assuming profiles.id matches auth.users.id
+        .eq("id", user.id) // if profiles.id matches auth.users.id
         .single();
-
       if (!error) {
         setProfiles(data);
       }
     };
-
     fetchProfile();
   }, []);
 
@@ -320,29 +302,7 @@ export default function ConversationScreen({ route, navigation }) {
         {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
         <View style={styles.inputContainer}>
-          {showPills && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.pillScroll}
-              contentContainerStyle={styles.pillContainer}
-            >
-              {/* rename library to IconLibrary for custom component  */}
-              {havenFeatures.map(
-                ({ id, label, library: IconLibrary, name }) => (
-                  <TouchableOpacity
-                    key={id}
-                    style={styles.pill}
-                    onPress={() => console.log(`Selected ${label}`)}
-                  >
-                    {/* Dynamically renders whatever icon library was specified */}
-                    <IconLibrary name={name} size={18} color="#000" />
-                    <Text style={styles.pillText}>{label}</Text>
-                  </TouchableOpacity>
-                ),
-              )}
-            </ScrollView>
-          )}
+          {showPills && <HavenTools />}
 
           {/* Input bar */}
           <View style={styles.inputBar}>
@@ -380,18 +340,19 @@ export default function ConversationScreen({ route, navigation }) {
               <Entypo name="images" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity>
-              {/* game-controller in regular chat, plus in haven */}
-              {/* <Pressable style={styles.iconCircle}>
-              <Ionicons name="game-controller-outline" size={28} />
-            </Pressable> */}
-
-              {/* pressable that toggles feature pills*/}
+              {/* show haven plus symbol or regular game controller, setShowPills*/}
+             {isHaven ? (
               <Pressable
                 style={styles.iconCircle}
                 onPress={() => setShowPills((prev) => !prev)}
               >
                 <AntDesign name="plus-circle" size={28} />
               </Pressable>
+             ) : (
+              <Pressable style={styles.iconCircle}>
+              <Ionicons name="game-controller-outline" size={28} />
+            </Pressable>
+             )}
             </TouchableOpacity>
           </View>
         </View>
@@ -538,34 +499,5 @@ const styles = StyleSheet.create({
   profileInfoTouchable: {
     flexDirection: "row",
     alignItems: "center",
-  },
-
-  //haven features
-  pillScroll: {
-    backgroundColor: "transparent",
-    marginBottom: 8,
-    overflow: "visible",
-  },
-  pillContainer: {
-    backgroundColor: "transparent",
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    gap: 6,
-    alignItems: "center",
-  },
-  pill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#79a78c",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 25,
-    gap: 8,
-  },
-  pillText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#ffffff",
-    letterSpacing: -0.2,
   },
 });
