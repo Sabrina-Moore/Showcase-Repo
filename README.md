@@ -63,10 +63,10 @@
 
 ## About The Project
 
-As part of the Snap Academy, an educational program for community college students run by the Snap Philanthropy and Next Shift Learning teams, our team was given the topic of "Foster Youth" with the goal of helping to solve a need for that target audience. We have a team of two Storytellers, two designers, and two engineers. 
+As part of the Snap Academy, an educational program for community college students run by the Snap Philanthropy and Next Shift Learning teams, our team assigned to solve a need for the "Foster Youth" audience and implement that solution as a feature to Snapchat.
 
 
-### Pitch
+### Haven (Snapchat feature)
 
 Foster Youth on average will be placed in three different homes before reaching 18. Each time they move, they start from scratch with their support system. A new home, new guardians, maybe even new friends if they move to a different school zone. From a study by Portland State University that interviewed foster youth in California, they identified “times of transition as disruptive to the stability and longevity of relationships.” 
 
@@ -74,7 +74,9 @@ And when someone doesn’t have these networks, everything including social skil
 
 So we thought, how might we help foster youth meaningfully connect to people and resources while experiencing a broken support system to deepen already existing connections?
 
-That’s where our feature comes in, Haven, a new addition to the chat tab. It’s a toolkit that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits. 
+That’s where our feature comes in, Haven, a new addition to the chat tab. It’s a toolkit that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits.
+
+Video of feature here. 
 
 
 
@@ -84,7 +86,7 @@ That’s where our feature comes in, Haven, a new addition to the chat tab. It�
 
 ### Features
 
-Haven lives on either the Chat home screen, each individual conversation screen, or the conversation group profile screen. 
+Haven lives on the conversation screen and conversation profile screen. 
 
 **Chat home screen**
 - New UI to represent chats with this feature
@@ -99,14 +101,13 @@ Haven lives on either the Chat home screen, each individual conversation screen,
 
 **Conversation screen**
 - Users needing help to bridge a lull in conversation can get "conversation starting" prompts
-- Streaks redesign 
 - users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
+- Instead of the regular buttons next to the text input and keyboard, a plus button opens access to the main Haven Toolkit
 
 
 **Conversation group profile screen**
 - users can customize settings for all added features (changing interval if applicable, or turning off and on features)
-- users can choose update their "life banner" status to be seen by their Haven connections
-- users can set their daily mood and need in a widget to be seen by their Haven connections
+- users can choose to update their "life banner" status to be seen by their Haven connections
 - users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
 
 
@@ -131,12 +132,28 @@ Haven lives on either the Chat home screen, each individual conversation screen,
 <!-- GETTING STARTED -->
 
 ## Getting Started
-
+This feature was designed using React Native and Expo with the IOS system in mind. 
 
 
 ### Prerequisites
 
-To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computer.
+To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computer. 
+
+
+### Running code on Expo
+
+### Installation
+
+Install the Expo app on your phone. Download here for IOS and here for Android. 
+Open the Expo app. 
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- USAGE EXAMPLES -->
+
+
+## Contributions
+
 
 
 ### Installation
@@ -160,13 +177,6 @@ To run this react native code, you will need to use the Expo Go app on your phon
    git remote set-url origin github_username/repo_name
    git remote -v # confirm the changes
    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- USAGE EXAMPLES -->
-
-
-## Contributions
 
 
 
