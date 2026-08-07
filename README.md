@@ -158,21 +158,19 @@ Open the Expo app.
 
 ### Installation
 
-1. Make your own database in Supabase, holding data like profiles and chat prompts.
-2. Follow instructions for connecting your project as a Framework for Expo React Native and copy the connection key. 
-3. Clone the repo
+1. Clone the repo
    ```sh
    git clone https://github.com/github_username/repo_name.git
    ```
-4. Install NPM packages
+2. Install NPM packages
    ```sh
    npm install
    ```
-5. Enter your API in `config.js`
+3. Enter your API in `config.js`
    ```js
    const API_KEY = "ENTER YOUR API";
    ```
-6. Change git remote url to avoid accidental pushes to base project
+4. Change git remote url to avoid accidental pushes to base project
    ```sh
    git remote set-url origin github_username/repo_name
    git remote -v # confirm the changes
@@ -210,6 +208,11 @@ To run terminal commands, you will need ...
     git switch branch-name
     git merge main
     ```
+
+
+### Creating your own Supabase
+
+
 
 ## Usage
 
