@@ -84,7 +84,7 @@ Video of feature here.
 
 
 
-### Features
+## Features
 
 Haven lives on the conversation screen and conversation profile screen. 
 
@@ -119,7 +119,7 @@ Haven lives on the conversation screen and conversation profile screen.
 
 
 
-### Tech Stack
+## Tech Stack
 
 - <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native** 
 - <a href="https://expo.dev/"><img src="assets/techStackLogos/expogo2.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v51.0.0)
