@@ -150,6 +150,7 @@ You will also need Visual Studio Code (or another IDE application) to be able to
 
 ### Installation
 
+To Shawn, do they need to clone our repo? How will they access the demo?
 
 1. Install the Expo app on your phone. Download here for IOS and here for Android. 
 2. Install Node.js
@@ -167,40 +168,63 @@ For developers, we welcome contributions.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Installation
-1. Fork the repository
+### Prerequisites
+Before contributing, ensure you have the following installed:
+- **Node.js**
+- **Git**
+- **Expo Go**
+- **A code editor** - I recommend Visual Studio Code
 
-2. Clone your forked repository
+### Installation
+1. Check your installations
+  ```bash
+  node --version
+  npm --version
+  git --version
+  ```
+2. Fork the repository 
+   - Navigate to Showcase-Repo and click the fork button on the top right corner
+   - Choose your own account as the owner
+3. Create a local folder on your computer and navigate inside that folder in your terminal
+4. Clone your forked repository inside that folder
    ```sh
-   git clone https://github.com/github_username/repo_name.git
+   git clone https://github.com/github_username/repo_name.git .
    ```
-3. Install NPM packages/dependencies
+5. Install NPM packages/dependencies
    ```sh
    npm install
    ```
-4. Create your own .env.local file to connect to a supabase project
+6. Open the code
+   ```sh
+   code .
+   ```
+5. Create your own .env.local file to connect to a supabase project
    ```js
    EXPO_PUBLIC_SUPABASE_URL=
    EXPO_PUBLIC_SUPABASE_KEY=
    ```
-5. Run the code
-6. Test the code with Expo Go or Xcode (if on mac computer)
-7. Make changes
+7. Run the code with Expo Go (or another simulator)
+   ```sh
+   npx expo start
+   ```
+9. Test the code and make changes
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### How to make code changes in the terminal
 
-To run terminal commands, you will need ... Node.js?
-
 1. Create and switch to a new development branch
-2. Make your code changes on that branch
-3. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
    ```sh
-   git add "fileName" "otherFileName"
+   git switch -c branch-name
    ```
-5. Make your commit
+3. Make your code changes on that branch
+   - Save the individual file 
+5. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
+   ```sh
+   git add fileName otherFileName
+   ```
+6. Make your commit
    ```sh
    git commit -m "Description of code"
    ```
@@ -208,7 +232,7 @@ To run terminal commands, you will need ... Node.js?
    ```sh
    git push origin branch-name
    ```
-9. On this repository, navigate to the "Pull Requests" tab and create a new request. Be aware that you will need to change the branches to be set to your own forked repo not the original forked repo called "Starter26" or this repo called "Showcase-Repo."
+9. On this repository, navigate to the "Pull Requests" tab inside your github repo and create a new request. Be aware that you will need to change the branches to be set to your own forked repo not the original forked repo called "Starter26" or this repo called "Showcase-Repo."
 10. After your Pull request is made and has been merged, you will then want to update your local main. Move from your development branch to main.
     ```sh
     git switch main
