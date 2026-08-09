@@ -25,12 +25,7 @@
   |                | Christopher Gonon-Maldonado      |
   |  Engineering   | Sabrina Moore and Shawn Seo      |
     
-  <p>
-    <a href="https://github.com/Sabrina-Moore/Showcase-Repo"><strong>Explore the Docs Link»</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/Sabrina-Moore/Showcase-Repo">View Demo Link</a>
-  </p>
+
 
 </div>
 
