@@ -85,32 +85,32 @@ Haven lives on the conversation screen and conversation profile screen.
 
 **Chat home screen**
 - New UI to represent chats with this feature
-- can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
+- Can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
 - Notification system called "nudges" to remind users to reach out when the conversation becomes inactive for too long
 - Nudges can also remind the user of important milestones and birthdays
 
 
 **conversation creation screen**
-- new tab for starting a Haven conversation
+- New tab for starting a Haven conversation
 
 
 **Conversation screen**
 - Users needing help to bridge a lull in conversation can get "conversation starting" prompts
-- users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
+- Users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
 - Instead of the regular buttons next to the text input and keyboard, a plus button opens access to the main Haven Toolkit
 
 
 **Conversation group profile screen**
-- users can customize settings for all added features (changing interval if applicable, or turning off and on features)
-- users can choose to update their "life banner" status to be seen by their Haven connections
-- users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
+- Users can customize settings for all added features (changing interval if applicable, or turning off and on features)
+- Users can choose to update their "life banner" status to be seen by their Haven connections
+- Users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
 
 
 **Supabase**
-- tracks dummy data for user profiles
-- tracks messages and conversations for realtime chatting
-- Tracks conversation inactivty for notification system
-- prompts table for users to get conversation starting prompts
+- Tracks dummy data for user profiles
+- Tracks messages and conversations for realtime chatting
+- Tracks conversation inactivity for notification system
+- Prompts table for users to get conversation starting prompts
 
 
 
