@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import AntDesign from "@expo/vector-icons/AntDesign";
+import RBSheet from "react-native-raw-bottom-sheet";
 
 import { supabase } from "../../utils/hooks/supabase";
 
@@ -28,10 +29,53 @@ const havenPills= [
 { id: "help", label: "Need Help?", library: Entypo, name: "location-pin" },
 ];
 
+
 export default function HavenTools () {
-console.log(Ionicons);
-console.log(Entypo);
-console.log(havenPills);
+  console.log(Ionicons);
+  console.log(Entypo);
+  console.log(havenPills);
+
+  const [activePill, setActivePill] = useState(null);
+  const ptrRBSheet = useRef(null); //pointer to dom element 
+
+  //prompts
+  const [prompts, setPrompts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+//fetch prompts
+  useEffect(() => {
+      fetchRandomPrompts();
+    }, []);
+
+  const fetchRandomPrompts = async () => {
+      try {
+        setLoading(true);
+        const { data, error: apiError } = await supabase.rpc(
+        "get_random_prompts"
+      );
+      if (apiError) throw apiError;
+      setPrompts(data || []);
+    } catch (err) {
+      console.error("PromptsData Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //open pills
+  const handlePillPress = (pill) => {
+    setActivePill(pill);
+
+    // If prompts pill was clicked, fetch fresh prompts & open sheet
+    if (pill.id === "prompts") {
+      fetchRandomPrompts();
+    }
+    if (pill.id === "games") {
+      console.log("Pressed games");
+    }
+    // Open bottom sheet
+    ptrRBSheet.current?.open();
+  };
 
      {/* feature pills from plus symbol Haven */}
     {/* only renders if showPills is true */}
@@ -43,22 +87,65 @@ console.log(havenPills);
                 style={styles.pillScroll}
                 contentContainerStyle={styles.pillContainer}
             >
-            {/* rename library to IconLibrary for custom component  */}
-            {havenPills.map(({ id, label, library:IconLibrary, name }) => (
+            {/* dynamically handles pills and rendering */}
+            {havenPills.map((pill) => {
+              const IconLibrary = pill.library;
+              return (
+                <View 
+                key={pill.id} 
+                styles={styles.pillShadow}> 
                 <TouchableOpacity
-                key={id}
                 style={styles.pill}
-                onPress={() => console.log(`Selected ${label}`)}
+                onPress={() => handlePillPress(pill)}
                 >
-                {/* Dynamically renders whatever icon library was specified */}
-                <IconLibrary name={name} size={18} color="#000" />
-                <Text style={styles.pillText}>{label}</Text>
+                <IconLibrary name={pill.name} size={18} color="#000" />
+                <Text style={styles.pillText}>{pill.label}</Text>
                 </TouchableOpacity>
-            ),
-            )}
+                </View>
+            );
+            })}
         </ScrollView>
-        {/* Add drawer of some sort for games and prompts */}
-        </View>
+        {/* Add bottom sheet of some sort for games and prompts */}
+      <RBSheet
+        ref={ptrRBSheet}
+        useNativeDriver={false}
+        height={300}
+        customStyles={{
+          wrapper: {
+            backgroundColor: "rgba(0,0,0,0.5)",
+          },
+          container: {
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            padding: 20,
+          },
+        }}
+      >
+        {activePill?.id === "prompts" && (
+          <View style={styles.drawerContainer}>
+            <View style={styles.promptContainer}>
+              <Text style={styles.promptLabel}>Daily Prompts</Text>
+              <TouchableOpacity onPress={fetchRandomPrompts}>
+                <Ionicons name="refresh" size={20} color="#79a78c" />
+              </TouchableOpacity>
+            </View>
+              <FlatList
+                data={prompts}
+                keyExtractor={(item, index) =>
+                  item?.prompt_id?.toString() || item?.id?.toString() || index.toString()
+                }
+                contentContainerStyle={styles.promptList}
+                renderItem={({ item }) => (
+                  <View style={styles.promptItem}>
+                    <Text style={styles.promptItemText}>{item?.prompt_text}</Text>
+                  </View>
+                )}
+              />
+          </View>
+        )}
+      </RBSheet>
+    
+    </View>
     );
 }
 
@@ -76,17 +163,23 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     paddingHorizontal: 6,
     paddingVertical: 4,
-    gap: 6,
+    gap: 12,
     alignItems: "center",
   },
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#79a78c",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    backgroundColor: "#a5BEA8",
+    paddingHorizontal: 18,
+    paddingVertical: 12,
     borderRadius: 25,
     gap: 8,
+    //shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   pillText: {
     fontSize: 15,
@@ -102,15 +195,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     gap: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E5E5EA",
-    marginBottom: 20,
+    borderColor: "#3a3a3a",
+    backgroundColor: "#a5BEA8",
   },
-  inputPill: {
+   inputPill: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     height: 40,
-    backgroundColor: "#F1F1F5",
+    backgroundColor: "#a5BEA8",
     borderRadius: 20,
     paddingHorizontal: 16,
     gap: 8,
@@ -118,6 +211,55 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 17,
-    color: "#000",
+    color: "#fff",
   },
+  //bottom sheet drawer
+  drawerContainer: {
+    borderWidth: 1,
+    borderColor: "#4a4a4a",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 10,
+    marginHorizontal: 10,
+    marginBottom: 8,
+    backgroundColor: "transparent",
+  },
+  drawerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+   //prompts
+  promptContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  promptList: {
+  gap: 16,        
+  paddingBottom: 4,
+},
+  promptLabel: {
+   textAlign: "center",
+  fontSize: 12,
+  color: "#8a8a8a",
+  marginBottom: 4,
+  letterSpacing: 0.5,
+  },
+  promptItem: {
+  width: "100%",
+  paddingVertical: 10,
+  paddingHorizontal: 10,
+  borderRadius: 18,
+  backgroundColor: "#2E5A44",
+},
+promptItemText: {
+  fontSize: 15,
+  fontWeight: "500",
+  color: "#ffffff",
+  textAlign: "center",
+  lineHeight: 20,
+},
 });
