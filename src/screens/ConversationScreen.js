@@ -49,20 +49,28 @@ export default function ConversationScreen({ route, navigation }) {
   const [messages, setMessages] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
+  const [userBitmoji, setUserBitmoji] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [profiles, setProfiles] = useState(null);
 
   const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
   const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
 
- 
-  console.log("Opening conversation:", conversationId);
 
   const [isLoading, setIsLoading] = useState(true);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const listRef = useRef();
+
+//feature pills persist for only a few seconds and goes away
+  const handleTogglePills = () => {
+  setShowPills(true);
+
+  setTimeout(() => {
+    setShowPills(false);
+  }, 6000);
+};
 
   //Adding realtime chat functionality
   //--------------------------------------
@@ -81,10 +89,15 @@ export default function ConversationScreen({ route, navigation }) {
       if (uid) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("username")
+          .select(`
+            username
+            user_id,
+            avatar_url`)
           .eq("user_id", uid)
           .single();
-        if (profile?.username) setCurrentUserName(profile.username);
+        if (profile?.username) setCurrentUserName(profile.username); //set state for username
+
+        setUserBitmoji(profiles?.avatar_url ?? null); //set state for avatar_url
       }
     };
     fetchUser();
@@ -243,7 +256,6 @@ export default function ConversationScreen({ route, navigation }) {
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
             </Pressable>
 
-            {/* added this */}
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() =>
@@ -256,9 +268,9 @@ export default function ConversationScreen({ route, navigation }) {
                 })
               }
             >
-              {/* need to make this dynamic rendering */}
+              {/* dynamic avatar rendering */}
               <Image
-                source={require("../../assets/snapchat/personalBitmoji.png")}
+              source={ {uri: userBitmoji }}
                 style={styles.avatarImage}
               />
 
@@ -312,12 +324,12 @@ export default function ConversationScreen({ route, navigation }) {
               </Pressable>
             </TouchableOpacity>
             {/* moved arrow up send and mic into textinput */}
-            <View style={styles.inputPill}>
+            <View style={[styles.inputPill, isHaven && styles.havenInputPill]}>
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
                 placeholder="Chat"
-                style={styles.input}
+                style={[styles.input, isHaven && styles.havenInput]}
                 onSubmitEditing={handleSend}
               />
               {draft.trim().length > 0 ? (
@@ -344,7 +356,7 @@ export default function ConversationScreen({ route, navigation }) {
              {isHaven ? (
               <Pressable
                 style={styles.iconCircle}
-                onPress={() => setShowPills((prev) => !prev)}
+                onPress={handleTogglePills}
               >
                 <AntDesign name="plus-circle" size={28} />
               </Pressable>
@@ -499,5 +511,16 @@ const styles = StyleSheet.create({
   profileInfoTouchable: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  //haven coloring
+   havenInputPill: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    height: 40,
+    backgroundColor: "#a5BEA8",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    gap: 8,
   },
 });
