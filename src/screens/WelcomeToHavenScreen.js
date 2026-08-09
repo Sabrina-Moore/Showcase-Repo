@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,51 +6,53 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import ConversationScreen from "./ConversationScreen";
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function WelcomeToHavenScreen({ route, navigation }) {
   const conversationId = route.params?.conversationId;
   const insets = useSafeAreaInsets();
+  const [expandedId, setExpandedId] = useState(null);
 
   const features = [
     {
       id: "1",
+      icon: "help-outline",
+      title: "What’s Haven?",
+      description:
+        "Haven gives users a space where the number one value is building connections.",
+    },
+    {
+      id: "2",
       icon: "add-circle-outline",
       title: "Exclusive Tools for Connection",
       description:
         "Send mood stickers, plant virtual trees, play educational games, etc.",
     },
     {
-      id: "2",
-      icon: "sparkles-outline", // Using sparkles to mimic the AI/bot style icon
-      title: "No Chatbots",
-      description:
-        "Zero AI assistants and chatbot companions to invade your privacy",
-    },
-    {
       id: "3",
       icon: "lock-closed-outline",
-      title: "Privacy Parameters",
+      title: "Privacy Matters",
       description:
-        "Added security measures like passcode entry, vanish mode, and more",
-    },
-    {
-      id: "4",
-      icon: "location-outline",
-      title: "Find Resources",
-      description:
-        "Food banks, access points, educational programs can be found easily through chat",
-    },
-    {
-      id: "5",
-      icon: "warning-outline",
-      title: "Emergency Help",
-      description: "Quick access to emergency care",
+        "Send mood stickers, plant virtual trees, play educational games, etc.",
     },
   ];
+
+  const toggleExpand = (id) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedId(expandedId === id ? null : id);
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -58,59 +60,77 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Ionicons name="chevron-back" size={28} color="#000" />
+        <Ionicons name="chevron-back" size={26} color="#000" />
       </TouchableOpacity>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top Icon / Image */}
+        {/* Top Logo Container */}
         <View style={styles.imageContainer}>
           <Image
-            source={require("../../assets/snapchat/ghostlogo.png")}
+            source={require("../../assets/HavenLogo.png")}
             style={styles.logoImage}
             resizeMode="contain"
           />
         </View>
 
-        {/* Title & Subtitle */}
-        <Text style={styles.title}>Welcome to Havens!</Text>
+        {/* Header Title & Subtitle */}
+        <Text style={styles.title}>Welcome to Haven!</Text>
         <Text style={styles.subtitle}>
           A unique chat experience made to build connections and strengthen
           relationships.
         </Text>
 
-        {/* Features List */}
+        {/* Features Accordion List */}
         <View style={styles.featuresList}>
-          {features.map((item, index) => (
-            <View
-              key={item.id}
-              style={[
-                styles.featureRow,
-                index < features.length - 1 && styles.borderBottom,
-              ]}
-            >
-              <View style={styles.iconContainer}>
-                <Ionicons name={item.icon} size={32} color="#000" />
-              </View>
-              <View style={styles.featureTextContainer}>
-                <Text style={styles.featureTitle}>{item.title}</Text>
-                <Text style={styles.featureDescription}>
-                  {item.description}
-                </Text>
-              </View>
-            </View>
-          ))}
+          {features.map((item, index) => {
+            const isExpanded = expandedId === item.id;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.featureRow,
+                  index < features.length - 1 && styles.borderBottom,
+                ]}
+                onPress={() => toggleExpand(item.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.iconContainer}>
+                  <Ionicons name={item.icon} size={26} color="#000000" />
+                </View>
+
+                <View style={styles.featureTextContainer}>
+                  <Text style={styles.featureTitle}>{item.title}</Text>
+                  <Text
+                    style={styles.featureDescription}
+                    numberOfLines={isExpanded ? undefined : 2}
+                  >
+                    {item.description}
+                  </Text>
+                </View>
+
+                <View style={styles.chevronContainer}>
+                  <Ionicons
+                    name={isExpanded ? "chevron-up" : "chevron-down"}
+                    size={20}
+                    color="#555555"
+                  />
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
 
-      {/* Floating Get Started Button */}
+      {/* Bottom Fixed Action Button */}
       <View
         style={[
           styles.buttonContainer,
-          { paddingBottom: insets.bottom > 0 ? insets.bottom : 20 },
+          { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 28 },
         ]}
       >
         <TouchableOpacity
@@ -125,7 +145,7 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
               navigation.goBack();
             }
           }}
-          activeOpacity={0.8}
+          activeOpacity={0.85}
         >
           <Text style={styles.buttonText}>Get Started</Text>
         </TouchableOpacity>
@@ -137,42 +157,43 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAF9F5", // Off-white cream background from design
+    backgroundColor: "#FFFEF9",
   },
   backButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     alignSelf: "flex-start",
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 100, // Bottom padding to prevent button overlap
+    paddingHorizontal: 28,
+    paddingBottom: 110,
     alignItems: "center",
   },
   imageContainer: {
-    marginTop: 10,
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 20,
     alignItems: "center",
     justifyContent: "center",
   },
   logoImage: {
-    width: 140,
-    height: 140,
+    width: 100,
+    height: 100,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "800",
     color: "#000000",
     textAlign: "center",
     marginBottom: 10,
+    letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 15,
-    color: "#666666",
+    color: "#555555",
     textAlign: "center",
     lineHeight: 22,
-    marginBottom: 32,
-    paddingHorizontal: 10,
+    marginBottom: 28,
+    paddingHorizontal: 12,
   },
   featuresList: {
     width: "100%",
@@ -180,11 +201,11 @@ const styles = StyleSheet.create({
   featureRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    paddingVertical: 18,
+    paddingVertical: 16,
   },
   borderBottom: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E0D8",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ECEAE3",
   },
   iconContainer: {
     marginRight: 16,
@@ -192,6 +213,7 @@ const styles = StyleSheet.create({
   },
   featureTextContainer: {
     flex: 1,
+    paddingRight: 8,
   },
   featureTitle: {
     fontSize: 16,
@@ -201,8 +223,11 @@ const styles = StyleSheet.create({
   },
   featureDescription: {
     fontSize: 13,
-    color: "#777777",
+    color: "#666666",
     lineHeight: 18,
+  },
+  chevronContainer: {
+    paddingTop: 4,
   },
   buttonContainer: {
     position: "absolute",
@@ -210,22 +235,24 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
-    paddingTop: 10,
+    paddingTop: 12,
   },
   getStartedButton: {
-    backgroundColor: "#2D5A46", // Dark green color matching screenshot
+    backgroundColor: "#2C523C",
     paddingVertical: 14,
-    paddingHorizontal: 48,
-    borderRadius: 30,
-    elevation: 4,
+    width: "70%",
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
   },
 });

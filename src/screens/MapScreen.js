@@ -3,25 +3,75 @@ import MapView, { Marker } from "react-native-maps";
 import {
   StyleSheet,
   View,
-  Dimensions,
   Image,
   Text,
   TouchableOpacity,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Header from "../components/Header";
-
+import MapHeader from "../components/MapHeader";
+import MapPills from "../components/MapPills";
 import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
+import ResourcesModal from "../components/ResourcesModal";
+import { supabase } from "../../utils/hooks/supabase";
+import LocationDetailSheet from "../components/LocationDetailSheet";
 
-import Ionicons from "react-native-vector-icons/Ionicons";
+const DUMMY_FRIENDS = [
+  {
+    id: "1",
+    ring: "#FF5A5F",
+    image: require("../../assets/mapImages/friend1.png"),
+  },
+  {
+    id: "2",
+    ring: "#4CAF50",
+    image: require("../../assets/mapImages/friend2.png"),
+  },
+  {
+    id: "3",
+    ring: "#FFC107",
+    image: require("../../assets/mapImages/friend3.png"),
+  },
+  {
+    id: "4",
+    ring: "#2196F3",
+    image: require("../../assets/mapImages/friend4.png"),
+  },
+  {
+    id: "5",
+    ring: "#E040FB",
+    image: require("../../assets/mapImages/friend5.png"),
+  },
+  {
+    id: "6",
+    ring: "#FF9800",
+    image: require("../../assets/mapImages/friend6.png"),
+  },
+  {
+    id: "7",
+    ring: "#00BCD4",
+    image: require("../../assets/mapImages/friend7.png"),
+  },
+  {
+    id: "8",
+    ring: "#8BC34A",
+    image: require("../../assets/mapImages/friend8.png"),
+  },
+];
+
+const DEFAULT_AVATAR = require("../../assets/snapchat/personalBitmoji.png");
 
 export default function MapScreen({ navigation }) {
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [activePill, setActivePill] = useState(null);
+  const [userAvatar, setUserAvatar] = useState(null);
+  const [selectedResource, setSelectedResource] = useState(null);
 
   const [currentRegion, setCurrentRegion] = useState({
     latitude: 34.0211573,
@@ -31,6 +81,8 @@ export default function MapScreen({ navigation }) {
   });
 
   useEffect(() => {
+    loadUserProfile();
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -49,74 +101,126 @@ export default function MapScreen({ navigation }) {
     })();
   }, []);
 
-  let text = "Waiting...";
-  text = JSON.stringify(location);
+  async function loadUserProfile() {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile avatar:", error);
+        return;
+      }
+
+      if (data?.avatar_url) {
+        setUserAvatar(data.avatar_url);
+      }
+    } catch (err) {
+      console.error("Failed to load user profile:", err);
+    }
+  }
+
+  const avatarSource = userAvatar ? { uri: userAvatar } : DEFAULT_AVATAR;
+
+  const handleSelectResource = (resource) => {
+    if (!resource?.location) return;
+    setActivePill(null); // closes ResourcesModal
+    setSelectedResource(resource);
+    setCurrentRegion({
+      latitude: resource.location.latitude,
+      longitude: resource.location.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+  };
 
   return (
-    <View 
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            marginBottom: tabBarHeight,
-          },
-        ]}
-      >
-        <Header title="Map" />
-
+    <View style={styles.container}>
       <MapView
         style={styles.map}
         region={currentRegion}
         showsUserLocation={true}
-        showsMyLocationButton={true}
-      />
-      <View style={[styles.mapFooter]}>
-        <View style={styles.locationContainer}>
-          <TouchableOpacity
-            style={[styles.userLocation, styles.shadow]}
-            onPress={() => {
-              console.log("Go to user location!");
-              const { latitude, longitude } = location.coords;
-              setCurrentRegion({ ...currentRegion, latitude, longitude });
-            }}
-          >
-            <Ionicons name="navigate" size={15} color="black" />
-          </TouchableOpacity>
-        </View>
-        <View style={[styles.bitmojiContainer, styles.shadow]}>
-          <Pressable
-            onPress={() => {
-              navigation.navigate("Event");
-            }}
-          >
-            <View style={styles.myBitmoji}>
-              <Ionicons name="calendar-outline" size={50} color="gray" />
-              <View style={styles.bitmojiTextContainer}>
-                <Text style={styles.bitmojiText}>Events</Text>
-              </View>
-            </View>
-          </Pressable>
+        showsMyLocationButton={false}
+      >
+        {selectedResource && (
+          <Marker
+            coordinate={selectedResource.location}
+            title={selectedResource.name}
+            description={selectedResource.label}
+          />
+        )}
+      </MapView>
 
-          <View style={styles.places}>
-            <Image
-              style={styles.bitmojiImage}
-              source={require("../../assets/snapchat/personalBitmoji.png")}
-            />
-            <View style={styles.bitmojiTextContainer}>
-              <Text style={styles.bitmojiText}>Places</Text>
-            </View>
-          </View>
-          <View style={styles.myFriends}>
-            <Image
-              style={styles.bitmojiImage}
-              source={require("../../assets/snapchat/personalBitmoji.png")}
-            />
-            <View style={styles.bitmojiTextContainer}>
-              <Text style={styles.bitmojiText}>Friends</Text>
-            </View>
-          </View>
-        </View>
+      <View
+        style={{ position: "absolute", top: insets.top, left: 0, right: 0 }}
+      >
+        <MapHeader cityLabel="LA" userAvatar={userAvatar} />
       </View>
+
+      <View
+        style={{ position: "absolute", top: insets.top, left: 0, right: 0 }}
+      >
+        <MapPills activePill={activePill} onSelectPill={setActivePill} />
+      </View>
+
+      {/* Right-side floating control stack: bitmoji, settings, layers, compass */}
+      <View style={[styles.rightControlsStack, { bottom: tabBarHeight + 100 }]}>
+        <View style={[styles.rightControlAvatar, styles.shadow]}>
+          <Image style={styles.rightControlAvatarImage} source={avatarSource} />
+          <View style={styles.rightControlBadge} />
+        </View>
+
+        <Pressable style={[styles.rightControlButton, styles.shadow]}>
+          <Ionicons name="settings-outline" size={20} color="#1a1a1a" />
+        </Pressable>
+
+        <Pressable style={[styles.rightControlButton, styles.shadow]}>
+          <Ionicons name="layers-outline" size={20} color="#1a1a1a" />
+        </Pressable>
+
+        <Pressable style={[styles.rightControlButton, styles.shadow]}>
+          <Ionicons name="compass-outline" size={22} color="#1a1a1a" />
+        </Pressable>
+      </View>
+
+      {/* Bottom overlay: locate-me button, friends strip */}
+      <View style={[styles.mapFooter, { paddingBottom: tabBarHeight + 2 }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.friendsStripWrapper}
+          contentContainerStyle={styles.friendsStrip}
+        >
+          {DUMMY_FRIENDS.map((friend) => (
+            <View
+              key={friend.id}
+              style={[styles.friendAvatarRing, { borderColor: friend.ring }]}
+            >
+              <Image style={styles.friendAvatarImage} source={friend.image} />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+
+      <ResourcesModal
+        visible={activePill === "resources"}
+        onClose={() => setActivePill(null)}
+        onSelectResource={handleSelectResource}
+      />
+      <LocationDetailSheet
+        resource={selectedResource}
+        visible={!!selectedResource}
+        onClose={() => setSelectedResource(null)}
+      />
     </View>
   );
 }
@@ -125,26 +229,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
+  },
+  map: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
   },
   mapFooter: {
     width: "100%",
-    display: "flex",
-    flexDirection: "column",
     position: "absolute",
+    bottom: 0,
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: 20,
-    bottom: 0,
-  },
-  map: {
-    //width: Dimensions.get("window").width,
-    //height: Dimensions.get("window").height,
-    flex: 1,
-    width: "100%",
   },
   locationContainer: {
-    backgroundColor: "transparent",
     width: "100%",
     paddingBottom: 8,
     alignItems: "center",
@@ -156,57 +254,74 @@ const styles = StyleSheet.create({
     width: 36,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 5,
   },
   shadow: {
     shadowColor: "rgba(0, 0, 0)",
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowRadius: 3,
-    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.15,
     elevation: 4,
   },
-  bitmojiContainer: {
+  rightControlsStack: {
+    position: "absolute",
+    right: 16,
+    alignItems: "center",
+    gap: 14,
+    zIndex: 8,
+  },
+  rightControlAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightControlAvatarImage: {
     width: "100%",
-    backgroundColor: "transparent",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+    height: "100%",
+    resizeMode: "cover",
   },
-  myBitmoji: {
-    width: 70,
-    height: 70,
-    alignItems: "center",
+  rightControlBadge: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#FF3B30",
+    borderWidth: 1.5,
+    borderColor: "#fff",
+  },
+  rightControlButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
-    marginLeft: 5,
-  },
-  bitmojiImage: {
-    width: 50,
-    height: 50,
-  },
-  bitmojiTextContainer: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 4,
-  },
-  bitmojiText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
-  places: {
-    width: 70,
-    height: 70,
     alignItems: "center",
-    justifyContent: "center",
   },
-  myFriends: {
-    width: 70,
-    height: 70,
+  friendsStripWrapper: {
+    marginBottom: 24,
+  },
+  friendsStrip: {
+    paddingHorizontal: 16,
+    gap: 10,
     alignItems: "center",
-    justifyContent: "center",
   },
-  calendarIcon: {},
+  friendAvatarRing: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    padding: 2,
+    backgroundColor: "#fff",
+  },
+  friendAvatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 22,
+    resizeMode: "cover",
+  },
 });
