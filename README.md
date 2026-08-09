@@ -112,11 +112,12 @@ Haven lives on the conversation screen and conversation profile screen.
 - Tracks conversation inactivity for notification system
 - Prompts table for users to get conversation starting prompts
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## Tech Stack
 
-- <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native** 
+- <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native**
 - <a href="https://expo.dev/"><img src="assets/techStackLogos/expogo5.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v54.0.36)
 - <a href="https://supabase.com/"><img src="assets/techStackLogos/supabase-logo1.svg" height="22" align="center" alt="Supabase" /></a> **Supabase** for database storage
 - <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="20" height="20" align="center" alt="JavaScript" /></a> **JavaScript**
