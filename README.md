@@ -6,7 +6,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Sabrina-Moore/Showcase-Repo">
-    <img src="./SEA Logomark.png" alt="Logo" width="180" height="80">
+    <img src="./assets/HavenLogo.png" alt="Logo" width="180" height="80">
   </a>
   <a href="https://www.figma.com/board/KxkdqMKt3bYeVN9LcZAUV0/2026-Snap-Academies-Showcase-%F0%9F%91%BB?node-id=0-1&p=f&t=PlwTk6WeaVxioo26-0">
 
