@@ -37,7 +37,7 @@ export default function SettingsScreen() {
       setEmail(data.email || user.email);
       setDateOfBirth(data.birthday || "01/01/1998");
       setProfilePictureUrl(
-        data.avatar_url ||
+        data.bitmoji_icon ||
           "https://image.cnbcfm.com/api/v1/image/100703713-Rubber%20duck%20in%20hk.jpg?v=1532564692&w=1600&h=900",
       ); // Default URL
       setInitialDisplayName(data.username || user.email.split("@")[0]);
@@ -53,7 +53,7 @@ export default function SettingsScreen() {
     try {
       const { error } = await supabase
         .from("profiles") // Replace with your table name
-        .update({ avatar_url: profilePictureUrl })
+        .update({ bitmoji_icon: profilePictureUrl })
         .eq("user_id", user.id);
 
       if (error) throw error;

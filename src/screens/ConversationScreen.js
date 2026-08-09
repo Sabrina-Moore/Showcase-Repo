@@ -135,12 +135,12 @@ const handleHelpPress = () => {
           .from("profiles")
           .select(`
             user_id,
-            avatar_url`)
+            bitmoji_icon`)
           .eq("user_id", uid)
           .single();
         if (profile?.username) setCurrentUserName(profile.username); //set state for username
 
-        setCurrentUserBitmojiIcon(profile?.avatar_url ?? null); //set state for bitmoji icon on chatscreen
+        setCurrentUserBitmojiIcon(profile?.bitmoji_icon ?? null); //set state for bitmoji icon on chatscreen
       }
     };
     fetchUser();
@@ -156,7 +156,7 @@ const handleHelpPress = () => {
       .from("conversation_members")
       .select(`
         user_id,
-        profiles (username, avatar_url)`,)
+        profiles (username, bitmoji_icon)`,)
       .eq("conversation_id", conversationId);
 
     if (error) {
@@ -167,7 +167,7 @@ const handleHelpPress = () => {
     console.log("Participant error:", error);
     setParticipant(data ?? []);
     const otherParticipant = (data ?? []).find((p) => p.user_id !== currentUserId); //first participant besides currentUser
-  setParticipantBitmojiIcon(otherParticipant?.profiles?.avatar_url ?? null);
+  setParticipantBitmojiIcon(otherParticipant?.profiles?.bitmoji_icon ?? null);
   };
 
   useEffect(() => {
@@ -186,7 +186,7 @@ const handleHelpPress = () => {
       .from("messages")
       .select(
         `message_id, conversation_id, sender_id, text, created_at,
-        profiles (user_id, username, avatar_url)`,
+        profiles (user_id, username, bitmoji_icon)`,
       )
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });

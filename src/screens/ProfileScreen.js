@@ -36,7 +36,7 @@ export default function ProfileScreen() {
   const [userBirthday, setUserBirthday] = useState(null);
 
   
-  //fetch user profile from profiles (avatar_url, username, email)
+  //fetch user profile from profiles (bitmoji_icon, username, email)
   useEffect(() => {
       const fetchProfile= async () => {
         const { data, error } = await supabase.auth.getUser(); //requests authentication data
@@ -51,7 +51,7 @@ export default function ProfileScreen() {
         if (uid) {
           const { data: profile, error:profileError } = await supabase
             .from("profiles")
-            .select("username, email, birthday, snap_score, avatar_url, bitmoji_pose")
+            .select("username, email, birthday, snap_score, bitmoji_icon, bitmoji_pose")
             .eq("user_id", uid)
             .single();
 

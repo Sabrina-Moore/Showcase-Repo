@@ -21,12 +21,17 @@ export default function ChatScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
+  const [otherBitmojiIcon, setOtherBitmojiIcon] = useState(null); //set conversation members user bitmoji
+
+
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Modal State
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
+
+  const username = selectedChat?.otherParticipant?.username || "User";
 
   useEffect(() => {
     loadConversations();
@@ -38,12 +43,25 @@ export default function ChatScreen({ navigation }) {
       error: userError,
     } = await supabase.auth.getUser();
 
+    //get current user 
+    const { data: currentProfile, error: profileError } = await supabase
+  .from("profiles")
+  .select("user_id, username, bitmoji_icon")
+  .eq("user_id", user.id)
+  .single();
+
+  if (profileError) {
+    console.error("Profile fetch error:", profileError);
+    return;
+  }
+
+
     if (userError || !user) return;
 
     const { data, error } = await supabase
       .from("conversation_members")
       .select(
-        `conversation_id, user_id, profiles (user_id, username, avatar_url)`,
+        `conversation_id, user_id, profiles (user_id, username, bitmoji_icon)`,
       );
 
     if (error) {
@@ -51,7 +69,7 @@ export default function ChatScreen({ navigation }) {
       return;
     }
 
-    //filtering for other participants in conversation - for conversation name
+    //filtering for other participants in conversation - for conversation name and bitmoji rendering
     const searchConversations = data
       .filter((member) => member.user_id === user.id) //filter for conversations user is in
       .map((myConversation) => {
@@ -68,19 +86,19 @@ export default function ChatScreen({ navigation }) {
       });
 
     setConversations(searchConversations);
-    console.log(JSON.stringify("Set Conversations data:", data, null, 2));
     setLoading(false);
   }
 
+
+
   const handleLongPress = (chat) => {
     setSelectedChat(chat);
+    setOtherBitmojiIcon(chat.otherParticipant?.bitmoji_icon || null);
     setModalVisible(true);
   };
 
-  const username = selectedChat?.otherParticipant?.username || "User";
-  const avatarUrl = selectedChat?.otherParticipant?.avatar_url;
 
-  console.log("Avatar URL:", avatarUrl);
+
   return (
     <View
       style={[
@@ -108,7 +126,11 @@ export default function ChatScreen({ navigation }) {
             onLongPress={() => handleLongPress(chat)}
             delayLongPress={300}
           >
+          {chat.otherParticipant?.bitmoji_icon ? (
+            <Image source={{ uri: chat.otherParticipant.bitmoji_icon }} style={styles.listAvatar} />
+          ) : (
             <Ionicons name="person-circle" size={48} color="#D8D8D8" />
+          )}
             <Text style={styles.username}>
               {chat.otherParticipant?.username}
             </Text>
@@ -137,9 +159,9 @@ export default function ChatScreen({ navigation }) {
               {/* Top Profile Card */}
               <View style={styles.card}>
                 <TouchableOpacity style={styles.profileHeader}>
-                  {avatarUrl ? (
+                  {otherBitmojiIcon ? (
                     <Image
-                      source={{ uri: avatarUrl }}
+                      source={{ uri: otherBitmojiIcon }}
                       style={styles.avatarImage}
                     />
                   ) : null}
@@ -301,6 +323,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 14,
   },
+  listAvatar: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+},
   avatarImage: {
     width: 44,
     height: 44,

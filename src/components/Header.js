@@ -18,15 +18,14 @@ import SelectionMenu from "./SelectionMenu";
 const Stack = createStackNavigator();
 
 export default function Header({ title }) {
-
-    const [showMenu, setShowMenu] = useState(false); //what is this template code? 
-
+  const [showMenu, setShowMenu] = useState(false); //what is this template code? 
   const navigation = useNavigation();
-  const [profilePic, setProfilePic] = useState(null);
+  
+  const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null); //sets current user bitmoji
   const [currentUserId, setCurrentUserId] = useState(null);
   //const { user } = useAuthentication();
 
-    //fetching user avatars
+  //fetching user bitmoji
   useEffect(() => {
       const fetchAvatar = async () => {
         const { data, error } = await supabase.auth.getUser(); //requests authentication data
@@ -41,12 +40,12 @@ export default function Header({ title }) {
         if (uid) {
           const { data: profile, error } = await supabase
             .from("profiles")
-            .select("avatar_url")
+            .select("bitmoji_icon")
             .eq("user_id", uid) //searching for avatars based on user_id
             .single();
-          if (profile?.avatar_url) setProfilePic(profile.avatar_url);
+          if (profile?.bitmoji_icon) setCurrentUserBitmojiIcon(profile.bitmoji_icon);
 
-          console.log("Setting profile pic:", profile.avatar_url);
+          console.log("Setting profile pic:", currentUserBitmojiIcon);
           console.log("uid:", uid);
           console.log("profile:", profile);
           console.log("error:", error);
@@ -73,8 +72,8 @@ export default function Header({ title }) {
             navigation.navigate("Profile");
           }}
         >
-         {profilePic ? (
-            <Image style={styles.profileImage} source={{ uri: profilePic }} />
+         {currentUserBitmojiIcon ? (
+            <Image style={styles.profileImage} source={{ uri: currentUserBitmojiIcon }} />
           ) : (
             <Ionicons name="person-circle" size={44} color="#D8D8D8" />
           )}
