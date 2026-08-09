@@ -15,6 +15,7 @@ import ReturnButton from "../components/ReturnButton";
 
 export default function SignupScreen({ navigation }) {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("");
   const [alreadyInUseButton, setAlreadyInUseButton] = useState(false);
@@ -38,7 +39,7 @@ export default function SignupScreen({ navigation }) {
         email,
         password,
         options: {
-          data: { username: email.split("@")[0],},
+          data: username ? { username } : {},
         },
       });
 
@@ -59,7 +60,6 @@ export default function SignupScreen({ navigation }) {
         console.log("User signed up:", JSON.stringify(data, null, 4));
 
         const user = data.user;
-        const username = email.split("@")[0];
 
         if(!user){
           Alert.alert("No user was returned from database.");
@@ -106,12 +106,19 @@ export default function SignupScreen({ navigation }) {
       <Text style={styles.signUpTitle}>Sign Up</Text>
       <View style={styles.signUpFields}>
         <Text style={styles.accountExistsText}>{alreadyInUseMessage}</Text>
-        <Text style={styles.inputText}>USERNAME OR EMAIL</Text>
+        <Text style={styles.inputText}>EMAIL</Text>
         <TextInput
           style={styles.inputField}
           secureTextEntry={false}
           autoCapitalize="none"
           onChangeText={(email) => setEmail(email)}
+        />
+         <Text style={styles.inputText}>USERNAME</Text>
+        <TextInput
+          style={styles.inputField}
+          secureTextEntry={false}
+          autoCapitalize="none"
+          onChangeText={(username) => setUsername(username)}
         />
         <Text style={styles.inputText}>PASSWORD</Text>
         <TextInput

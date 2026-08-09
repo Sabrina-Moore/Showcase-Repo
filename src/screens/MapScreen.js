@@ -64,7 +64,8 @@ const DUMMY_FRIENDS = [
 
 const DEFAULT_AVATAR = require("../../assets/snapchat/personalBitmoji.png");
 
-export default function MapScreen({ navigation }) {
+export default function MapScreen({ route, navigation }) {
+  const { initialFilter } = route.params ?? {};
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
   const [location, setLocation] = useState(null);
@@ -79,6 +80,13 @@ export default function MapScreen({ navigation }) {
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
+
+  //added so HavenTools in conversationScreen can navigate to page with resoources open
+  useEffect(() => {
+  if (initialFilter === "resources") {
+    setActivePill("resources");
+  }
+}, [initialFilter]);
 
   useEffect(() => {
     loadUserProfile();

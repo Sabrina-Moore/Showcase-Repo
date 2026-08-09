@@ -13,6 +13,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
@@ -44,25 +45,57 @@ function colorForSender(senderId) {
 
 
 export default function ConversationScreen({ route, navigation }) {
-  const { conversationId , isHaven: HavenMode } = route.params ?? {};
+
+  const { conversationId, isHaven: HavenMode } = route.params ?? {};
+  const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
+
   const insets = useSafeAreaInsets();
-  const [messages, setMessages] = useState("");
+  const [messages, setMessages] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
-  const [userBitmoji, setUserBitmoji] = useState(null);
-  const [participants, setParticipants] = useState([]);
-  const [profiles, setProfiles] = useState(null);
+  const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null);
 
-  const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
+  const [participant, setParticipant] = useState([]);
+  const [participantBitmojiIcon, setParticipantBitmojiIcon] = useState(null);
+
+
   const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
 
-
+  const realtimeChannelRef = useRef(null); //so that when returnign to conversation screen, we don't have a duplicate channel
   const [isLoading, setIsLoading] = useState(true);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const listRef = useRef();
 
+  //Haven conditional Rendering logic
+//-----------------------------------------------------
+  //check if isHaven is true in supabase
+  const fetchHavenStatus = async () => { 
+    if (!conversationId) {
+      setIsHaven(false); 
+      return;
+    }
+    
+    const { data, error } = await supabase 
+    .from("conversations") 
+    .select("is_haven") 
+    .eq("conversation_id", conversationId) 
+    .single(); 
+
+    if (error) { 
+      console.error("Error fetching Haven status:", error); 
+      return; 
+    } 
+      setIsHaven(data?.is_haven === true); 
+    };
+
+  //checks if isHaven is on when returning to conversation from another screen
+  useFocusEffect(
+  React.useCallback(() => {
+    fetchHavenStatus();
+  }, [conversationId])
+);
 //feature pills persist for only a few seconds and goes away
   const handleTogglePills = () => {
   setShowPills(true);
@@ -72,6 +105,17 @@ export default function ConversationScreen({ route, navigation }) {
   }, 6000);
 };
 
+//onPress handler for navigation to map from Need Help button in HavenTools
+const handleHelpPress = () => {
+  navigation.navigate("Back", {
+    screen: "Map",
+    params: {
+      initialFilter: "resources",
+    },
+  });
+};
+
+ //--------------------------------------
   //Adding realtime chat functionality
   //--------------------------------------
   // uses hook to store currently logged in users info to database
@@ -90,22 +134,24 @@ export default function ConversationScreen({ route, navigation }) {
         const { data: profile } = await supabase
           .from("profiles")
           .select(`
-            username
             user_id,
             avatar_url`)
           .eq("user_id", uid)
           .single();
         if (profile?.username) setCurrentUserName(profile.username); //set state for username
 
-        setUserBitmoji(profiles?.avatar_url ?? null); //set state for avatar_url
+        setCurrentUserBitmojiIcon(profile?.avatar_url ?? null); //set state for bitmoji icon on chatscreen
       }
     };
     fetchUser();
   }, []);
 
   //------------------------------
-  //fetch conversation participants
+  //fetch conversation participants from conversation_members
   const fetchParticipants = async () => {
+
+    if(!conversationId || !currentUserId) return;
+    
     const { data, error } = await supabase
       .from("conversation_members")
       .select(`
@@ -119,15 +165,17 @@ export default function ConversationScreen({ route, navigation }) {
     }
     console.log("Participants:", JSON.stringify(data, null, 2));
     console.log("Participant error:", error);
-    setParticipants(data ?? []);
+    setParticipant(data ?? []);
+    const otherParticipant = (data ?? []).find((p) => p.user_id !== currentUserId); //first participant besides currentUser
+  setParticipantBitmojiIcon(otherParticipant?.profiles?.avatar_url ?? null);
   };
 
   useEffect(() => {
     fetchParticipants();
-  }, [conversationId]);
+  }, [conversationId, currentUserId]);
 
   //------------------------------
-  //getting messages from database
+  //fetch messages from messages
   const fetchMessages = async () => {
     if (!conversationId) return;
 
@@ -159,12 +207,19 @@ export default function ConversationScreen({ route, navigation }) {
   }, [conversationId]);
 
   //-------------------------------------
-  // realtime messaging
+  // realtime messaging with channel
+  //redesigned to handle duplicate channels (upon navigating between Map and ConversationScreen)
   useEffect(() => {
     if (!conversationId) return;
 
+    if (realtimeChannelRef.current) {
+    supabase.removeChannel(realtimeChannelRef.current);
+    realtimeChannelRef.current = null;
+  }
+  const channelName = `conversation-${conversationId}-${Date.now()}`; //more specific channel names to prevent duplicates
+
     const channel = supabase
-      .channel(`conversation-${conversationId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -177,10 +232,17 @@ export default function ConversationScreen({ route, navigation }) {
           fetchMessages();
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+      console.log("Realtime status:", status);
+    });
+
+    realtimeChannelRef.current = channel;
 
     return () => {
+      if (realtimeChannelRef.current === channel) {
       supabase.removeChannel(channel);
+      realtimeChannelRef.current = null;
+      }
     };
   }, [conversationId]);
   //--------------------------------
@@ -229,20 +291,7 @@ export default function ConversationScreen({ route, navigation }) {
     );
   }
   //-----------------------------------
-  //fetching profile avatar
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("avatar_url")
-        .eq("id", user.id) // if profiles.id matches auth.users.id
-        .single();
-      if (!error) {
-        setProfiles(data);
-      }
-    };
-    fetchProfile();
-  }, []);
+
 
   return (
     <View style={styles.container}>
@@ -261,7 +310,9 @@ export default function ConversationScreen({ route, navigation }) {
               onPress={() =>
                 navigation.navigate("ConversationProfileScreen", {
                   chatbotName:
-                    participants
+                    participant
+                    // remove filter if we want to include currentUser
+                      .filter((p) => p.user_id !== currentUserId)
                       .map((p) => p.profiles?.username)
                       .filter(Boolean)
                       .join(", ") || "Best Friend",
@@ -270,13 +321,16 @@ export default function ConversationScreen({ route, navigation }) {
             >
               {/* dynamic avatar rendering */}
               <Image
-              source={ {uri: userBitmoji }}
+              source={ {uri: participantBitmojiIcon}}
                 style={styles.avatarImage}
               />
 
               <View style={styles.nameContainer}>
                 <Text style={styles.username}>
-                  {participants.map((p) => p.profiles?.username).join(", ")}
+                  {participant
+                    .filter((p) => p.user_id !== currentUserId)
+                    .map((p) => p.profiles?.username)
+                    .join(" and ")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -314,7 +368,8 @@ export default function ConversationScreen({ route, navigation }) {
         {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
         <View style={styles.inputContainer}>
-          {showPills && <HavenTools />}
+          {showPills && (<HavenTools onHelpPress={handleHelpPress} />
+          )}
 
           {/* Input bar */}
           <View style={styles.inputBar}>
@@ -324,7 +379,7 @@ export default function ConversationScreen({ route, navigation }) {
               </Pressable>
             </TouchableOpacity>
             {/* moved arrow up send and mic into textinput */}
-            <View style={[styles.inputPill, isHaven && styles.havenInputPill]}>
+            <View style={[styles.defaultPill, isHaven && styles.havenPill]}>
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
@@ -481,7 +536,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E5EA",
     marginBottom: 20,
   },
-  inputPill: {
+  defaultPill: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
@@ -513,7 +568,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   //haven coloring
-   havenInputPill: {
+   havenPill: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",

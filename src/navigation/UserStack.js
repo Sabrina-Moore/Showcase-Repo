@@ -26,7 +26,7 @@ export default function App() {
         <Stack.Screen
           name="Profile"
           component={ProfileScreen}
-          options={{ headerShown: true }}
+          options={{ headerShown: false}}
         />
         <Stack.Screen
           name="Camera"
@@ -79,11 +79,11 @@ export default function App() {
           component={EventScreen}
           options={{ headerShown: true }}
         />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="Map"
           component={MapScreen}
           options={{ headerShown: true }}
-        />
+        /> */}
         <Stack.Screen
           name="ConversationProfileScreen"
           component={ConversationProfileScreen}

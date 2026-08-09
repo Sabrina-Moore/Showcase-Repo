@@ -2,8 +2,11 @@ import { Image, Text, View, ScrollView, Button, StyleSheet, Pressable } from "re
 import { supabase } from "../../utils/hooks/supabase";
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthentication } from "../../utils/hooks/useAuthentication";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import EvilIcons from '@expo/vector-icons/EvilIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
 const handleSignOut = async () => {
@@ -19,22 +22,23 @@ const handleSignOut = async () => {
   }
 };
 
-
-
 export default function ProfileScreen() {
 
   const navigation = useNavigation();
   const { user } = useAuthentication();
+  const insets = useSafeAreaInsets();
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userBitmoji, setUserBitmoji] = useState(null);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState(null);
+  const [snapScore, setSnapScore] = useState(null);
+  const [userBirthday, setUserBirthday] = useState(null);
 
   
   //fetch user profile from profiles (avatar_url, username, email)
   useEffect(() => {
-      const fetchProfileBitmoji = async () => {
+      const fetchProfile= async () => {
         const { data, error } = await supabase.auth.getUser(); //requests authentication data
         if (error) {
           console.error("Error fetching current user:", error);
@@ -47,7 +51,7 @@ export default function ProfileScreen() {
         if (uid) {
           const { data: profile, error:profileError } = await supabase
             .from("profiles")
-            .select("username, email, avatar_url")
+            .select("username, email, birthday, snap_score, avatar_url, bitmoji_pose")
             .eq("user_id", uid)
             .single();
 
@@ -59,21 +63,50 @@ export default function ProfileScreen() {
            console.log("Profile:", profile);
            
           if(profile){
-            setUserBitmoji(profile.avatar_url);
+            setUserBitmoji(profile.bitmoji_pose);
             setEmail(profile.email);
             setUsername(profile.username);
+            setSnapScore(profile.snap_score);
+            setUserBirthday(profile.birthday);
           }
 
         }
 
       };
-      fetchProfileBitmoji();
+      fetchProfile();
     }, []);
 
  
   return (
     <View style={styles.screen}>
-      <ScrollView>
+      {/* custom header */}
+
+            <View style={[styles.headerOverlay, { paddingTop: insets.top + 6 }]}
+              pointerEvents="box-none"
+            >
+              <Pressable
+                onPress={() => navigation?.goBack()}
+                style={styles.iconCircle}
+              >
+                <Ionicons name="chevron-back" size={24} color="#fff" />
+              </Pressable>
+      
+              <View style={styles.headerRightIcons}>
+                <Pressable style={styles.iconCircle}>
+                  <Ionicons name="share-outline" size={18} color="#fff" />
+                </Pressable>
+                <Pressable style={styles.iconCircle}>
+                  <MaterialCommunityIcons name="hanger" size={24} color="white" />
+                </Pressable>
+                <Pressable style={styles.iconCircle}
+                onPress={() => navigation.navigate("Settings")}>
+                  <EvilIcons name="gear" size={24} color="white" />
+                </Pressable>
+              </View>
+            </View>
+  
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 54 }}>
+        {/* bitomji image */}
         <View style={styles.bitmojiContainer}>
           {userBitmoji ? (
           <Image
@@ -81,46 +114,37 @@ export default function ProfileScreen() {
             style={styles.avatar}
           />
           ) : null}
+          <View style={styles.bitmojiNameOverlay}>
+              <Text style={styles.bitmojiNameText}>{username}</Text>
+            </View>
         </View>
-      <Pressable>
-        <Button
-          onPress={() => {
-            navigation.navigate("Settings", {});
-          }}
-          title="Settings"
-        />
-      </Pressable>
 
       {/* content below bitmoji image */}
-
         <View style={styles.contentContainer}>
           <View style={styles.topHandle} />
 
           {/* User information */}
           <View style={styles.profileRow}>
 
-
-            <View style={styles.profileText}>
-              <Text style={styles.profileName}>{username}</Text>
-              <Text style={styles.profileEmail}>{email}</Text>
-            </View>
-
             {/* Profile information buttons */}
           <View style={styles.tagRow}>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>🎂 Dec 20</Text>
+              <Ionicons name="balloon" size={24} color="red" />
+              <Text style={styles.tagText}> {userBirthday} </Text>
             </View>
 
             <View style={styles.tag}>
+              <Text style={styles.tagText}> {snapScore} </Text>
+            </View>
+
+            {/* <View style={styles.tag}>
               <Text style={styles.tagText}>♓ Pisces</Text>
-            </View>
+            </View> */}
 
-            <View style={styles.tag}>
+            {/* <View style={styles.tag}>
               <Text style={styles.tagText}>💜 Cancer</Text>
-            </View>
-          </View>
-
-
+            </View> */}
+          </View> 
           </View>
         </View>
       </ScrollView>
@@ -136,79 +160,51 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    flexDirection: "column",
+    flexDirection: 1,
+  },
+    headerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 12,
+  },
+  headerRightIcons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+   iconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
     alignItems: "center",
   },
   bitmojiContainer: {
     width: "100%",
     height: 320,
-    position: "relative",
   },
   avatar: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
   },
-   bitmojiButtonText: {
-    color: "#FFFFFF",
-    fontSize: 30,
-    fontWeight: "700",
-  },
-
-  bitmojiButtonIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: "contain",
-  },
-
-  settingsButton: {
-    position: "absolute",
-    top: 55,
-    right: 18,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  //Vaughn's code from here
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 18,
   },
-
-  profileImage: {
-    width: 88,
-    height: 88,
-    borderRadius: 18,
-    marginRight: 15,
-    borderWidth: 2,
-    borderColor: "#D4AF37",
-  },
-
-  profileText: {
-    flex: 1,
-  },
-
-  profileName: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "#111111",
-  },
-
-  profileEmail: {
-    marginTop: 4,
-    fontSize: 15,
-    color: "#777777",
-  },
   tagRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginBottom: 18,
+    
   },
-
   tag: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
@@ -218,14 +214,15 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     marginRight: 8,
     marginBottom: 8,
+    flexDirection: "row",
+    
   },
-
   tagText: {
     fontSize: 13,
     fontWeight: "600",
     color: "#555555",
   },
-
+  //snapchat+
   goldFeatureCard: {
     minHeight: 90,
     flexDirection: "row",
@@ -237,7 +234,6 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 22,
   },
-
   goldFeatureImage: {
     width: 66,
     height: 66,
@@ -245,23 +241,19 @@ const styles = StyleSheet.create({
     marginRight: 12,
     backgroundColor: "#111111",
   },
-
   goldFeatureText: {
     flex: 1,
   },
-
   goldFeatureTitle: {
     fontSize: 18,
     fontWeight: "800",
     color: "#111111",
   },
-
   goldFeatureDescription: {
     marginTop: 4,
     fontSize: 13,
     color: "#777777",
   },
-
   featureBadge: {
     backgroundColor: "#24B8EA",
     borderRadius: 4,
@@ -269,13 +261,12 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginLeft: 6,
   },
-
   featureBadgeText: {
     color: "#FFFFFF",
     fontSize: 11,
     fontWeight: "800",
   },
-
+//for page divisions
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -283,30 +274,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 10,
   },
-
   sectionTitle: {
     fontSize: 21,
     fontWeight: "800",
     color: "#111111",
   },
-
   sectionButton: {
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 16,
     backgroundColor: "#EAEAEA",
   },
-
   sectionButtonText: {
     fontSize: 13,
     fontWeight: "700",
     color: "#222222",
   },
-
   rowsContainer: {
     marginBottom: 20,
   },
-
   dynamicRow: {
     minHeight: 82,
     flexDirection: "row",
@@ -316,7 +302,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 10,
-
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,
@@ -326,45 +311,28 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-
   rowIconContainer: {
     width: 48,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
   },
-
   rowIcon: {
     fontSize: 28,
   },
-
   rowTextContainer: {
     flex: 1,
   },
-
   rowTitle: {
     fontSize: 16,
     fontWeight: "800",
     color: "#191919",
   },
-
   rowDescription: {
     marginTop: 4,
     fontSize: 13,
     color: "#858585",
   },
-
-  moreButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-  },
-
-  moreButtonText: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: "#777777",
-  },
-
   partyCard: {
     minHeight: 82,
     flexDirection: "row",
@@ -374,7 +342,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 22,
-
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,
@@ -384,12 +351,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-
   partyCardActive: {
     borderWidth: 2,
     borderColor: "#8A2BE2",
   },
-
   newBadge: {
     backgroundColor: "#25B8E8",
     borderRadius: 4,
@@ -397,21 +362,31 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginRight: 8,
   },
-
   newBadgeText: {
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "800",
   },
-
   chevron: {
     fontSize: 28,
     color: "#999999",
     marginLeft: 6,
   },
-
   logoutContainer: {
     marginTop: 18,
   },
-
+  bitmojiNameOverlay: {
+  position: "absolute",
+  bottom: 16,
+  left: 16,
+  right: 16,
+},
+bitmojiNameText: {
+  fontSize: 30,
+  fontWeight: "500",
+  color: "#FFFFFF",
+  textShadowColor: "rgba(0,0,0,0.4)",
+  textShadowOffset: { width: 0, height: 1 },
+  textShadowRadius: 4,
+},
 });
