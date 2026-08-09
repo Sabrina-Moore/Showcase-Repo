@@ -13,6 +13,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import AntDesign from "@expo/vector-icons/AntDesign";
 import RBSheet from "react-native-raw-bottom-sheet";
@@ -30,11 +31,12 @@ const havenPills= [
 ];
 
 
-export default function HavenTools () {
+export default function HavenTools ({onHelpPress}) {
   console.log(Ionicons);
   console.log(Entypo);
   console.log(havenPills);
 
+  const navigation = useNavigation();
   const [activePill, setActivePill] = useState(null);
   const ptrRBSheet = useRef(null); //pointer to dom element 
 
@@ -63,19 +65,18 @@ export default function HavenTools () {
   };
 
   //open pills
-  const handlePillPress = (pill) => {
-    setActivePill(pill);
-
-    // If prompts pill was clicked, fetch fresh prompts & open sheet
-    if (pill.id === "prompts") {
-      fetchRandomPrompts();
-    }
-    if (pill.id === "games") {
-      console.log("Pressed games");
-    }
-    // Open bottom sheet
-    ptrRBSheet.current?.open();
+  const handleGamesPress = () => {
+      setActivePill({ id: "games"});
+    ptrRBSheet.current?.open(); // Open bottom sheet
   };
+
+  const handlePromptPress = () => {
+      setActivePill({ id: "prompts"});
+      fetchRandomPrompts();
+    ptrRBSheet.current?.open(); // Open bottom sheet
+  };
+
+
 
      {/* feature pills from plus symbol Haven */}
     {/* only renders if showPills is true */}
@@ -88,7 +89,7 @@ export default function HavenTools () {
                 contentContainerStyle={styles.pillContainer}
             >
             {/* dynamically handles pills and rendering */}
-            {havenPills.map((pill) => {
+            {/* {havenPills.map((pill) => {
               const IconLibrary = pill.library;
               return (
                 <View 
@@ -103,7 +104,27 @@ export default function HavenTools () {
                 </TouchableOpacity>
                 </View>
             );
-            })}
+            })} */}
+
+            {/* not dynamic pills */}
+            <View style={styles.pillRow}>
+              <TouchableOpacity style={styles.pill}
+              onPress={handleGamesPress}>
+                <Ionicons name="game-controller-outline" size={18} color="#000" />
+                <Text style={styles.pillText}>Games</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pill}
+              onPress={handlePromptPress}>
+                <Entypo name="chat" size={18} color="#000" />
+                <Text style={styles.pillText}>Prompts</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pill}
+              onPress={onHelpPress}>
+                <Entypo name="location-pin" size={18} color="#000" />
+                <Text style={styles.pillText}>Need Help?</Text>
+              </TouchableOpacity>
+            </View>
+
         </ScrollView>
         {/* Add bottom sheet of some sort for games and prompts */}
       <RBSheet
@@ -121,6 +142,7 @@ export default function HavenTools () {
           },
         }}
       >
+        {/* prompts pill */}
         {activePill?.id === "prompts" && (
           <View style={styles.drawerContainer}>
             <View style={styles.promptContainer}>
@@ -143,6 +165,19 @@ export default function HavenTools () {
               />
           </View>
         )}
+
+        {/* games pill */}
+         {activePill?.id === "games" && (
+          <View style={styles.drawerContainer}>
+            <View style={styles.promptContainer}>
+              <Text style={styles.promptLabel}>Games</Text>
+              <TouchableOpacity >
+                <Ionicons name="refresh" size={20} color="#79a78c" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        
       </RBSheet>
     
     </View>

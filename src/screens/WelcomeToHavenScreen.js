@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { supabase } from "../../utils/hooks/supabase";
 
 if (
   Platform.OS === "android" &&
@@ -53,6 +54,26 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedId(expandedId === id ? null : id);
   };
+
+  //navigating to conversation screen and toggling conditional rendering
+  const handleGetStarted = async () => {
+  if (!conversationId) {
+    navigation.goBack();
+    return;
+  }
+
+  const { error } = await supabase
+    .from("conversations")
+    .update({ is_haven: true })
+    .eq("conversation_id", conversationId);
+
+  if (error) {
+    console.error("Error creating Haven:", error);
+    return;
+  }
+
+  navigation.navigate("Conversation", {conversationId, isHaven: true});
+};
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -135,16 +156,7 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
       >
         <TouchableOpacity
           style={styles.getStartedButton}
-          onPress={() => {
-            if (conversationId) {
-              navigation.navigate("Conversation", {
-                conversationId: conversationId,
-                isHaven: true,
-              });
-            } else {
-              navigation.goBack();
-            }
-          }}
+          onPress={handleGetStarted}
           activeOpacity={0.85}
         >
           <Text style={styles.buttonText}>Get Started</Text>
