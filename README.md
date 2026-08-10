@@ -148,9 +148,9 @@ You will need to have access to and some familiarity with terminal commands.
 4. Install [Node.js](https://nodejs.org/en/download) to run other dependencies
 5. List the files and folders inside your current directory, move into a sub-folder or file, or move backwards to a parent directory
 ```sh
-  ls
-  cd filename
-  cd ..
+ls
+cd filename
+cd ..
 ```
 6. In your terminal (or documents folder), make a new folder directory to house the code
 ```sh
