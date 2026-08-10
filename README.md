@@ -143,7 +143,6 @@ Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTool
 ## Getting Started
 This prototype is run using React Native, Expo and Mac's Xcode simulator. The prototype has better compatibility with IOS, but works on Android. 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
