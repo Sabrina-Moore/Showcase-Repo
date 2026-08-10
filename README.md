@@ -12,6 +12,13 @@
 
 <h3 align="center">Snap Haven</h3>
 
+<br />
+
+h3 align="center">
+  A little nudge. A bigger connection.
+</h3>
+<br />
+
  <p align="center">
     React Native feature for Snapchat
     <br />
@@ -185,6 +192,7 @@ Before contributing, ensure you have the following installed:
 2. Fork the repository 
    - Navigate to Showcase-Repo and click the fork button on the top right corner
    - Choose your own account as the owner
+<br />
 3. Create a local folder on your computer and navigate inside that folder in your terminal
 4. Clone your forked repository inside that folder
    ```sh
@@ -219,7 +227,8 @@ Before contributing, ensure you have the following installed:
    git switch -c branch-name
    ```
 3. Make your code changes on that branch
-   - Save the individual file 
+   - Save the individual file
+<br />
 5. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
    ```sh
    git add fileName otherFileName
