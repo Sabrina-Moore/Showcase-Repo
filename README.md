@@ -133,6 +133,9 @@ Video of feature here.
 ## Running the App
 This prototype is run using React Native, Expo and Mac's Xcode simulator. The prototype has better compatibility with IOS, but works on Android. 
 
+Because we have no hosted this code on the internet, you will need to be able to save the repository locally and run it to get the Expo QR code. 
+
+You will need to have access to and some familiarity with terminal commands. 
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -140,12 +143,36 @@ This prototype is run using React Native, Expo and Mac's Xcode simulator. The pr
 ### Getting Started
 
 1. Install the [Expo app](https://expo.dev/go) on your IPhone or Android. 
-2. Make an Expo account. 
-3. Install Node.js
-4. Clone this repository
-5. Install project dependencies
-6. Run the code
-7. Open your Expo Go app
+2. Make an Expo account.
+3. Open terminal on your computer. 
+4. Install [Node.js](https://nodejs.org/en/download) to run other dependencies
+5. List the files and folders inside your current directory, move into a sub-folder or file, or move backwards to a parent directory
+   ```sh
+    ls
+    cd filename
+    cd ..
+    ```
+6. In your terminal (or documents folder), make a new folder directory to house the code
+  ```sh
+  mkdir foldername
+  ```
+7. Move terminal location into the folder
+  ```sh
+  cd foldername
+   ```
+8. Clone this repository
+   ```sh
+    git clone 
+   ```
+9. Install project dependencies with the code 
+   ```sh
+   npm install
+   ```
+10. Run the code
+   ```sh
+   code .
+   ```
+11. Open your Expo Go app
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
