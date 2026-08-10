@@ -74,6 +74,7 @@ export default function MapScreen({ route, navigation }) {
   const [userAvatar, setUserAvatar] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
 
+  const [showDetailSheet, setShowDetailSheet] = useState(false); // controls the sheet only
   const [currentRegion, setCurrentRegion] = useState({
     latitude: 34.0211573,
     longitude: -118.4503864,
@@ -83,10 +84,10 @@ export default function MapScreen({ route, navigation }) {
 
   //added so HavenTools in conversationScreen can navigate to page with resoources open
   useEffect(() => {
-  if (initialFilter === "resources") {
-    setActivePill("resources");
-  }
-}, [initialFilter]);
+    if (initialFilter === "resources") {
+      setActivePill("resources");
+    }
+  }, [initialFilter]);
 
   useEffect(() => {
     loadUserProfile();
@@ -143,6 +144,7 @@ export default function MapScreen({ route, navigation }) {
     if (!resource?.location) return;
     setActivePill(null); // closes ResourcesModal
     setSelectedResource(resource);
+    setShowDetailSheet(true);
     setCurrentRegion({
       latitude: resource.location.latitude,
       longitude: resource.location.longitude,
@@ -164,6 +166,7 @@ export default function MapScreen({ route, navigation }) {
             coordinate={selectedResource.location}
             title={selectedResource.name}
             description={selectedResource.label}
+            style={{ transform: [{ scale: 1.35 }] }}
           />
         )}
       </MapView>
@@ -226,8 +229,8 @@ export default function MapScreen({ route, navigation }) {
       />
       <LocationDetailSheet
         resource={selectedResource}
-        visible={!!selectedResource}
-        onClose={() => setSelectedResource(null)}
+        visible={showDetailSheet}
+        onClose={() => setShowDetailSheet(false)}
       />
     </View>
   );

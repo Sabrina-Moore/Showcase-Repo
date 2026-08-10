@@ -14,6 +14,7 @@ import MapScreen from "../screens/MapScreen";
 import EventScreen from "../screens/EventScreen"; //New component by Sona and Christian
 import CameraScreen from "../screens/CameraScreen";
 import ConversationProfileScreen from "../screens/ConversationProfileScreen";
+import ConversationHavenProfileScreen from "../screens/ConversationHavenProfileScreen";
 import WelcomeToHavenScreen from "../screens/WelcomeToHavenScreen";
 
 const Stack = createStackNavigator();
@@ -26,7 +27,7 @@ export default function App() {
         <Stack.Screen
           name="Profile"
           component={ProfileScreen}
-          options={{ headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Camera"
@@ -87,6 +88,11 @@ export default function App() {
         <Stack.Screen
           name="ConversationProfileScreen"
           component={ConversationProfileScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ConversationHavenProfileScreen"
+          component={ConversationHavenProfileScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
