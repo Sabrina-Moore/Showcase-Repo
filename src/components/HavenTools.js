@@ -31,7 +31,7 @@ const havenPills= [
 ];
 
 
-export default function HavenTools ({onHelpPress}) {
+export default function HavenTools ({onHelpPress, onPromptSelect}) {
   console.log(Ionicons);
   console.log(Entypo);
   console.log(havenPills);
@@ -158,9 +158,13 @@ export default function HavenTools ({onHelpPress}) {
                 }
                 contentContainerStyle={styles.promptList}
                 renderItem={({ item }) => (
-                  <View style={styles.promptItem}>
+                  <TouchableOpacity style={styles.promptItem}
+                  onPress={() => {
+                    onPromptSelect?.(item.prompt_text);
+                    ptrRBSheet.current?.close();
+                  }}>
                     <Text style={styles.promptItemText}>{item?.prompt_text}</Text>
-                  </View>
+                  </TouchableOpacity>
                 )}
               />
           </View>

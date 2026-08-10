@@ -23,15 +23,12 @@ import HavenTools from "../components/HavenTools";
 
 //global colors for users
 // Color used for the current user's own messages ("ME" label + border).
-const ME_COLOR = "#FF375F";
+const ME_COLOR = "#E92754";
 // Palette used to color-code other senders (name label + left border).
 const SENDER_COLORS = [
-  "#0A84FF",
-  "#34C759",
-  "#FF9500",
-  "#AF52DE",
-  "#00C7BE",
-  "#FFD60A",
+  "#3CB2E2",
+  "#9B55A0",
+  "#03A588",
 ];
 
 function colorForSender(senderId) {
@@ -67,6 +64,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [isSending, setIsSending] = useState(false);
 
   const listRef = useRef();
+
 
   //Haven conditional Rendering logic
 //-----------------------------------------------------
@@ -106,6 +104,7 @@ export default function ConversationScreen({ route, navigation }) {
 };
 
 //onPress handler for navigation to map from Need Help button in HavenTools
+//Resources filter open on navigation
 const handleHelpPress = () => {
   navigation.navigate("Back", {
     screen: "Map",
@@ -185,7 +184,7 @@ const handleHelpPress = () => {
     const { data, error } = await supabase
       .from("messages")
       .select(
-        `message_id, conversation_id, sender_id, text, created_at,
+        `message_id, conversation_id, sender_id, text, created_at, is_prompt, 
         profiles (user_id, username, bitmoji_icon)`,
       )
       .eq("conversation_id", conversationId)
@@ -266,6 +265,22 @@ const handleHelpPress = () => {
     setIsSending(false);
   };
 
+  //send prompts in chat if "prompt" is selected
+  const sendPromptAsMessage = async (promptText, conversationId, userId) => {
+    const {data, error } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      sender_id: userId,
+      text: promptText,
+      is_prompt: "true",
+    });
+
+    if (error) {
+      console.log("Failed to send prompt:", error);
+    }
+  }
+
   //creating an array to sort the messages for rendering
   const sortedMessages = [...messages].sort(
     (a, b) => new Date(a.created_at) - new Date(b.created_at),
@@ -277,6 +292,7 @@ const handleHelpPress = () => {
     const ismMyData = item.sender_id === currentUserId;
     const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
     const senderLabel = ismMyData ? "ME" : item.profiles?.username;
+    const isPrompt = item.is_prompt === true;
 
     return (
       <View style={styles.messageWrapper}>
@@ -284,8 +300,14 @@ const handleHelpPress = () => {
           {senderLabel}
         </Text>
 
-        <View style={[styles.messageRow, { borderLeftColor: senderColor }]}>
-          <Text style={styles.messageText}>{item.text}</Text>
+        <View style={[styles.messageRow, { borderLeftColor: senderColor }, isPrompt && styles.promptMessageBubble]}>
+          {isPrompt && (
+          <View style={styles.promptBadge}>
+            <Entypo name="chat" size={12} color="#a5BEA8" />
+            <Text style={styles.promptBadgeText}>Prompt</Text>
+          </View>
+        )}
+          <Text style={isPrompt? styles.promptMessageText : styles.messageText}>{item.text}</Text>
         </View>
       </View>
     );
@@ -368,7 +390,10 @@ const handleHelpPress = () => {
         {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
         <View style={styles.inputContainer}>
-          {showPills && (<HavenTools onHelpPress={handleHelpPress} />
+          {showPills && (<HavenTools 
+          onHelpPress={handleHelpPress} 
+          onPromptSelect={(promptText) => sendPromptAsMessage(promptText, conversationId, currentUserId)}
+          />
           )}
 
           {/* Input bar */}
@@ -578,4 +603,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 8,
   },
+  //haven prompt message ui
+  promptMessageBubble: {
+  backgroundColor: "#2E5A44",
+  borderRadius: 18,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  borderWidth: 1,
+  borderColor: "#a5BEA8",
+},
+promptBadge: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 4,
+  marginBottom: 4,
+},
+promptBadgeText: {
+  fontSize: 11,
+  fontWeight: "700",
+  color: "#a5BEA8",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+},
+promptMessageText: {
+  fontSize: 15,
+  color: "#ffffff",
+  lineHeight: 20,
+},
+
 });
