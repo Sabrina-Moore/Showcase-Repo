@@ -323,15 +323,15 @@ This code relies on dynamic rendering from fetching from and inserting into supa
 <br /> 
 
 Foreign keys:
-profiles
-  - Foreign Key: user_id -> auth.users_id
-conversation_members
-  - Foreign key: conversation_id -> public.conversations.conversation_id
+- profiles
+  - - Foreign Key: user_id -> auth.users_id
+- conversation_members
+  - - Foreign key: conversation_id -> public.conversations.conversation_id
   - foreign key: user_id -> public.profiles.user_id
-messages
+- messages
   - Foreign key: conversation_id -> public.conversations.conversation_id
   - Foreign key: sender_id -> public.profiles.user_id
-prompts
+- prompts
   - prompt_id is identity (unique numbers)
 
 
