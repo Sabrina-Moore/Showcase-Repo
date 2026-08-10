@@ -319,7 +319,7 @@ This code relies on dynamic rendering from fetching from and inserting into supa
 <img width="650" height="32" alt="Screenshot 2026-08-10 at 02 27 08" src="https://github.com/user-attachments/assets/7f267b97-28b7-4ff1-a3dc-a97234d2aad7" />
 </div>
 
-<br>
+<br/>
 
 Foreign keys:
 - profiles
@@ -333,13 +333,14 @@ Foreign keys:
 - prompts
   - prompt_id is identity (unique numbers)
 
-<br>
+<br/>
+
 Most of the tables will need RLS policies:
 - Enable read access for all users: every table
 - Enable insert for users based on user_id: profiles
 - Enable insert for authenticated users only: conversations, messages
 
-<br>
+<br/>
 SQL Prompts:
 Randomize prompts (random order with unique categories, limit of 3)
 ```sql
