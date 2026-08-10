@@ -9,7 +9,7 @@
     <img src="./assets/HavenLogo2.png" alt="Logo" width="180" height="180">
   </a>
 
-<h2 align="center">Snap Haven</h2>
+<h1 align="center">Snap Haven</h1>
 
 <h3 align="center">
   A little nudge. A bigger connection.
@@ -30,8 +30,6 @@
   |                | Christopher Gonon-Maldonado      |
   |  Engineering   | Sabrina Moore and Shawn Seo      |
     
-
-
 </div>
 
 <!-- TABLE OF CONTENTS -->
