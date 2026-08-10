@@ -141,29 +141,22 @@ Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTool
 <!-- GETTING STARTED -->
 
 ## Getting Started
-This feature was designed using React Native and Expo with the IOS system in mind. 
-
+This prototype is run using React Native, Expo and Mac's Xcode simulator. The prototype has better compatibility with IOS, but works on Android. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Prerequisites
-
-To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computer. 
-
-You will also need Visual Studio Code (or another IDE application) to be able to open and run the code. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Installation
 
-To Shawn, do they need to clone our repo? How will they access the demo?
-
-1. Install the Expo app on your phone. Download here for IOS and here for Android. 
-2. Install Node.js
-3. Clone this repository
-4. Install project dependencies
-5. Run the code
-6. Open your Expo Go app
+1. Install the Expo app on your phone. Download here for IOS and here for Android.
+2. Make an Expo account. 
+3. Install Node.js
+4. Clone this repository
+5. Install project dependencies
+6. Run the code
+7. Open your Expo Go app
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -176,10 +169,10 @@ For developers, we welcome contributions.
 
 ### Prerequisites
 Before contributing, ensure you have the following installed:
-- **Node.js**
-- **Git**
-- **Expo Go**
-- **A code editor** - I recommend Visual Studio Code
+- Install **Node.js** (LTS version) on your machine.
+- Install **Git** for terminal command interactions with Github. 
+- Install **Expo Go** on your phone or Xcode on Mac.
+- Install **Visual Studio Code** or any other preferred code editor or IDE.
 
 ### Installation
 1. Check your installations
