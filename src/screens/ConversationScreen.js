@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'; //gesture-tap icon
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
 
@@ -181,7 +182,8 @@ export default function ConversationScreen({ route, navigation }) {
     const { data, error } = await supabase
       .from("messages")
       .select(
-        `message_id, conversation_id, sender_id, text, created_at, is_prompt, 
+        `message_id, conversation_id, sender_id, text, created_at, is_prompt,
+         is_nudge, is_checkin, 
         profiles (user_id, username, bitmoji_icon)`,
       )
       .eq("conversation_id", conversationId)
@@ -268,7 +270,7 @@ export default function ConversationScreen({ route, navigation }) {
       conversation_id: conversationId,
       sender_id: userId,
       text: promptText,
-      is_prompt: "true",
+      is_prompt: true,
     });
 
     if (error) {
@@ -288,6 +290,8 @@ export default function ConversationScreen({ route, navigation }) {
     const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
     const senderLabel = ismMyData ? "ME" : item.profiles?.username;
     const isPrompt = item.is_prompt === true;
+    const isCheckin = item.is_checkin === true;
+    const isNudge = item.is_nudge === true;
 
     return (
       <View style={styles.messageWrapper}>
@@ -300,6 +304,8 @@ export default function ConversationScreen({ route, navigation }) {
             styles.messageRow,
             { borderLeftColor: senderColor },
             isPrompt && styles.promptMessageBubble,
+            isCheckin && styles.checkinMessageBubble,
+            isNudge && styles.nudgeMessageBubble,
           ]}
         >
           {isPrompt && (
@@ -308,8 +314,20 @@ export default function ConversationScreen({ route, navigation }) {
               <Text style={styles.promptBadgeText}>Prompt</Text>
             </View>
           )}
+          {isCheckin && (
+            <View style={styles.checkinBadge}>
+              <MaterialCommunityIcons name="hand-wave" size={12} color="black" />
+              <Text style={styles.promptBadgeText}>Mood | Need </Text>
+            </View>
+          )}
+          {isNudge && (
+            <View style={styles.nudgeBadge}>
+              <MaterialCommunityIcons name="gesture-tap" size={12} color="black" />
+              <Text style={styles.promptBadgeText}>Nudge</Text>
+            </View>
+          )}
           <Text
-            style={isPrompt ? styles.promptMessageText : styles.messageText}
+            style={isPrompt ? styles.promptMessageText : isCheckin ? styles.checkinMessageText : isNudge ? styles.nudgeMessageText : styles.messageText}
           >
             {item.text}
           </Text>
@@ -334,18 +352,11 @@ export default function ConversationScreen({ route, navigation }) {
             <TouchableOpacity
               style={styles.profileInfoTouchable}
               onPress={() => {
-                const chatbotName =
-                  participant
-                    .filter((p) => p.user_id !== currentUserId)
-                    .map((p) => p.profiles?.username)
-                    .filter(Boolean)
-                    .join(", ") || "Best Friend";
-
                 navigation.navigate(
                   isHaven
                     ? "ConversationHavenProfileScreen"
                     : "ConversationProfileScreen",
-                  { chatbotName, conversationId },
+                  { conversationId },
                 );
               }}
             >
@@ -641,4 +652,43 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     lineHeight: 20,
   },
+  //mood need nudges
+  checkinMessageBubble: {
+  backgroundColor: "#B47100",
+  borderRadius: 18,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  borderWidth: 1,
+  borderColor: "#E2793C",
+},
+checkinBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 4,
+  },
+  checkinMessageText: {
+  fontSize: 15,
+  color: "#ffffff", 
+  fontWeight: "600",
+},
+nudgeMessageBubble: {
+  backgroundColor: "#2E5A44",
+  borderRadius: 18,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  borderWidth: 1,
+  borderColor: "#2E5A44",
+},
+nudgeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 4,
+  },
+nudgeMessageText: {
+  fontSize: 15,
+  color: "#ffffff",
+  fontWeight: "600",
+},
 });
