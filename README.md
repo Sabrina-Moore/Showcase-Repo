@@ -305,14 +305,13 @@ This code relies on dynamic rendering from fetching from and inserting into supa
 <img width="1360" height="27" alt="Screenshot 2026-08-10 at 02 28 21" src="https://github.com/user-attachments/assets/80894959-722f-416b-9480-9c56fc5d893b" />
 </a> 
 <a> conversations table
-<img width="842" height="31" alt="Screenshot 2026-08-10 at 02 24 12" src="https://github.com/user-attachments/assets/dce8abe0-53ae-435c-9585-be323e060943" />
+<img width="844" height="31" alt="Screenshot 2026-08-10 at 02 24 12" src="https://github.com/user-attachments/assets/dce8abe0-53ae-435c-9585-be323e060943" />
 </a> 
 <a>  conversation_members table
 <img width="844" height="30" alt="Screenshot 2026-08-10 at 02 26 45" src="https://github.com/user-attachments/assets/559e4f27-f8e9-43f7-bd67-5f11d1c76fbd" />
 </a> 
 <a>  prompts table
-< br/>
-<img width="622" height="32" alt="Screenshot 2026-08-10 at 02 27 08" src="https://github.com/user-attachments/assets/7f267b97-28b7-4ff1-a3dc-a97234d2aad7" />
+<img width="844" height="32" alt="Screenshot 2026-08-10 at 02 27 08" src="https://github.com/user-attachments/assets/7f267b97-28b7-4ff1-a3dc-a97234d2aad7" />
 </a> 
 
 
