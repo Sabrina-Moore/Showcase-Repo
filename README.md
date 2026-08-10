@@ -9,7 +9,7 @@
     <img src="./assets/HavenLogo2.png" alt="Logo" width="180" height="180">
   </a>
 
-<h3 align="center">Snap Haven</h3>
+<h2 align="center">Snap Haven</h2>
 
 <h3 align="center">
   A little nudge. A bigger connection.
