@@ -20,7 +20,7 @@ import { supabase } from "../../utils/hooks/supabase";
 
 import getStatusLabel from "../../utils/hooks/getStatusLabel";
 import timeAgo from "../../utils/hooks/timeAgo";
-
+import CreateChat from "../components/CreateChat";
 
 const badges = [
   {
@@ -50,6 +50,7 @@ export default function ChatScreen({ navigation }) {
   // Modal State
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
+  const [newChatSheetVisible, setNewChatSheetVisible] = useState(false);
 
   const username = selectedChat?.otherParticipant?.username || "User";
 
@@ -145,7 +146,7 @@ const havenByConversation = {};
   };
 
   const handleNewChat = (chat) => {
-    console.log("Pressed new chat");
+    setNewChatSheetVisible(true);
   };
 
 
@@ -227,6 +228,10 @@ const havenByConversation = {};
             <Ionicons name="camera-outline" size={24} color="#999" />
           </TouchableOpacity>
         )}
+      />
+      <CreateChat
+        visible={newChatSheetVisible}
+        onClose={() => setNewChatSheetVisible(false)}
       />
       {/* new chat button */}
       <Pressable
