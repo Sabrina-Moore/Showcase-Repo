@@ -300,16 +300,21 @@ This code relies on dynamic rendering from fetching from and inserting into supa
 
 
 #### Supabase Tables
-profiles: user_id, username, created_at, birthday, email, bitmoji_icon, bitmoji_pose, snap_score, school, astrology_sign, city, state
-  - user_id -> auth.users_id
-conversation_members: conversation_id, user_id, primary ID (unused but necessary)
+
+<a>
+<img width="842" height="31" alt="Screenshot 2026-08-10 at 02 24 12" src="https://github.com/user-attachments/assets/dce8abe0-53ae-435c-9585-be323e060943" />
+</a> conversations table
+
+Foreign keys:
+profiles
+  - Foreign Key: user_id -> auth.users_id
+conversation_members
   - Foreign key: conversation_id -> public.conversations.conversation_id
   - foreign key: user_id -> public.profiles.user_id
-conversations: conversation_id, created_at, is_haven, latest_message_sent 
-messages: conversation_id, text, created_at, sender_id,  message_id, is_prompt, is_nudge, is_checkin
+messages
   - Foreign key: conversation_id -> public.conversations.conversation_id
   - Foreign key: sender_id -> public.profiles.user_id
-prompts: prompt_id, prompt_text, category
+prompts
   - prompt_id is identity (unique numbers)
 
 
