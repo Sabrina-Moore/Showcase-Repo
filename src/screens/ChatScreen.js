@@ -21,6 +21,23 @@ import { supabase } from "../../utils/hooks/supabase";
 import getStatusLabel from "../../utils/hooks/getStatusLabel";
 import timeAgo from "../../utils/hooks/timeAgo";
 
+
+const badges = [
+  {
+    id: "unread", label: "Unread",
+  },
+  {
+    id: "myAI", label: "My AI",
+  },
+  {
+    id: "topics", label: "Topics",
+  },
+  {
+    id: "groups", label: "Groups",
+  },
+];
+
+
 export default function ChatScreen({ navigation }) {
   console.log("ChatScreen rendered/mounted");
 
@@ -144,6 +161,30 @@ const havenByConversation = {};
     >
       <Header title="Chat" />
 
+      {/* topics and filters in horizontal scollview */}
+      <View style={styles.badgesSection}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.badgesScrollContent}
+          >
+            {badges.map((badge) => (
+              <TouchableOpacity
+                key={badge.id}
+                style={styles.badge}
+                activeOpacity={0.75}
+              >
+              <Text style={styles.badgeLabel}>{badge.label}</Text>
+            </TouchableOpacity>
+          ))}
+            <TouchableOpacity
+                style={styles.badgeBig}
+                activeOpacity={0.75}
+              >
+              <Text style={styles.badgeLabel}>Best Friends</Text>
+            </TouchableOpacity>
+        </ScrollView>
+      </View>
       {/* renders the chat */}
       {/* navigating to conversation profile with press*/}
       {/* renders status "New Chat time" and "Sent time" */}
@@ -505,4 +546,34 @@ const styles = StyleSheet.create({
   color: "#2E5A44",
   marginTop: 2,
   },
+  //filters/topics 
+  badgesSection: {
+  paddingTop: 2,
+  paddingBottom: 6,
+  borderBottomWidth: 1,
+  borderColor: "#E5E5EA",
+  backgroundColor: "#FFFFFF",
+},
+badgesScrollContent: {
+  paddingHorizontal: 10,
+  alignItems: "center",
+},
+badge: {
+  alignItems: "center",
+  justifyContent: "center",
+  width: 60,
+  marginHorizontal: 10,
+},
+badgeBig: {
+  alignItems: "center",
+  justifyContent: "center",
+  width: 90,
+  marginHorizontal: 20,
+},
+badgeLabel: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#3A3A3C",
+  textAlign: "center",
+},
 });
