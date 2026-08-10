@@ -252,10 +252,11 @@ export default function ChatScreen({ navigation }) {
         keyExtractor={(item) => item.conversation_id.toString()}
         renderItem={({ item: chat }) => (
           <TouchableOpacity
-            style={styles.chatBorder}
+            style={[styles.chatBorder, chat.is_haven && styles.havenChatBorder]}
             onPress={() =>
               navigation.navigate("Conversation", {
                 conversationId: chat.conversation_id,
+                isHaven: chat.is_haven,
               })
             }
             onLongPress={() => handleLongPress(chat)}
@@ -448,6 +449,16 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderBottomWidth: 1,
     borderColor: "#D1D1D6",
+  },
+  havenChatBorder: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 16,
+  paddingVertical: 18,
+  borderBottomWidth: 1,
+  borderColor: "#D1D1D6",
+  backgroundColor: "#F8F3E6",
   },
   username: {
     flex: 1,
