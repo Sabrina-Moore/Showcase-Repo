@@ -15,13 +15,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'; //gesture-tap icon
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"; //gesture-tap icon, handshake icon
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
 
 import CameraScreen from "./CameraScreen"; //functionality for camera button
 import HavenTools from "../components/HavenTools";
 import MessageStatus from "../components/MessageStatus";
+import getStatusLabel from "../../utils/hooks/getStatusLabel";
+import timeAgo from "../../utils/hooks/timeAgo";
 
 //global colors for users
 // Color used for the current user's own messages ("ME" label + border).
@@ -38,12 +40,45 @@ function colorForSender(senderId) {
   return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
 }
 
+// small status pill shown under a Haven invite card once it's no longer pending
+// (or on the sender's side the whole time)
+function HavenInviteStatusPill({ status, isRecipient }) {
+  if (status === "accepted") {
+    return (
+      <View style={[styles.inviteStatusPill, styles.inviteStatusAccepted]}>
+        <Text style={styles.inviteStatusTextAccepted}>
+          {isRecipient ? "You accepted" : "Accepted"}
+        </Text>
+      </View>
+    );
+  }
+  if (status === "declined") {
+    return (
+      <View style={[styles.inviteStatusPill, styles.inviteStatusDeclined]}>
+        <Text style={styles.inviteStatusTextDeclined}>
+          {isRecipient ? "You declined" : "Declined"}
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <View style={styles.inviteStatusPill}>
+      <Text style={styles.inviteStatusTextPending}>Awaiting response...</Text>
+    </View>
+  );
+}
+
 export default function ConversationScreen({ route, navigation }) {
   const { conversationId, isHaven: HavenMode } = route.params ?? {};
   const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
 
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState([]);
+  const [conversationStatus, setConversationStatus] = useState({
+  latest_message_sent: null,
+  status_label: "",
+  time_ago: "",
+});
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null);
@@ -197,7 +232,7 @@ export default function ConversationScreen({ route, navigation }) {
       .from("messages")
       .select(
         `message_id, conversation_id, sender_id, text, created_at, is_prompt,
-         is_nudge, is_checkin, 
+         is_nudge, is_checkin, is_haven_invite, invite_status,
         profiles (user_id, username, bitmoji_icon)`,
       )
       .eq("conversation_id", conversationId)
@@ -206,13 +241,21 @@ export default function ConversationScreen({ route, navigation }) {
     if (error) {
       console.error("Error fetching chat messages:", error);
       setMessages([]);
-    } else {
-      console.log("Messages fetched:", data);
-      setMessages(data ?? []);
-    }
+    } 
 
+      setMessages(data ?? []);
+
+      const latestMessage = data?.length ? data[data.length - 1] : null;
+    
+        const withStatus = {
+            latest_message_sent: latestMessage?.created_at ?? null,
+            status_label: getStatusLabel(latestMessage, currentUserId),
+            time_ago: timeAgo(latestMessage?.created_at),
+          };
+    setConversationStatus(withStatus);
     setIsLoading(false);
   };
+
 
   useEffect(() => {
     fetchMessages();
@@ -242,6 +285,22 @@ export default function ConversationScreen({ route, navigation }) {
         },
         () => {
           fetchMessages();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => {
+          // picks up invite_status flipping from pending -> accepted/declined
+          fetchMessages();
+          // picks up is_haven flipping true the moment the other person accepts,
+          // without needing to leave and refocus this screen
+          fetchHavenStatus();
         },
       )
       .subscribe((status) => {
@@ -279,6 +338,7 @@ export default function ConversationScreen({ route, navigation }) {
   };
 
   //send prompts in chat if "prompt" is selected
+
   const sendPromptAsMessage = async (promptText, conversationId, userId) => {
     const { data, error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
@@ -289,6 +349,38 @@ export default function ConversationScreen({ route, navigation }) {
 
     if (error) {
       console.log("Failed to send prompt:", error);
+    }
+  };
+
+  //-----------------------------------
+  //responding to a Haven invite message (accept or decline)
+  const handleRespondHavenInvite = async (messageId, response) => {
+    const { error } = await supabase
+      .from("messages")
+      .update({ invite_status: response })
+      .eq("message_id", messageId);
+
+    if (error) {
+      console.error("Error responding to Haven invite:", error);
+      return;
+    }
+
+    // reflect the change immediately rather than waiting on the realtime round trip
+    fetchMessages();
+
+    if (response === "accepted") {
+      const { error: convError } = await supabase
+        .from("conversations")
+        .update({ is_haven: true })
+        .eq("conversation_id", conversationId);
+
+      if (convError) {
+        console.error("Error activating Haven:", convError);
+        return;
+      }
+
+      setIsHaven(true);
+      navigation.navigate("WelcomeToHavenScreen", { conversationId });
     }
   };
 
@@ -303,6 +395,64 @@ export default function ConversationScreen({ route, navigation }) {
     const ismMyData = item.sender_id === currentUserId;
     const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
     const senderLabel = ismMyData ? "ME" : item.profiles?.username;
+    const isHavenInvite = item.is_haven_invite === true;
+
+    // Haven invite gets its own card treatment, distinct from prompt/checkin/nudge bubbles
+    if (item.is_haven_invite) console.log("invite item:", item);
+    if (isHavenInvite) {
+      return (
+        <View style={styles.messageWrapper}>
+          <Text style={styles.inviteSystemLabel}>Haven Invite</Text>
+          <Text style={[styles.sender, { color: senderColor }]}>
+            {senderLabel}
+          </Text>
+
+          <View style={[styles.messageRow, { borderLeftColor: senderColor }]}>
+            <View style={styles.inviteCard}>
+              <View style={styles.inviteHeaderRow}>
+                <View style={styles.inviteIconWrapper}>
+                  <MaterialCommunityIcons
+                    name="handshake"
+                    size={22}
+                    color="#fff"
+                  />
+                </View>
+                <Text style={styles.inviteTitleText}>{item.text}</Text>
+              </View>
+
+              {ismMyData ? (
+                <HavenInviteStatusPill status={item.invite_status} />
+              ) : item.invite_status === "pending" ? (
+                <View style={styles.inviteActionsRow}>
+                  <TouchableOpacity
+                    style={styles.inviteAcceptButton}
+                    onPress={() =>
+                      handleRespondHavenInvite(item.message_id, "accepted")
+                    }
+                  >
+                    <Text style={styles.inviteButtonText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.inviteDeclineButton}
+                    onPress={() =>
+                      handleRespondHavenInvite(item.message_id, "declined")
+                    }
+                  >
+                    <Text style={styles.inviteButtonText}>Decline</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <HavenInviteStatusPill
+                  status={item.invite_status}
+                  isRecipient
+                />
+              )}
+            </View>
+          </View>
+        </View>
+      );
+    }
+
     const isPrompt = item.is_prompt === true;
     const isCheckin = item.is_checkin === true;
     const isNudge = item.is_nudge === true;
@@ -330,29 +480,48 @@ export default function ConversationScreen({ route, navigation }) {
           )}
           {isCheckin && (
             <View style={styles.checkinBadge}>
-              <MaterialCommunityIcons name="hand-wave" size={12} color="black" />
+              <MaterialCommunityIcons
+                name="hand-wave"
+                size={12}
+                color="black"
+              />
               <Text style={styles.promptBadgeText}>Mood | Need </Text>
             </View>
           )}
           {isNudge && (
             <View style={styles.nudgeBadge}>
-              <MaterialCommunityIcons name="gesture-tap" size={12} color="black" />
+              <MaterialCommunityIcons
+                name="gesture-tap"
+                size={12}
+                color="black"
+              />
               <Text style={styles.promptBadgeText}>Nudge</Text>
             </View>
           )}
           <Text
-            style={isPrompt ? styles.promptMessageText : isCheckin ? styles.checkinMessageText : isNudge ? styles.nudgeMessageText : styles.messageText}
+            style={
+              isPrompt
+                ? styles.promptMessageText
+                : isCheckin
+                  ? styles.checkinMessageText
+                  : isNudge
+                    ? styles.nudgeMessageText
+                    : styles.messageText
+            }
           >
             {item.text}
           </Text>
           <TouchableOpacity
-              style={styles.sendUpdateButton}
-              onPress={console.log("Pressed")}
-            >
-              {( isNudge || isCheckin) && (
-              <Text style={styles.sendUpdateText}> Respond to {otherUserUsername}'s message </Text>
-              )}
-              </TouchableOpacity>
+            style={styles.sendUpdateButton}
+            onPress={console.log("Pressed")}
+          >
+            {(isNudge || isCheckin) && (
+              <Text style={styles.sendUpdateText}>
+                {" "}
+                Respond to {otherUserUsername}'s message{" "}
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -396,6 +565,13 @@ export default function ConversationScreen({ route, navigation }) {
                     .map((p) => p.profiles?.username)
                     .join(" and ")}
                 </Text>
+                {/* messageStatus */}
+                 <MessageStatus
+                latestMessageSent={conversationStatus.latest_message_sent}
+                statusLabel={conversationStatus.status_label}
+                timeAgo={conversationStatus.time_ago}
+                isHaven={isHaven}
+              />
               </View>
             </TouchableOpacity>
           </View>
@@ -688,65 +864,153 @@ const styles = StyleSheet.create({
   },
   promptMessageText: {
     fontSize: 15,
-  color: "#F8F3E6", 
-  fontWeight: "600",
+    color: "#F8F3E6",
+    fontWeight: "600",
   },
-checkinMessageText: {
-  fontSize: 15,
-  color: "#F8F3E6", 
-  fontWeight: "600",
+  checkinMessageText: {
+    fontSize: 15,
+    color: "#F8F3E6",
+    fontWeight: "600",
   },
   //mood need nudges
   checkinMessageBubble: {
-  backgroundColor: "#B47100",
-  borderRadius: 18,
-  paddingHorizontal: 14,
-  paddingVertical: 10,
-  borderWidth: 1,
-  borderColor: "#E2793C",
-},
-checkinBadge: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 4,
-  marginBottom: 4,
-},
-checkinBadgeText: {
-  fontSize: 11,
-  fontWeight: "700",
-  color: "#a5BEA8",
-  textTransform: "uppercase",
-  letterSpacing: 0.5,
-},
-checkinMessageText: {
-  fontSize: 15,
-  color: "#F8F3E6", 
-  fontWeight: "600",
-},
-nudgeMessageBubble: {
-  backgroundColor: "#2E5A44",
-  borderRadius: 18,
-  paddingHorizontal: 14,
-  paddingVertical: 10,
-  borderWidth: 1,
-  borderColor: "#2E5A44",
-},
-nudgeBadge: {
+    backgroundColor: "#B47100",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "#E2793C",
+  },
+  checkinBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
     marginBottom: 4,
   },
-nudgeBadgeText: {
-  fontSize: 11,
-  fontWeight: "700",
-  color: "#a5BEA8",
-  textTransform: "uppercase",
-  letterSpacing: 0.5,
-},
-nudgeMessageText: {
-  fontSize: 15,
-  color: "#F8F3E6",
-  fontWeight: "600",
-},
+  checkinBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#a5BEA8",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  checkinMessageText: {
+    fontSize: 15,
+    color: "#F8F3E6",
+    fontWeight: "600",
+  },
+  nudgeMessageBubble: {
+    backgroundColor: "#2E5A44",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "#2E5A44",
+  },
+  nudgeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 4,
+  },
+  nudgeBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#a5BEA8",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  nudgeMessageText: {
+    fontSize: 15,
+    color: "#F8F3E6",
+    fontWeight: "600",
+  },
+  //haven invite card
+  inviteSystemLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#8E8E93",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  inviteCard: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
+    borderRadius: 16,
+    padding: 14,
+    maxWidth: 300,
+  },
+  inviteHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  inviteIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#2E5A44",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  inviteTitleText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0b0b0b",
+    lineHeight: 21,
+  },
+  inviteActionsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  inviteAcceptButton: {
+    flex: 1,
+    backgroundColor: "#2E5A44",
+    borderRadius: 20,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  inviteDeclineButton: {
+    flex: 1,
+    backgroundColor: "#B47100",
+    borderRadius: 20,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  inviteButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  inviteStatusPill: {
+    backgroundColor: "#F1F1F5",
+    borderRadius: 20,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  inviteStatusAccepted: {
+    backgroundColor: "#DDEFE1",
+  },
+  inviteStatusDeclined: {
+    backgroundColor: "#F7E4D3",
+  },
+  inviteStatusTextPending: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#8E8E93",
+  },
+  inviteStatusTextAccepted: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#2E5A44",
+  },
+  inviteStatusTextDeclined: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#B47100",
+  },
 });
