@@ -6,7 +6,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Sabrina-Moore/Showcase-Repo">
-    <img src="./SEA Logomark.png" alt="Logo" width="180" height="80">
+    <img src="./assets/HavenLogo.png" alt="Logo" width="180" height="180">
   </a>
   <a href="https://www.figma.com/board/KxkdqMKt3bYeVN9LcZAUV0/2026-Snap-Academies-Showcase-%F0%9F%91%BB?node-id=0-1&p=f&t=PlwTk6WeaVxioo26-0">
 
@@ -25,12 +25,7 @@
   |                | Christopher Gonon-Maldonado      |
   |  Engineering   | Sabrina Moore and Shawn Seo      |
     
-  <p>
-    <a href="https://github.com/Sabrina-Moore/Showcase-Repo"><strong>Explore the Docs Link»</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/Sabrina-Moore/Showcase-Repo">View Demo Link</a>
-  </p>
+
 
 </div>
 
@@ -51,6 +46,13 @@
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
+      </ul>
+      <a href="#getting-started">Contributions</a>
+      <ul>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#how-to-make-code-changes-in-the-terminal">Making Changes</a></li>
+        <li><a href="#file-structure">File Structure </a></li>
+        <li><a href="#creating-your-own-supabase">Creating a Supabase Project</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -86,43 +88,44 @@ Video of feature here.
 
 ## Features
 
-Haven lives on the conversation screen and conversation profile screen. 
+Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTools.js. 
 
-**Chat home screen**
+**Chat screen**
 - New UI to represent chats with this feature
-- can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
+- Can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
 - Notification system called "nudges" to remind users to reach out when the conversation becomes inactive for too long
 - Nudges can also remind the user of important milestones and birthdays
 
 
 **conversation creation screen**
-- new tab for starting a Haven conversation
+- New tab for starting a Haven conversation
 
 
 **Conversation screen**
 - Users needing help to bridge a lull in conversation can get "conversation starting" prompts
-- users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
+- Users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
 - Instead of the regular buttons next to the text input and keyboard, a plus button opens access to the main Haven Toolkit
 
 
 **Conversation group profile screen**
-- users can customize settings for all added features (changing interval if applicable, or turning off and on features)
-- users can choose to update their "life banner" status to be seen by their Haven connections
-- users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
+- Users can customize settings for all added features (changing interval if applicable, or turning off and on features)
+- Users can choose to update their "life banner" status to be seen by their Haven connections
+- Users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
 
 
 **Supabase**
-- tracks dummy data for user profiles
-- tracks messages and conversations for realtime chatting
-- Tracks conversation inactivty for notification system
-- prompts table for users to get conversation starting prompts
+- Tracks dummy data for user profiles
+- Tracks messages and conversations for realtime chatting
+- Tracks conversation inactivity for notification system
+- Prompts table for users to get conversation starting prompts
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## Tech Stack
 
-- <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native** 
-- <a href="https://expo.dev/"><img src="assets/techStackLogos/expogo2.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v51.0.0)
+- <a href="https://reactnative.dev/"> <img src="https://skillicons.dev/icons?i=react" alt="Tech Stack Icons" width="20" height="20" align="center" alt="React Native" /></a> **React Native**
+- <a href="https://expo.dev/"><img src="assets/techStackLogos/expogo5.png" width="20" height="20" align="center" alt="Expo Go" /></a> **Expo Go** (v54.0.36)
 - <a href="https://supabase.com/"><img src="assets/techStackLogos/supabase-logo1.svg" height="22" align="center" alt="Supabase" /></a> **Supabase** for database storage
 - <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="20" height="20" align="center" alt="JavaScript" /></a> **JavaScript**
 - 💾 **AsyncStorage** for local session storage
@@ -135,58 +138,93 @@ Haven lives on the conversation screen and conversation profile screen.
 This feature was designed using React Native and Expo with the IOS system in mind. 
 
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Prerequisites
 
 To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computer. 
 
-
-### Running code on Expo
-
-### Installation
-
-Install the Expo app on your phone. Download here for IOS and here for Android. 
-Open the Expo app. 
+You will also need Visual Studio Code (or another IDE application) to be able to open and run the code. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- USAGE EXAMPLES -->
+### Installation
+
+To Shawn, do they need to clone our repo? How will they access the demo?
+
+1. Install the Expo app on your phone. Download here for IOS and here for Android. 
+2. Install Node.js
+3. Clone this repository
+4. Install project dependencies
+5. Run the code
+6. Open your Expo Go app
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## Contributions
+For developers, we welcome contributions. 
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Prerequisites
+Before contributing, ensure you have the following installed:
+- **Node.js**
+- **Git**
+- **Expo Go**
+- **A code editor** - I recommend Visual Studio Code
 
 ### Installation
-
-1. Clone the repo
+1. Check your installations
+  ```bash
+  node --version
+  npm --version
+  git --version
+  ```
+2. Fork the repository 
+   - Navigate to Showcase-Repo and click the fork button on the top right corner
+   - Choose your own account as the owner
+3. Create a local folder on your computer and navigate inside that folder in your terminal
+4. Clone your forked repository inside that folder
    ```sh
-   git clone https://github.com/github_username/repo_name.git
+   git clone https://github.com/github_username/repo_name.git .
    ```
-2. Install NPM packages
+5. Install NPM packages/dependencies
    ```sh
    npm install
    ```
-3. Enter your API in `config.js`
-   ```js
-   const API_KEY = "ENTER YOUR API";
-   ```
-4. Change git remote url to avoid accidental pushes to base project
+6. Open the code
    ```sh
-   git remote set-url origin github_username/repo_name
-   git remote -v # confirm the changes
+   code .
    ```
+5. Create your own .env.local file to connect to a supabase project
+   ```js
+   EXPO_PUBLIC_SUPABASE_URL=
+   EXPO_PUBLIC_SUPABASE_KEY=
+   ```
+7. Run the code with Expo Go (or another simulator)
+   ```sh
+   npx expo start
+   ```
+9. Test the code and make changes
 
-### How to add code changes through the terminal
 
-To run terminal commands, you will need ...
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### How to make code changes in the terminal
 
 1. Create and switch to a new development branch
-2. Make your code changes on that branch
-3. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
    ```sh
-   git add "fileName" "otherFileName"
+   git switch -c branch-name
    ```
-5. Make your commit
+3. Make your code changes on that branch
+   - Save the individual file 
+5. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
+   ```sh
+   git add fileName otherFileName
+   ```
+6. Make your commit
    ```sh
    git commit -m "Description of code"
    ```
@@ -194,7 +232,7 @@ To run terminal commands, you will need ...
    ```sh
    git push origin branch-name
    ```
-9. On this repository, navigate to the "Pull Requests" tab and create a new request. Be aware that you will need to change the branches to be set to your own forked repo not the original forked repo called "Starter26" or this repo called "Showcase-Repo."
+9. On this repository, navigate to the "Pull Requests" tab inside your github repo and create a new request. Be aware that you will need to change the branches to be set to your own forked repo not the original forked repo called "Starter26" or this repo called "Showcase-Repo."
 10. After your Pull request is made and has been merged, you will then want to update your local main. Move from your development branch to main.
     ```sh
     git switch main
@@ -208,11 +246,36 @@ To run terminal commands, you will need ...
     git switch branch-name
     git merge main
     ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### File Structure
+
+- assets - Images, Icons, and fonts
+- src/components - Reusable components that provide UI or logic for a specific purpose
+- src/navigation - Controls navigation between screens and bottom tabs
+- src/screens - Individual screens/pages of the application
+- utils/hooks - Custom hooks and Helper code that facilitate supabase functionality and session authentication
+- .env.local - Local file that holds supabase connection keys/credentials: ignored by Git for privacy
+- App.js - Builds top-level component and initiates root navigation (renders loading screen)
+- Index.js - Application start point that sets App.js as root component
+- package.json - project dependencies
+- README.md - Project documentation
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Creating your own Supabase
 
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Helpful Resources
+If you're new to React Native or Expo, these resources can help:
+- Expo Documentation
+- React Native Documentation
+- Expo Go Documentation
+- React Navigation Documentation
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
 
@@ -228,31 +291,9 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com
 
-## Let's talk resouces
+## Let's talk resources
 
 🌳 If you want to implement a table or bold text or even bullet point, use this [documentation](https://google.github.io/styleguide/docguide/style.html) to get the right syntax. Don't be afraid to look at other templates and pull the parts and types you like! Sharing is caring.
 
