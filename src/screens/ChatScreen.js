@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   width: 56,
   height: 56,
   borderRadius: 28,
-  backgroundColor: "#FFDE59", // Snapchat-yellow, swap for your own accent
+  backgroundColor: "#FFFC00", // Snapchat-yellow
   justifyContent: "center",
   alignItems: "center",
   shadowColor: "#000",

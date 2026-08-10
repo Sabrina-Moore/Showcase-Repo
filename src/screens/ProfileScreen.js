@@ -163,23 +163,28 @@ export default function ProfileScreen() {
             <EvilIcons name="gear" size={24} color="white" />
           </Pressable>
         </View>
-      </View>
-  
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 54 }}>
-        {/* bitomji image */}
-        <View style={styles.bitmojiContainer}>
-          {userBitmoji ? (
-          <Image
-            source={{ uri: userBitmoji }}
-            style={styles.avatar}
-          />
-          ) : null}
-          <View style={styles.bitmojiNameOverlay}>
-              <Text style={styles.bitmojiNameText}>{username}</Text>
-            </View>
-        </View>
 
+        {/* bitmoji background */}
+      </View>
+        <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "flex-start" }}
+          >
+            {userBitmoji ? (
+        <Image
+          source={{ uri: userBitmoji }}
+          style={styles.avatar}
+          resizeMode="contain"
+        />
+        ) : null}
+        <View style={styles.bitmojiNameOverlay}>
+            <Text style={styles.bitmojiNameText}>{username}</Text>
+          </View>
+        </View>
+  
       {/* content below bitmoji image */}
+      <ScrollView style={styles.scrollContent}
+      contentContainerStyle={styles.scrollContentContainer}
+      showsVerticalScrollIndicator={false}>
         <View style={styles.contentContainer}>
           <View style={styles.topHandle} />
 
@@ -272,11 +277,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffff",
   },
    scrollContent: {
-    flexGrow: 1,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    },
+  scrollContentContainer: {
+    paddingTop: 300,
   },
+
   container: {
-    width: "100%",
-    flexDirection: 1,
+    minHeight: 800,
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 16,
   },
     headerOverlay: {
     position: "absolute",
@@ -313,9 +329,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   avatar: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+    width: "200%",
+    height: undefined,
+    aspectRatio: 1,
   },
     bitmojiNameText: {
     fontSize: 30,
