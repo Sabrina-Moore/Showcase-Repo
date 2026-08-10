@@ -33,6 +33,12 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
       title: "What’s Haven?",
       description:
         "Haven gives users a space where the number one value is building connections.",
+      details: [
+        "Haven is a conversational toolkit to improve your chat experience without changing your habits.",
+        "This feature can be added to any chat if you want more tools to help engage with friends and maintain their relationships.",
+        "Customize your experience with these tools inside the conversation profile.",
+        "Look for the new + button next to the keyboard to interact with the tools.",
+      ],
     },
     {
       id: "2",
@@ -40,6 +46,13 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
       title: "Exclusive Tools for Connection",
       description:
         "Send mood stickers, plant virtual trees, play educational games, etc.",
+      details: [
+        "Lull in activity? Nudge them and send a notification to their phone letting them know you need them.",
+        "Need help starting a conversation? Use a Prompt to get things started.",
+        "Passively let Haven-mates know how you're feeling and how they can help you by setting the Mood and Need.",
+        "Looking for external aid? Use the Need Help button to find local resources in the Snap Map.",
+        "And more!",
+      ],
     },
     {
       id: "3",
@@ -47,6 +60,10 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
       title: "Privacy Matters",
       description:
         "Send mood stickers, plant virtual trees, play educational games, etc.",
+      details: [
+        "These chats can be personal, so once you've made your Haven, any additional friends added to the Haven will need to be approved by existing members.",
+        "If you're 17+ and need more privacy, set a passcode for your chat so only Haven members can access.",
+      ],
     },
   ];
 
@@ -55,25 +72,25 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  //navigating to conversation screen and toggling conditional rendering
+  // navigating to conversation screen and toggling conditional rendering
   const handleGetStarted = async () => {
-  if (!conversationId) {
-    navigation.goBack();
-    return;
-  }
+    if (!conversationId) {
+      navigation.goBack();
+      return;
+    }
 
-  const { error } = await supabase
-    .from("conversations")
-    .update({ is_haven: true })
-    .eq("conversation_id", conversationId);
+    const { error } = await supabase
+      .from("conversations")
+      .update({ is_haven: true })
+      .eq("conversation_id", conversationId);
 
-  if (error) {
-    console.error("Error creating Haven:", error);
-    return;
-  }
+    if (error) {
+      console.error("Error creating Haven:", error);
+      return;
+    }
 
-  navigation.navigate("Conversation", {conversationId, isHaven: true});
-};
+    navigation.navigate("Conversation", { conversationId, isHaven: true });
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -111,37 +128,53 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
           {features.map((item, index) => {
             const isExpanded = expandedId === item.id;
             return (
-              <TouchableOpacity
+              <View
                 key={item.id}
                 style={[
-                  styles.featureRow,
+                  styles.featureItemContainer,
                   index < features.length - 1 && styles.borderBottom,
                 ]}
-                onPress={() => toggleExpand(item.id)}
-                activeOpacity={0.7}
               >
-                <View style={styles.iconContainer}>
-                  <Ionicons name={item.icon} size={26} color="#000000" />
-                </View>
+                <TouchableOpacity
+                  style={styles.featureRow}
+                  onPress={() => toggleExpand(item.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.iconContainer}>
+                    <Ionicons name={item.icon} size={26} color="#000000" />
+                  </View>
 
-                <View style={styles.featureTextContainer}>
-                  <Text style={styles.featureTitle}>{item.title}</Text>
-                  <Text
-                    style={styles.featureDescription}
-                    numberOfLines={isExpanded ? undefined : 2}
-                  >
-                    {item.description}
-                  </Text>
-                </View>
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>{item.title}</Text>
+                    <Text
+                      style={styles.featureDescription}
+                      numberOfLines={isExpanded ? undefined : 2}
+                    >
+                      {item.description}
+                    </Text>
+                  </View>
 
-                <View style={styles.chevronContainer}>
-                  <Ionicons
-                    name={isExpanded ? "chevron-up" : "chevron-down"}
-                    size={20}
-                    color="#555555"
-                  />
-                </View>
-              </TouchableOpacity>
+                  <View style={styles.chevronContainer}>
+                    <Ionicons
+                      name={isExpanded ? "chevron-up" : "chevron-down"}
+                      size={20}
+                      color="#555555"
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {/* Expanded Bullet Points */}
+                {isExpanded && (
+                  <View style={styles.detailsContainer}>
+                    {item.details.map((detail, dIndex) => (
+                      <View key={dIndex} style={styles.bulletRow}>
+                        <Text style={styles.bulletPoint}>•</Text>
+                        <Text style={styles.bulletText}>{detail}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
             );
           })}
         </View>
@@ -210,14 +243,16 @@ const styles = StyleSheet.create({
   featuresList: {
     width: "100%",
   },
-  featureRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+  featureItemContainer: {
     paddingVertical: 16,
   },
   borderBottom: {
     borderBottomWidth: 1,
     borderBottomColor: "#ECEAE3",
+  },
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
   iconContainer: {
     marginRight: 16,
@@ -241,6 +276,26 @@ const styles = StyleSheet.create({
   chevronContainer: {
     paddingTop: 4,
   },
+  detailsContainer: {
+    marginTop: 14,
+    paddingLeft: 42, // Aligns nicely with the text box above
+  },
+  bulletRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  bulletPoint: {
+    fontSize: 14,
+    color: "#555555",
+    marginRight: 8,
+    fontWeight: "bold",
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#444444",
+    lineHeight: 20,
+  },
   buttonContainer: {
     position: "absolute",
     bottom: 0,
@@ -248,6 +303,7 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
     paddingTop: 12,
+    backgroundColor: "#FFFEF9",
   },
   getStartedButton: {
     backgroundColor: "#2C523C",

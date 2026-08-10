@@ -95,6 +95,22 @@ export default function ConversationScreen({ route, navigation }) {
 
   const listRef = useRef();
 
+  // kept in sync so the realtime callback below (created once per conversationId)
+  // always sees the latest currentUserId instead of a stale closure value
+  const currentUserIdRef = useRef(currentUserId);
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId;
+  }, [currentUserId]);
+
+  // prevents navigating to WelcomeToHavenScreen more than once per conversation visit
+  const hasNavigatedToWelcomeRef = useRef(false);
+  const wasHavenRef = useRef(HavenMode ?? false);
+
+  useEffect(() => {
+    hasNavigatedToWelcomeRef.current = false;
+    wasHavenRef.current = HavenMode ?? false;
+  }, [conversationId]);
+
   //Haven conditional Rendering logic
   //-----------------------------------------------------
   //check if isHaven is true in supabase
@@ -114,7 +130,18 @@ export default function ConversationScreen({ route, navigation }) {
       console.error("Error fetching Haven status:", error);
       return;
     }
-    setIsHaven(data?.is_haven === true);
+    const nowHaven = data?.is_haven === true;
+    const justBecameHaven = nowHaven && !wasHavenRef.current;
+    wasHavenRef.current = nowHaven;
+    setIsHaven(nowHaven);
+
+    // Fires for whichever screen (sender or recipient) sees the flip first —
+    // covers the sender's side, which only learns Haven turned on via
+    // focus/realtime rather than tapping Accept directly.
+    if (justBecameHaven && !hasNavigatedToWelcomeRef.current) {
+      hasNavigatedToWelcomeRef.current = true;
+      navigation.navigate("WelcomeToHavenScreen", { conversationId });
+    }
   };
 
   //checks if isHaven is on when returning to conversation from another screen
@@ -355,13 +382,25 @@ export default function ConversationScreen({ route, navigation }) {
   //-----------------------------------
   //responding to a Haven invite message (accept or decline)
   const handleRespondHavenInvite = async (messageId, response) => {
-    const { error } = await supabase
+    // .select() here so we get the updated row back — without it, an update
+    // silently blocked by RLS returns no error and no data, which is easy
+    // to miss (that's exactly what was happening before the UPDATE policy
+    // existed on the messages table).
+    const { data, error } = await supabase
       .from("messages")
       .update({ invite_status: response })
-      .eq("message_id", messageId);
+      .eq("message_id", messageId)
+      .select();
 
     if (error) {
       console.error("Error responding to Haven invite:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(
+        "Haven invite update affected 0 rows — check that an UPDATE RLS policy exists on messages for conversation members.",
+      );
       return;
     }
 
@@ -379,6 +418,8 @@ export default function ConversationScreen({ route, navigation }) {
         return;
       }
 
+      wasHavenRef.current = true;
+      hasNavigatedToWelcomeRef.current = true;
       setIsHaven(true);
       navigation.navigate("WelcomeToHavenScreen", { conversationId });
     }
@@ -395,10 +436,10 @@ export default function ConversationScreen({ route, navigation }) {
     const ismMyData = item.sender_id === currentUserId;
     const senderColor = ismMyData ? ME_COLOR : colorForSender(item.sender_id);
     const senderLabel = ismMyData ? "ME" : item.profiles?.username;
+
     const isHavenInvite = item.is_haven_invite === true;
 
     // Haven invite gets its own card treatment, distinct from prompt/checkin/nudge bubbles
-    if (item.is_haven_invite) console.log("invite item:", item);
     if (isHavenInvite) {
       return (
         <View style={styles.messageWrapper}>
@@ -411,10 +452,9 @@ export default function ConversationScreen({ route, navigation }) {
             <View style={styles.inviteCard}>
               <View style={styles.inviteHeaderRow}>
                 <View style={styles.inviteIconWrapper}>
-                  <MaterialCommunityIcons
-                    name="handshake"
-                    size={22}
-                    color="#fff"
+                  <Image
+                    source={require("../../assets/HavenLogoTransparent.png")}
+                    style={{ width: 22, height: 22, resizeMode: "contain" }}
                   />
                 </View>
                 <Text style={styles.inviteTitleText}>{item.text}</Text>
@@ -949,10 +989,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   inviteIconWrapper: {
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     borderRadius: 12,
-    backgroundColor: "#2E5A44",
+    backgroundColor: "#fefefe",
     justifyContent: "center",
     alignItems: "center",
   },
