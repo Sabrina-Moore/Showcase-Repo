@@ -207,7 +207,10 @@ Before contributing, ensure you have the following installed:
    ```sh
    npx expo start
    ```
-9. Test the code and make changes
+9. After running the above command:
+- The development server will start, and you'll see a QR code inside the terminal window.
+- Scan that QR code to open the app on the device. On Android, use the Expo Go > Scan QR code option. On iOS, use the default camera app.
+10. Test the code and make changes
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -271,10 +274,9 @@ Before contributing, ensure you have the following installed:
 
 ### Helpful Resources
 If you're new to React Native or Expo, these resources can help:
-- Expo Documentation
-- React Native Documentation
-- Expo Go Documentation
-- React Navigation Documentation
+- [Expo Documentation](https://docs.expo.dev/tutorial/create-your-first-app/)
+- [React Native Documentation](https://reactnative.dev/docs/getting-started)
+- [React Navigation Documentation](https://reactnavigation.org/docs/getting-started)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
