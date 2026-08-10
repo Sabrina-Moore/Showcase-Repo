@@ -8,7 +8,6 @@
   <a href="https://github.com/Sabrina-Moore/Showcase-Repo">
     <img src="./assets/HavenLogo2.png" alt="Logo" width="180" height="180">
   </a>
-  <a href="https://www.figma.com/board/KxkdqMKt3bYeVN9LcZAUV0/2026-Snap-Academies-Showcase-%F0%9F%91%BB?node-id=0-1&p=f&t=PlwTk6WeaVxioo26-0">
 
 <h3 align="center">Snap Haven</h3>
 
