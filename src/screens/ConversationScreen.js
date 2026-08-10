@@ -25,11 +25,7 @@ import HavenTools from "../components/HavenTools";
 // Color used for the current user's own messages ("ME" label + border).
 const ME_COLOR = "#E92754";
 // Palette used to color-code other senders (name label + left border).
-const SENDER_COLORS = [
-  "#3CB2E2",
-  "#9B55A0",
-  "#03A588",
-];
+const SENDER_COLORS = ["#3CB2E2", "#9B55A0", "#03A588"];
 
 function colorForSender(senderId) {
   if (!senderId) return SENDER_COLORS[0];
@@ -40,9 +36,7 @@ function colorForSender(senderId) {
   return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
 }
 
-
 export default function ConversationScreen({ route, navigation }) {
-
   const { conversationId, isHaven: HavenMode } = route.params ?? {};
   const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
 
@@ -55,7 +49,6 @@ export default function ConversationScreen({ route, navigation }) {
   const [participant, setParticipant] = useState([]);
   const [participantBitmojiIcon, setParticipantBitmojiIcon] = useState(null);
 
-
   const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
 
   const realtimeChannelRef = useRef(null); //so that when returnign to conversation screen, we don't have a duplicate channel
@@ -65,56 +58,55 @@ export default function ConversationScreen({ route, navigation }) {
 
   const listRef = useRef();
 
-
   //Haven conditional Rendering logic
-//-----------------------------------------------------
+  //-----------------------------------------------------
   //check if isHaven is true in supabase
-  const fetchHavenStatus = async () => { 
+  const fetchHavenStatus = async () => {
     if (!conversationId) {
-      setIsHaven(false); 
+      setIsHaven(false);
       return;
     }
-    
-    const { data, error } = await supabase 
-    .from("conversations") 
-    .select("is_haven") 
-    .eq("conversation_id", conversationId) 
-    .single(); 
 
-    if (error) { 
-      console.error("Error fetching Haven status:", error); 
-      return; 
-    } 
-      setIsHaven(data?.is_haven === true); 
-    };
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("is_haven")
+      .eq("conversation_id", conversationId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching Haven status:", error);
+      return;
+    }
+    setIsHaven(data?.is_haven === true);
+  };
 
   //checks if isHaven is on when returning to conversation from another screen
   useFocusEffect(
-  React.useCallback(() => {
-    fetchHavenStatus();
-  }, [conversationId])
-);
-//feature pills persist for only a few seconds and goes away
+    React.useCallback(() => {
+      fetchHavenStatus();
+    }, [conversationId]),
+  );
+  //feature pills persist for only a few seconds and goes away
   const handleTogglePills = () => {
-  setShowPills(true);
+    setShowPills(true);
 
-  setTimeout(() => {
-    setShowPills(false);
-  }, 8000);
-};
+    setTimeout(() => {
+      setShowPills(false);
+    }, 8000);
+  };
 
-//onPress handler for navigation to map from Need Help button in HavenTools
-//Resources filter open on navigation
-const handleHelpPress = () => {
-  navigation.navigate("Back", {
-    screen: "Map",
-    params: {
-      initialFilter: "resources",
-    },
-  });
-};
+  //onPress handler for navigation to map from Need Help button in HavenTools
+  //Resources filter open on navigation
+  const handleHelpPress = () => {
+    navigation.navigate("Back", {
+      screen: "Map",
+      params: {
+        initialFilter: "resources",
+      },
+    });
+  };
 
- //--------------------------------------
+  //--------------------------------------
   //Adding realtime chat functionality
   //--------------------------------------
   // uses hook to store currently logged in users info to database
@@ -132,9 +124,11 @@ const handleHelpPress = () => {
       if (uid) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select(`
+          .select(
+            `
             user_id,
-            bitmoji_icon`)
+            bitmoji_icon`,
+          )
           .eq("user_id", uid)
           .single();
         if (profile?.username) setCurrentUserName(profile.username); //set state for username
@@ -148,14 +142,15 @@ const handleHelpPress = () => {
   //------------------------------
   //fetch conversation participants from conversation_members
   const fetchParticipants = async () => {
+    if (!conversationId || !currentUserId) return;
 
-    if(!conversationId || !currentUserId) return;
-    
     const { data, error } = await supabase
       .from("conversation_members")
-      .select(`
+      .select(
+        `
         user_id,
-        profiles (username, bitmoji_icon)`,)
+        profiles (username, bitmoji_icon)`,
+      )
       .eq("conversation_id", conversationId);
 
     if (error) {
@@ -165,8 +160,10 @@ const handleHelpPress = () => {
     console.log("Participants:", JSON.stringify(data, null, 2));
     console.log("Participant error:", error);
     setParticipant(data ?? []);
-    const otherParticipant = (data ?? []).find((p) => p.user_id !== currentUserId); //first participant besides currentUser
-  setParticipantBitmojiIcon(otherParticipant?.profiles?.bitmoji_icon ?? null);
+    const otherParticipant = (data ?? []).find(
+      (p) => p.user_id !== currentUserId,
+    ); //first participant besides currentUser
+    setParticipantBitmojiIcon(otherParticipant?.profiles?.bitmoji_icon ?? null);
   };
 
   useEffect(() => {
@@ -212,10 +209,10 @@ const handleHelpPress = () => {
     if (!conversationId) return;
 
     if (realtimeChannelRef.current) {
-    supabase.removeChannel(realtimeChannelRef.current);
-    realtimeChannelRef.current = null;
-  }
-  const channelName = `conversation-${conversationId}-${Date.now()}`; //more specific channel names to prevent duplicates
+      supabase.removeChannel(realtimeChannelRef.current);
+      realtimeChannelRef.current = null;
+    }
+    const channelName = `conversation-${conversationId}-${Date.now()}`; //more specific channel names to prevent duplicates
 
     const channel = supabase
       .channel(channelName)
@@ -232,15 +229,15 @@ const handleHelpPress = () => {
         },
       )
       .subscribe((status) => {
-      console.log("Realtime status:", status);
-    });
+        console.log("Realtime status:", status);
+      });
 
     realtimeChannelRef.current = channel;
 
     return () => {
       if (realtimeChannelRef.current === channel) {
-      supabase.removeChannel(channel);
-      realtimeChannelRef.current = null;
+        supabase.removeChannel(channel);
+        realtimeChannelRef.current = null;
       }
     };
   }, [conversationId]);
@@ -267,9 +264,7 @@ const handleHelpPress = () => {
 
   //send prompts in chat if "prompt" is selected
   const sendPromptAsMessage = async (promptText, conversationId, userId) => {
-    const {data, error } = await supabase
-    .from("messages")
-    .insert({
+    const { data, error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
       sender_id: userId,
       text: promptText,
@@ -279,7 +274,7 @@ const handleHelpPress = () => {
     if (error) {
       console.log("Failed to send prompt:", error);
     }
-  }
+  };
 
   //creating an array to sort the messages for rendering
   const sortedMessages = [...messages].sort(
@@ -300,20 +295,29 @@ const handleHelpPress = () => {
           {senderLabel}
         </Text>
 
-        <View style={[styles.messageRow, { borderLeftColor: senderColor }, isPrompt && styles.promptMessageBubble]}>
+        <View
+          style={[
+            styles.messageRow,
+            { borderLeftColor: senderColor },
+            isPrompt && styles.promptMessageBubble,
+          ]}
+        >
           {isPrompt && (
-          <View style={styles.promptBadge}>
-            <Entypo name="chat" size={12} color="#a5BEA8" />
-            <Text style={styles.promptBadgeText}>Prompt</Text>
-          </View>
-        )}
-          <Text style={isPrompt? styles.promptMessageText : styles.messageText}>{item.text}</Text>
+            <View style={styles.promptBadge}>
+              <Entypo name="chat" size={12} color="#a5BEA8" />
+              <Text style={styles.promptBadgeText}>Prompt</Text>
+            </View>
+          )}
+          <Text
+            style={isPrompt ? styles.promptMessageText : styles.messageText}
+          >
+            {item.text}
+          </Text>
         </View>
       </View>
     );
   }
   //-----------------------------------
-
 
   return (
     <View style={styles.container}>
@@ -329,21 +333,25 @@ const handleHelpPress = () => {
 
             <TouchableOpacity
               style={styles.profileInfoTouchable}
-              onPress={() =>
-                navigation.navigate("ConversationProfileScreen", {
-                  chatbotName:
-                    participant
-                    // remove filter if we want to include currentUser
-                      .filter((p) => p.user_id !== currentUserId)
-                      .map((p) => p.profiles?.username)
-                      .filter(Boolean)
-                      .join(", ") || "Best Friend",
-                })
-              }
+              onPress={() => {
+                const chatbotName =
+                  participant
+                    .filter((p) => p.user_id !== currentUserId)
+                    .map((p) => p.profiles?.username)
+                    .filter(Boolean)
+                    .join(", ") || "Best Friend";
+
+                navigation.navigate(
+                  isHaven
+                    ? "ConversationHavenProfileScreen"
+                    : "ConversationProfileScreen",
+                  { chatbotName, conversationId },
+                );
+              }}
             >
               {/* dynamic avatar rendering */}
               <Image
-              source={ {uri: participantBitmojiIcon}}
+                source={{ uri: participantBitmojiIcon }}
                 style={styles.avatarImage}
               />
 
@@ -390,11 +398,14 @@ const handleHelpPress = () => {
         />
         {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
-        <View style={[styles.inputContainer, {paddingBottom: insets.bottom}]}>
-          {showPills && (<HavenTools 
-          onHelpPress={handleHelpPress} 
-          onPromptSelect={(promptText) => sendPromptAsMessage(promptText, conversationId, currentUserId)}
-          />
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
+          {showPills && (
+            <HavenTools
+              onHelpPress={handleHelpPress}
+              onPromptSelect={(promptText) =>
+                sendPromptAsMessage(promptText, conversationId, currentUserId)
+              }
+            />
           )}
 
           {/* Input bar */}
@@ -434,18 +445,18 @@ const handleHelpPress = () => {
             </TouchableOpacity>
             <TouchableOpacity>
               {/* show haven plus symbol or regular game controller, setShowPills*/}
-             {isHaven ? (
-              <Pressable
-                style={styles.iconCircle}
-                onPress={handleTogglePills}
-              >
-                <AntDesign name="plus-circle" size={28} />
-              </Pressable>
-             ) : (
-              <Pressable style={styles.iconCircle}>
-              <Ionicons name="game-controller-outline" size={28} />
-            </Pressable>
-             )}
+              {isHaven ? (
+                <Pressable
+                  style={styles.iconCircle}
+                  onPress={handleTogglePills}
+                >
+                  <AntDesign name="plus-circle" size={28} />
+                </Pressable>
+              ) : (
+                <Pressable style={styles.iconCircle}>
+                  <Ionicons name="game-controller-outline" size={28} />
+                </Pressable>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -593,7 +604,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   //haven coloring
-   havenPill: {
+  havenPill: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
@@ -605,30 +616,29 @@ const styles = StyleSheet.create({
   },
   //haven prompt message ui
   promptMessageBubble: {
-  backgroundColor: "#2E5A44",
-  borderRadius: 18,
-  paddingHorizontal: 14,
-  paddingVertical: 10,
-  borderWidth: 1,
-  borderColor: "#a5BEA8",
-},
-promptBadge: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 4,
-  marginBottom: 4,
-},
-promptBadgeText: {
-  fontSize: 11,
-  fontWeight: "700",
-  color: "#a5BEA8",
-  textTransform: "uppercase",
-  letterSpacing: 0.5,
-},
-promptMessageText: {
-  fontSize: 15,
-  color: "#ffffff",
-  lineHeight: 20,
-},
-
+    backgroundColor: "#2E5A44",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "#a5BEA8",
+  },
+  promptBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 4,
+  },
+  promptBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#a5BEA8",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  promptMessageText: {
+    fontSize: 15,
+    color: "#ffffff",
+    lineHeight: 20,
+  },
 });

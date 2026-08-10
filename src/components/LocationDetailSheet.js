@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Modal,
   View,
@@ -7,14 +7,100 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
+  Animated,
+  PanResponder,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const POPULAR_TIMES = [20, 25, 35, 55, 70, 60, 45, 50, 65, 40, 25, 15];
 
+// ---- bottom sheet sizing / snap points ----
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const FULL_SHEET_HEIGHT = SCREEN_HEIGHT * 0.82;
+const PEEK_SHEET_HEIGHT = 230; // just the pinned header is visible
+const SNAP_FULL = 0;
+const SNAP_PEEK = FULL_SHEET_HEIGHT - PEEK_SHEET_HEIGHT;
+const SNAP_CLOSED = FULL_SHEET_HEIGHT;
+const SNAP_POSITIONS = [SNAP_FULL, SNAP_PEEK, SNAP_CLOSED];
+const CLOSED_INDEX = SNAP_POSITIONS.length - 1;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
 export default function LocationDetailSheet({ resource, visible, onClose }) {
   const [selectedDay, setSelectedDay] = useState("Fri");
+
+  const translateY = useRef(new Animated.Value(SNAP_FULL)).current;
+  const snapIndexRef = useRef(0); // 0 = full, 1 = peek, 2 = closed
+  const dragStartValue = useRef(0);
+
+  // keep the latest onClose without recreating the PanResponder
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // reset to full every time the sheet is (re)opened
+  useEffect(() => {
+    if (visible) {
+      translateY.setValue(SNAP_FULL);
+      snapIndexRef.current = 0;
+    }
+  }, [visible, resource]);
+
+  const snapTo = (index) => {
+    snapIndexRef.current = index;
+    Animated.spring(translateY, {
+      toValue: SNAP_POSITIONS[index],
+      useNativeDriver: true,
+      bounciness: 4,
+      speed: 14,
+    }).start(() => {
+      if (index === CLOSED_INDEX) {
+        onCloseRef.current?.();
+      }
+    });
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dy) > 4,
+      onPanResponderGrant: () => {
+        dragStartValue.current = SNAP_POSITIONS[snapIndexRef.current];
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const next = clamp(
+          dragStartValue.current + gestureState.dy,
+          SNAP_FULL,
+          SNAP_CLOSED,
+        );
+        translateY.setValue(next);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const released = clamp(
+          dragStartValue.current + gestureState.dy,
+          SNAP_FULL,
+          SNAP_CLOSED,
+        );
+        // bias toward the direction of the flick
+        const projected = released + gestureState.vy * 60;
+
+        let closestIndex = 0;
+        let minDist = Infinity;
+        SNAP_POSITIONS.forEach((pos, idx) => {
+          const dist = Math.abs(pos - projected);
+          if (dist < minDist) {
+            minDist = dist;
+            closestIndex = idx;
+          }
+        });
+        snapTo(closestIndex);
+      },
+    }),
+  ).current;
 
   if (!resource || !resource.details) return null;
   const d = resource.details;
@@ -24,14 +110,20 @@ export default function LocationDetailSheet({ resource, visible, onClose }) {
       visible={visible}
       animationType="slide"
       transparent
-      onRequestClose={onClose}
+      onRequestClose={() => snapTo(CLOSED_INDEX)}
     >
       <View style={styles.backdrop} pointerEvents="box-none">
-        <View style={styles.sheet}>
-          <View style={styles.dragHandle} />
+        <Animated.View
+          style={[
+            styles.sheet,
+            { height: FULL_SHEET_HEIGHT, transform: [{ translateY }] },
+          ]}
+        >
+          {/* Pinned drag area: handle + header. Not inside the ScrollView
+              so the gesture never fights with scrolling the content below. */}
+          <View {...panResponder.panHandlers}>
+            <View style={styles.dragHandle} />
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <View style={styles.avatarRing}>
@@ -51,11 +143,16 @@ export default function LocationDetailSheet({ resource, visible, onClose }) {
                   </View>
                 </View>
               </View>
-              <Pressable style={styles.closeButton} onPress={onClose}>
+              <Pressable
+                style={styles.closeButton}
+                onPress={() => snapTo(CLOSED_INDEX)}
+              >
                 <Ionicons name="close" size={18} color="#1a1a1a" />
               </Pressable>
             </View>
+          </View>
 
+          <ScrollView showsVerticalScrollIndicator={false}>
             {/* Tags */}
             <ScrollView
               horizontal
@@ -169,7 +266,7 @@ export default function LocationDetailSheet({ resource, visible, onClose }) {
 
             <View style={{ height: 24 }} />
           </ScrollView>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -201,7 +298,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingTop: 10,
     paddingHorizontal: 16,
-    height: "82%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.15,
@@ -220,6 +316,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+    paddingBottom: 12,
   },
   headerLeft: {
     flexDirection: "row",

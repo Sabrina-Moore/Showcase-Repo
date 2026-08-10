@@ -4,54 +4,53 @@ import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../utils/hooks/supabase";
 
+const DEFAULT_AVATAR = require("../../assets/snapchat/personalBitmoji.png");
+
 export default function MapHeader({
   cityName = "Santa Monica",
   temperature = "76 °F",
-}) 
-{
-
-   const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null); //sets current user bitmoji
+}) {
+  const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null); //sets current user bitmoji
   const [currentUserId, setCurrentUserId] = useState(null);
-  
-    //fetching user bitmoji
-    useEffect(() => {
-        const fetchAvatar = async () => {
-          const { data, error } = await supabase.auth.getUser(); //requests authentication data
-          if (error) {
-            console.error(error);
-            return;
-          }
-          const uid = data?.user?.id ?? null; //extracts the users id or null
-          setCurrentUserId(uid);
-          console.log("Inside data fetch for current user");
-    
-          if (uid) {
-            const { data: profile, error } = await supabase
-              .from("profiles")
-              .select("bitmoji_icon")
-              .eq("user_id", uid) //searching for avatars based on user_id
-              .single();
-            if (profile?.bitmoji_icon) setCurrentUserBitmojiIcon(profile.bitmoji_icon);
-  
-            console.log("BITMOJI VALUE:", profile?.bitmoji_icon);
-            console.log("uid:", uid);
-            console.log("profile:", profile);
-            console.log("error:", error);
-          }
-        };
-        fetchAvatar();
-      }, []);
-  
+
+  //fetching user bitmoji
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      const { data, error } = await supabase.auth.getUser(); //requests authentication data
+      if (error) {
+        console.error(error);
+        return;
+      }
+      const uid = data?.user?.id ?? null; //extracts the users id or null
+      setCurrentUserId(uid);
+      console.log("Inside data fetch for current user");
+
+      if (uid) {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("bitmoji_icon")
+          .eq("user_id", uid) //searching for avatars based on user_id
+          .single();
+        if (profile?.bitmoji_icon)
+          setCurrentUserBitmojiIcon(profile.bitmoji_icon);
+      }
+    };
+    fetchAvatar();
+  }, []);
+
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.rightHeaderGroup}>
         <View style={styles.avatarContainer}>
-          <Image
-            style={styles.avatarImage}
-            source={{uri: currentUserBitmojiIcon}}
-          />
+          {currentUserBitmojiIcon ? (
+            <Image
+              style={styles.avatarImage}
+              source={{ uri: currentUserBitmojiIcon }}
+            />
+          ) : (
+            <Image style={styles.avatarImage} source={DEFAULT_AVATAR} />
+          )}
         </View>
-
         <View style={styles.infoContainer}>
           <Text style={styles.cityName}>{cityName}</Text>
           <View style={styles.weatherRow}>

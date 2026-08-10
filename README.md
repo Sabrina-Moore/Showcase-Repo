@@ -12,6 +12,12 @@
 
 <h3 align="center">Snap Haven</h3>
 
+<h3 align="center">
+  A little nudge. A bigger connection.
+</h3>
+
+<br />
+
  <p align="center">
     React Native feature for Snapchat
     <br />
@@ -72,11 +78,11 @@ As part of the Snap Academy, an educational program for community college studen
 
 Foster Youth on average will be placed in three different homes before reaching 18. Each time they move, they start from scratch with their support system. A new home, new guardians, maybe even new friends if they move to a different school zone. From a study by Portland State University that interviewed foster youth in California, they identified “times of transition as disruptive to the stability and longevity of relationships.” 
 
-And when someone doesn’t have these networks, everything including social skills, job security, and housing stability is impacted. We found when researching nonprofits that specialize in providing services to this group that they are shifting their strategies to developing and maintaining support systems to build relational permanence. Having more robust social ties with peers, friends, and trusted adults leads to multidimensional support in the form of emotional, tangible, and informational support. 
+And when someone doesn’t have these networks, **everything** including social skills, job security, and housing stability is impacted. We found when researching nonprofits that specialize in providing services to this group that they are shifting their strategies to developing and maintaining support systems to build relational permanence. Having more robust social ties with peers, friends, and trusted adults leads to multidimensional support in the form of emotional, tangible, and informational support. 
 
-So we thought, how might we help foster youth meaningfully connect to people and resources while experiencing a broken support system to deepen already existing connections?
+So we thought, how might we **help** foster youth meaningfully connect to people and resources while experiencing a broken support system to deepen already existing connections?
 
-That’s where our feature comes in, Haven, a new addition to the chat tab. It’s a toolkit that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits.
+That’s where our feature comes in, **Haven**, a new addition to the chat tab. It’s a **toolkit** that can be added to any chat for any user that needs additional support for facilitating conversation to nurture already existing connections with friends or trusted adults. This feature is optional and customizable, so users can integrate as much as they want into their chats, or remove anything that they find disruptive to their habits.
 
 Video of feature here. 
 
@@ -135,29 +141,22 @@ Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTool
 <!-- GETTING STARTED -->
 
 ## Getting Started
-This feature was designed using React Native and Expo with the IOS system in mind. 
-
+This prototype is run using React Native, Expo and Mac's Xcode simulator. The prototype has better compatibility with IOS, but works on Android. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Prerequisites
-
-To run this react native code, you will need to use the Expo Go app on your phone or a simulator like Xcode on mac computer. 
-
-You will also need Visual Studio Code (or another IDE application) to be able to open and run the code. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Installation
 
-To Shawn, do they need to clone our repo? How will they access the demo?
-
-1. Install the Expo app on your phone. Download here for IOS and here for Android. 
-2. Install Node.js
-3. Clone this repository
-4. Install project dependencies
-5. Run the code
-6. Open your Expo Go app
+1. Install the Expo app on your phone. Download here for IOS and here for Android.
+2. Make an Expo account. 
+3. Install Node.js
+4. Clone this repository
+5. Install project dependencies
+6. Run the code
+7. Open your Expo Go app
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -170,10 +169,10 @@ For developers, we welcome contributions.
 
 ### Prerequisites
 Before contributing, ensure you have the following installed:
-- **Node.js**
-- **Git**
-- **Expo Go**
-- **A code editor** - I recommend Visual Studio Code
+- Install **Node.js** (LTS version) on your machine.
+- Install **Git** for terminal command interactions with Github. 
+- Install **Expo Go** on your phone or Xcode on Mac.
+- Install **Visual Studio Code** or any other preferred code editor or IDE.
 
 ### Installation
 1. Check your installations
@@ -185,6 +184,7 @@ Before contributing, ensure you have the following installed:
 2. Fork the repository 
    - Navigate to Showcase-Repo and click the fork button on the top right corner
    - Choose your own account as the owner
+<br />
 3. Create a local folder on your computer and navigate inside that folder in your terminal
 4. Clone your forked repository inside that folder
    ```sh
@@ -219,7 +219,8 @@ Before contributing, ensure you have the following installed:
    git switch -c branch-name
    ```
 3. Make your code changes on that branch
-   - Save the individual file 
+   - Save the individual file
+<br />
 5. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
    ```sh
    git add fileName otherFileName
