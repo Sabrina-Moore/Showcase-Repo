@@ -265,6 +265,76 @@ Before contributing, ensure you have the following installed:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Creating your own Supabase
+This code relies on dynamic rendering from fetching from and inserting into supabase tables. 
+1. Create a supabase account
+2. Create a new project
+   - Link to your github repository
+   - Name your project
+   - Create a database password
+3. Connect to your project ("connect" button near the top)
+   - Framework = Expo React Native
+   - Run npm installation inside terminal
+   - create .env.local file if you haven't already and add supabase_url and supabase_key
+   - Ensure that gitignore properly lists .env.local
+5. Create tables
+
+
+#### Supabase Tables
+profiles: user_id, username, created_at, birthday, email, bitmoji_icon, bitmoji_pose, snap_score, school, astrology_sign, city, state
+  - user_id -> auth.users_id
+conversation_members: conversation_id, user_id, primary ID (unused but necessary)
+  - Foreign key: conversation_id -> public.conversations.conversation_id
+  - foreign key: user_id -> public.profiles.user_id
+conversations: conversation_id, created_at, is_haven, latest_message_sent 
+messages: conversation_id, text, created_at, sender_id,  message_id, is_prompt, is_nudge, is_checkin
+  - Foreign key: conversation_id -> public.conversations.conversation_id
+  - Foreign key: sender_id -> public.profiles.user_id
+prompts: prompt_id, prompt_text, category
+  - prompt_id is identity (unique numbers)
+
+
+Most of the tables will need RLS policies:
+- Enable read access for all users: every table
+- Enable insert for users based on user_id: profiles
+- Enable insert for authenticated users only: conversations, messages
+
+SQL Prompts:
+Randomize prompts (random order with unique categories, limit of 3)
+```sh
+DROP FUNCTION IF EXISTS get_random_prompts();
+DROP FUNCTION IF EXISTS get_random_prompts(integer);
+DROP FUNCTION IF EXISTS get_random_unique_category_prompts();
+
+create function get_random_prompts()
+returns setof prompts
+language sql
+as $$
+ select distinct on (category) *
+  from (
+    select *
+    from prompts
+    order by random()
+  ) sub
+  limit 3;
+$$;
+```
+Allow user_id to be in multiple conversations
+```sh
+ALTER TABLE public.conversation_members
+DROP CONSTRAINT conversation_members_pkey;
+
+ALTER TABLE public.conversation_members
+ADD CONSTRAINT conversation_members_pkey
+PRIMARY KEY (user_id, conversation_id);
+```
+Members can update their conversations
+```sh
+create policy "Members can update their conversations"
+on conversations for update
+using (auth.uid() in (
+  select user_id from conversation_members where conversation_id = conversations.conversation_id
+));
+```
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
