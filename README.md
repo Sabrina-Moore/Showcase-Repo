@@ -5,7 +5,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/Sabrina-Moore/Showcase-Repo">
+  <a>
     <img src="./assets/HavenLogo2.png" alt="Logo" width="180" height="180">
   </a>
 
