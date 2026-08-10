@@ -48,14 +48,14 @@
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#running-the-app">Running the App</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#getting-started">Getting Started</a></li>
       </ul>
       <a href="#getting-started">Contributions</a>
       <ul>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#getting-started">Getting Started</a></li>
         <li><a href="#how-to-make-code-changes-in-the-terminal">Making Changes</a></li>
         <li><a href="#file-structure">File Structure </a></li>
         <li><a href="#creating-your-own-supabase">Creating a Supabase Project</a></li>
@@ -94,22 +94,13 @@ Video of feature here.
 
 ## Features
 
-Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTools.js. 
-
-**Chat screen**
 - New UI to represent chats with this feature
-- Can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
-
-**conversation creation screen**
-- New tab for starting a Haven conversation
-
-**Conversation screen**
+- Can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom) or enter from "New Chat" button
 - Users needing help to bridge a lull in conversation can get "conversation starting" prompts
 - Instead of the regular game button next to the text input and keyboard, a plus button opens access to the main Haven toolkit
-
-**Conversation group profile screen**
 - Users can send "nudges" to their Haven conversation to check-in, send a reminder about an anniversary, and more. 
 - Users can choose to update their mood + need status to be sent to their Haven conversation
+
 
 **Stretch Milestones**
 - "Nudges" expanded to remind users to reach out when the conversation becomes inactive for too long (based on lastest message timer)
@@ -139,16 +130,16 @@ Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTool
 
 <!-- GETTING STARTED -->
 
-## Getting Started
+## Running the App
 This prototype is run using React Native, Expo and Mac's Xcode simulator. The prototype has better compatibility with IOS, but works on Android. 
 
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Installation
+### Getting Started
 
-1. Install the Expo app on your phone. Download here for IOS and here for Android.
+1. Install the ]Expo app](https://expo.dev/go) on your IPhone or Android. 
 2. Make an Expo account. 
 3. Install Node.js
 4. Clone this repository
@@ -159,9 +150,13 @@ This prototype is run using React Native, Expo and Mac's Xcode simulator. The pr
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
 ## Contributions
-For developers, we welcome contributions. 
+Contributors are welcome! If you'd like to improve the problem, fix a bug, add a feature, or anything else you can think of, we'd love your input. 
+
+Before getting started:
+Read through the code carefully as well as any open issues and pull requests. Make your pull requests detailed and specific - don't commit a lot of changes and push them all together as it makes reading and debugging more difficult. Please include screenshots or screen recordings in your pull requests and issues. 
+
+Thanks for your help and we appreciate your interest in our feature!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -172,7 +167,7 @@ Before contributing, ensure you have the following installed:
 - Install **Expo Go** on your phone or Xcode on Mac.
 - Install **Visual Studio Code** or any other preferred code editor or IDE.
 
-### Installation
+### Getting Started
 1. Check your installations
   ```bash
   node --version
