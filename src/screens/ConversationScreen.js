@@ -49,7 +49,7 @@ export default function ConversationScreen({ route, navigation }) {
 
   const [participant, setParticipant] = useState([]);
   const [participantBitmojiIcon, setParticipantBitmojiIcon] = useState(null);
-
+  const [otherUserUsername, setOtherUserUsername] = useState(null);
   const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
 
   const realtimeChannelRef = useRef(null); //so that when returnign to conversation screen, we don't have a duplicate channel
@@ -165,6 +165,7 @@ export default function ConversationScreen({ route, navigation }) {
       (p) => p.user_id !== currentUserId,
     ); //first participant besides currentUser
     setParticipantBitmojiIcon(otherParticipant?.profiles?.bitmoji_icon ?? null);
+    setOtherUserUsername(otherParticipant?.profiles?.username ?? null);
   };
 
   useEffect(() => {
@@ -331,6 +332,14 @@ export default function ConversationScreen({ route, navigation }) {
           >
             {item.text}
           </Text>
+          <TouchableOpacity
+              style={styles.sendUpdateButton}
+              onPress={console.log("Pressed")}
+            >
+              {( isNudge || isCheckin) && (
+              <Text style={styles.sendUpdateText}> Respond to {otherUserUsername}'s message </Text>
+              )}
+              </TouchableOpacity>
         </View>
       </View>
     );
@@ -610,6 +619,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  sendUpdateButton: {
+    marginTop: 10,
+    width: "75%",
+    borderRadius: 30,
+    backgroundColor: "#F8F3E6",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  sendUpdateText: {
+    fontSize: 14,
+    lineHeight: 24,
+    color: "#808080",
+  },
   profileInfoTouchable: {
     flexDirection: "row",
     alignItems: "center",
@@ -649,8 +672,13 @@ const styles = StyleSheet.create({
   },
   promptMessageText: {
     fontSize: 15,
-    color: "#ffffff",
-    lineHeight: 20,
+  color: "#F8F3E6", 
+  fontWeight: "600",
+  },
+checkinMessageText: {
+  fontSize: 15,
+  color: "#F8F3E6", 
+  fontWeight: "600",
   },
   //mood need nudges
   checkinMessageBubble: {
@@ -662,14 +690,21 @@ const styles = StyleSheet.create({
   borderColor: "#E2793C",
 },
 checkinBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginBottom: 4,
-  },
-  checkinMessageText: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 4,
+  marginBottom: 4,
+},
+checkinBadgeText: {
+  fontSize: 11,
+  fontWeight: "700",
+  color: "#a5BEA8",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+},
+checkinMessageText: {
   fontSize: 15,
-  color: "#ffffff", 
+  color: "#F8F3E6", 
   fontWeight: "600",
 },
 nudgeMessageBubble: {
@@ -686,9 +721,16 @@ nudgeBadge: {
     gap: 4,
     marginBottom: 4,
   },
+nudgeBadgeText: {
+  fontSize: 11,
+  fontWeight: "700",
+  color: "#a5BEA8",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+},
 nudgeMessageText: {
   fontSize: 15,
-  color: "#ffffff",
+  color: "#F8F3E6",
   fontWeight: "600",
 },
 });
