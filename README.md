@@ -291,9 +291,9 @@ git merge main
 This code relies on dynamic rendering from fetching from and inserting into supabase tables. 
 1. Create a supabase account
 2. Create a new project
-   - Link to your github repository
-   - Name your project
-   - Create a database password
+   * Link to your github repository
+   * Name your project
+   * Create a database password
 3. Connect to your project ("connect" button near the top)
    - Framework = Expo React Native
    - Run npm installation inside terminal
