@@ -139,7 +139,7 @@ This prototype is run using React Native, Expo and Mac's Xcode simulator. The pr
 
 ### Getting Started
 
-1. Install the ]Expo app](https://expo.dev/go) on your IPhone or Android. 
+1. Install the [Expo app](https://expo.dev/go) on your IPhone or Android. 
 2. Make an Expo account. 
 3. Install Node.js
 4. Clone this repository
@@ -154,7 +154,9 @@ This prototype is run using React Native, Expo and Mac's Xcode simulator. The pr
 Contributors are welcome! If you'd like to improve the problem, fix a bug, add a feature, or anything else you can think of, we'd love your input. 
 
 Before getting started:
-Read through the code carefully as well as any open issues and pull requests. Make your pull requests detailed and specific - don't commit a lot of changes and push them all together as it makes reading and debugging more difficult. Please include screenshots or screen recordings in your pull requests and issues. 
+1. Read through the code carefully as well as any open issues and pull requests.
+2. Make your pull requests detailed and specific - don't commit a lot of changes and push them all together as it makes reading and debugging more difficult.
+3. Please include screenshots or screen recordings in your pull requests and issues. 
 
 Thanks for your help and we appreciate your interest in our feature!
 
