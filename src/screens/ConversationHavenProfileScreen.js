@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image,
   ScrollView,
@@ -13,18 +13,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-// import { supabase } from "../../utils/hooks/supabase"; // uncomment once you wire up persistence
+import { supabase } from "../../utils/hooks/supabase"; 
+import { ProfileTags } from "../components/ProfileTags";
 
 const { width } = Dimensions.get("window");
 
-// ---- placeholder data, swap for real fields from `participant` / `profiles` ----
-const HAVEN_INFO = {
-  dateAdded: "Dec 28",
-  snapscore: "35,506",
-  zodiac: "Cancer",
-  zodiacEmoji: "♏",
-  username: "place holder",
-};
 
 const NUDGE_CATEGORIES = [
   "Check-in",
@@ -118,9 +111,15 @@ function SelectField({
 
 export default function ConversationHavenProfileScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
-  const { chatbotName, conversationId } = route?.params ?? {};
-  const displayName = chatbotName || "Best Friend";
+  const { conversationId, isHaven: HavenMode } = route.params ?? {};
 
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [otherUserId, setOtherUserId] = useState(null);
+  const [userBitmoji, setUserBitmoji] = useState(null);
+  const [otherUsername, setOtherUsername] = useState("");
+
+
+  //nudges and mood notifications
   const [nudgeCategory, setNudgeCategory] = useState(null);
   const [nudgeText, setNudgeText] = useState("");
   const [mood, setMood] = useState(null);
@@ -131,27 +130,90 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
   const toggleField = (field) =>
     setOpenField((cur) => (cur === field ? null : field));
 
+//fetch current user id
+useEffect(() => {
+  const fetchCurrentUser = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error("Error fetching current user:", error);
+      return;
+    }
+
+    setCurrentUserId(data?.user?.id ?? null);
+  };
+  fetchCurrentUser();
+}, []);
+
+
+//fetch other Participant profile from profiles (profile tags)
+  useEffect(() => {
+    const fetchOtherUser= async () => {
+      if(!conversationId || !currentUserId) return;
+
+        const { data, error } = await supabase
+          .from("conversation_members")
+          .select (`user_id, profiles (username)`)
+          .eq("conversation_id", conversationId)
+          .neq("user_id", currentUserId)
+          .single();
+
+
+        if(error){
+          console.log("other participant fetch error:", error);
+          return;
+        }
+        setOtherUserId(data?.user_id ?? null);
+        setOtherUsername(data?.profiles?.username ?? null);
+    };
+    fetchOtherUser();
+  }, [conversationId, currentUserId]);
+
   const handleSendUpdate = async () => {
-    if (!nudgeCategory || !nudgeText.trim()) return;
-    // TODO: persist to supabase, e.g. an insert into a `nudges` table
-    // await supabase.from("nudges").insert({
-    //   conversation_id: conversationId,
-    //   category: nudgeCategory,
-    //   text: nudgeText.trim(),
-    // });
+    if (!nudgeCategory || !nudgeText.trim() || !currentUserId || !conversationId) return;
+
+    const  { error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+        sender_id: currentUserId,
+        text: nudgeText.trim(),
+        is_prompt: false,
+        is_nudge: true,
+        is_checkin: false,
+    })
+      if (error) {
+        console.log("Failed to send prompt:", error);
+      }
+
     setNudgeText("");
+    setNudgeCategory(null);
   };
 
+  const handleSendMoodNeed = async () => {
+    if ( !mood || !need || !currentUserId || !conversationId) return;
+
+    const  { error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+        sender_id: currentUserId,
+        text: `Feeling ${mood} and need to be ${need.toLowerCase()}`,
+        is_prompt: false,
+        is_nudge: false,
+        is_checkin: true,
+    })
+      if (error) {
+        console.log("Failed to send mood/need:", error);
+      }
+  };
+
+
+  //leaving as they are so that the user can still make selections
   const handleSelectMood = (value) => {
     setMood(value);
     setOpenField(null);
-    // TODO: persist mood, e.g. update a `haven_status` row for this conversation/user
+
   };
 
   const handleSelectNeed = (value) => {
     setNeed(value);
     setOpenField(null);
-    // TODO: persist need, same idea as mood
   };
 
   const handleFindResources = () => {
@@ -167,6 +229,7 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* header */}
       <View
         style={[styles.headerOverlay, { paddingTop: insets.top + 6 }]}
         pointerEvents="box-none"
@@ -192,13 +255,17 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
       </View>
 
       <View
-        style={{ flex: 1, alignItems: "center", justifyContent: "flex-start" }}
+        style={styles.bitmojiContainer}
       >
+        {/* background bitmoji */}
         <Image
           source={require("../../assets/conversationProfilePic/bestFriend.png")}
-          style={{ width: "150%", height: undefined, aspectRatio: 1 }}
+          style={styles.bitmojiImage}
           resizeMode="contain"
         />
+         <View style={styles.bitmojiNameOverlay}>
+          <Text style={styles.bitmojiNameText}>{otherUsername}</Text>
+        </View>
       </View>
 
       <ScrollView
@@ -220,8 +287,7 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
               <View style={styles.presenceDot} />
             </View>
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.nameTextDark}>{displayName}</Text>
-              <Text style={styles.usernameTextDark}>{HAVEN_INFO.username}</Text>
+              <Text style={styles.nameTextDark}>{otherUsername}</Text>
             </View>
           </View>
 
@@ -232,19 +298,8 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
             style={styles.pillsRow}
             contentContainerStyle={{ gap: 8 }}
           >
-            <View style={styles.pill}>
-              <Ionicons name="location" size={13} color="#FF5A5F" />
-              <Text style={styles.pillText}>{HAVEN_INFO.dateAdded}</Text>
-              <Ionicons name="chevron-forward" size={12} color="#8E8E93" />
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillEmoji}>👻</Text>
-              <Text style={styles.pillText}>{HAVEN_INFO.snapscore}</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillEmoji}>{HAVEN_INFO.zodiacEmoji}</Text>
-              <Text style={styles.pillText}>{HAVEN_INFO.zodiac}</Text>
-            </View>
+            <ProfileTags userId={otherUserId}/>
+
             {mood && (
               <View style={[styles.pill, styles.moodPill]}>
                 <Text style={[styles.pillText, { color: MOOD_ACCENT }]}>
@@ -362,6 +417,12 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
                 />
               </View>
             </View>
+             <TouchableOpacity
+                style={styles.sendUpdateButton}
+                onPress={handleSendMoodNeed}
+              >
+                <Text style={styles.sendUpdateText}>Send Update</Text>
+              </TouchableOpacity>
           </View>
 
           {/* Links */}
@@ -740,5 +801,32 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 15,
     fontWeight: "700",
+  },
+  bitmojiContainer: {
+  width: "100%",
+  aspectRatio: 1,
+  position: "relative",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  },
+
+  bitmojiImage: {
+  width: "150%",
+  height: undefined,
+  aspectRatio: 1,
+  },
+  bitmojiNameOverlay: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 0,
+  },
+    bitmojiNameText: {
+    fontSize: 30,
+    fontWeight: "500",
+    color: "#FFFFFF",
+    textShadowColor: "rgba(0,0,0,0.4)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 });

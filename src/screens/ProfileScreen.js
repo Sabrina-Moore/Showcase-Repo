@@ -8,6 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { ProfileTags } from "../components/ProfileTags";
 
 // hardcoded fake story
 const storyItems = [
@@ -57,7 +58,7 @@ export default function ProfileScreen() {
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userBitmoji, setUserBitmoji] = useState(null);
-  const [username, setUsername] = useState("");
+  const [otherUsername, setOtherUsername] = useState("");
   const [email, setEmail] = useState(null);
   const [snapScore, setSnapScore] = useState(null);
   const [userBirthday, setUserBirthday] = useState(null);
@@ -98,7 +99,7 @@ export default function ProfileScreen() {
           if(profile){
             setUserBitmoji(profile.bitmoji_pose);
             setEmail(profile.email);
-            setUsername(profile.username);
+            setOtherUsername(profile.username);
             setSnapScore(profile.snap_score);
             setUserBirthday(profile.birthday);
             setAstrologySign(profile.astrology_sign);
@@ -166,18 +167,16 @@ export default function ProfileScreen() {
 
         {/* bitmoji background */}
       </View>
-        <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "flex-start" }}
-          >
-            {userBitmoji ? (
-        <Image
-          source={{ uri: userBitmoji }}
-          style={styles.avatar}
-          resizeMode="contain"
-        />
-        ) : null}
-        <View style={styles.bitmojiNameOverlay}>
-            <Text style={styles.bitmojiNameText}>{username}</Text>
+        <View style={styles.bitmojiContainer} >
+          {userBitmoji ? (
+          <Image
+            source={{ uri: userBitmoji }}
+            style={styles.avatar}
+            resizeMode="contain"
+          />
+          ) : null}
+          <View style={styles.bitmojiNameOverlay}>
+            <Text style={styles.bitmojiNameText}>{otherUsername}</Text>
           </View>
         </View>
   
@@ -188,41 +187,9 @@ export default function ProfileScreen() {
         <View style={styles.contentContainer}>
           <View style={styles.topHandle} />
 
-            {/* Profile information tags*/}
-          <View style={styles.tagRow}>
-            {userBirthday ? (
-              <View style={styles.tag}>
-                <Ionicons name="balloon" size={16} color="red" />
-                <Text style={styles.tagText}> {userBirthday}</Text>
-              </View>
-            ) : null}
-            {astrologySign ? (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{astrologySign}</Text>
-              </View>
-            ) : null}
-            {city && state ? (
-              <View style={styles.tag}>
-                <Ionicons name="location-outline" size={14} color="#555" />
-                <Text style={styles.tagText}>
-                  {" "}
-                  {city}, {state}
-                </Text>
-              </View>
-            ) : null}
-             {school ? (
-              <View style={styles.tag}>
-                <Ionicons name="school-outline" size={14} color="#555" />
-                <Text style={styles.tagText}> {school}</Text>
-              </View>
-            ) : null}
- 
-            {snapScore != null ? (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>🔥 {snapScore}</Text>
-              </View>
-            ) : null}
-        </View> 
+            {/* Profile information tags from ProfileTags.js*/}
+          <ProfileTags userId={currentUserId} />
+          
             {/* gold feature card */}
         <Pressable style={styles.goldFeatureCard}>
             <View style={styles.goldFeatureImage} />
@@ -284,7 +251,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     },
   scrollContentContainer: {
-    paddingTop: 300,
+    paddingTop: 400,
   },
 
   container: {
@@ -320,13 +287,14 @@ const styles = StyleSheet.create({
   bitmojiContainer: {
     width: "100%",
     height: 420,
+    position: "relative",
+  alignItems: "center",
   },
    bitmojiNameOverlay: {
     position: "absolute",
-    bottom: 16,
     left: 16,
     right: 16,
-    marginBottom: 20,
+    bottom: 70,
   },
   avatar: {
     width: "200%",

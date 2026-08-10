@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image,
   ScrollView,
@@ -11,17 +11,20 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { supabase } from "../../utils/hooks/supabase"; 
+import { ProfileTags } from "../components/ProfileTags";
 
 const { width } = Dimensions.get("window");
 
-const PROFILE_INFO = {
-  dateAdded: "Aug 4",
-  snapscore: "41,625",
-  zodiac: "Scorpio",
-  school: "PCC 2028",
-  username: "place holder",
-  locationLabel: "Mid-City, Los Angeles",
-};
+//don't need this
+// const PROFILE_INFO = {
+//   dateAdded: "Aug 4",
+//   snapscore: "41,625",
+//   zodiac: "Scorpio",
+//   school: "PCC 2028",
+//   username: "place holder",
+//   locationLabel: "Mid-City, Los Angeles",
+// };
 
 const CHARMS = [
   { id: "1", label: "It's Been\nForever", icon: "hourglass-outline" },
@@ -32,7 +35,55 @@ const CHARMS = [
 
 export default function ConversationProfileScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
-  const chatbotName = route?.params?.chatbotName || "Place Holder";
+  const conversationId = route?.params?.conversationId;
+
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [otherUserId, setOtherUserId] = useState(null);
+  const [userBitmoji, setUserBitmoji] = useState(null);
+  const [otherUsername, setOtherUsername] = useState("");
+
+
+
+  //fetch current user id
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Error fetching current user:", error);
+        return;
+      }
+  
+      setCurrentUserId(data?.user?.id ?? null);
+    };
+    fetchCurrentUser();
+  }, []);
+
+
+  //fetch other Participant profile from profiles (profile tags)
+  useEffect(() => {
+    const fetchOtherUser= async () => {
+      if(!conversationId || !currentUserId) return;
+
+        const { data, error } = await supabase
+          .from("conversation_members")
+          .select (`user_id, profiles (username)`)
+          .eq("conversation_id", conversationId)
+          .neq("user_id", currentUserId)
+          .single();
+
+
+        if(error){
+          console.log("other participant fetch error:", error);
+          return;
+        }
+        setOtherUserId(data?.user_id ?? null);
+        setOtherUsername(data?.profiles?.username ?? null);
+    };
+    fetchOtherUser();
+  }, [conversationId, currentUserId]);
+
+
+  
 
   return (
     <View style={styles.container}>
@@ -58,13 +109,16 @@ export default function ConversationProfileScreen({ route, navigation }) {
       </View>
 
       <View
-        style={{ flex: 1, alignItems: "center", justifyContent: "flex-start" }}
+        style={styles.bitmojiContainer}
       >
         <Image
           source={require("../../assets/conversationProfilePic/bestFriend.png")}
-          style={{ width: "150%", height: undefined, aspectRatio: 1 }}
+          style={styles.bitmojiImage}
           resizeMode="contain"
         />
+        <View style={styles.bitmojiNameOverlay}>
+          <Text style={styles.bitmojiNameText}>{otherUsername}</Text>
+        </View>
       </View>
 
       <ScrollView
@@ -86,10 +140,7 @@ export default function ConversationProfileScreen({ route, navigation }) {
               <View style={styles.presenceDot} />
             </View>
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.nameTextDark}>{chatbotName}</Text>
-              <Text style={styles.usernameTextDark}>
-                {PROFILE_INFO.username}
-              </Text>
+              <Text style={styles.nameTextDark}>{otherUsername}</Text>
             </View>
           </View>
 
@@ -100,24 +151,8 @@ export default function ConversationProfileScreen({ route, navigation }) {
             style={styles.pillsRow}
             contentContainerStyle={{ gap: 8 }}
           >
-            <View style={styles.pill}>
-              <Ionicons name="location" size={13} color="#FF5A5F" />
-              <Text style={styles.pillText}>{PROFILE_INFO.dateAdded}</Text>
-              <Ionicons name="chevron-forward" size={12} color="#8E8E93" />
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillEmoji}>👻</Text>
-              <Text style={styles.pillText}>{PROFILE_INFO.snapscore}</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillEmoji}>♏</Text>
-              <Text style={styles.pillText}>{PROFILE_INFO.zodiac}</Text>
-            </View>
-            <View style={styles.pill}>
-              <Ionicons name="school-outline" size={13} color="#5b5b5b" />
-              <Text style={styles.pillText}>{PROFILE_INFO.school}</Text>
-              <Ionicons name="chevron-forward" size={12} color="#8E8E93" />
-            </View>
+             <ProfileTags userId={otherUserId}/>
+             
           </ScrollView>
 
           {/* Action Row */}
@@ -163,7 +198,7 @@ export default function ConversationProfileScreen({ route, navigation }) {
                 <View style={styles.rowTextWrapper}>
                   <Text style={styles.rowTitle}>Wallpaper</Text>
                   <Text style={styles.rowSubtitle}>
-                    Both you and {chatbotName} will see the wallpaper
+                    Both you and {otherUsername} will see the wallpaper
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
@@ -460,5 +495,32 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#0A84FF",
     textAlign: "center",
+  },
+    bitmojiContainer: {
+  width: "100%",
+  aspectRatio: 1,
+  position: "relative",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  },
+
+  bitmojiImage: {
+  width: "150%",
+  height: undefined,
+  aspectRatio: 1,
+  },
+  bitmojiNameOverlay: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 0,
+  },
+    bitmojiNameText: {
+    fontSize: 30,
+    fontWeight: "500",
+    color: "#FFFFFF",
+    textShadowColor: "rgba(0,0,0,0.4)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 });
