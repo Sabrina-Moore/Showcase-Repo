@@ -173,32 +173,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
   },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-  },
   sheet: {
     backgroundColor: "#FFFFFF", 
     borderTopLeftRadius: 24, 
     borderTopRightRadius: 24, 
     paddingBottom: 30, 
     overflow: "hidden", 
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 6,
-    paddingBottom: 14,
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#F2F2F7",
-    alignItems: "center",
-    justifyContent: "center",
   },
   tabContainer: {
     flexDirection: "row",

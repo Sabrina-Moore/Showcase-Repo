@@ -115,7 +115,7 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [otherUserId, setOtherUserId] = useState(null);
-  const [userBitmoji, setUserBitmoji] = useState(null);
+  const [BitmojiPose, setBitmojiPose] = useState(null);
   const [otherUsername, setOtherUsername] = useState("");
 
 
@@ -152,7 +152,7 @@ useEffect(() => {
 
         const { data, error } = await supabase
           .from("conversation_members")
-          .select (`user_id, profiles (username)`)
+          .select (`user_id, profiles (username, bitmoji_icon, bitmoji_pose)`)
           .eq("conversation_id", conversationId)
           .neq("user_id", currentUserId)
           .single();
@@ -164,6 +164,8 @@ useEffect(() => {
         }
         setOtherUserId(data?.user_id ?? null);
         setOtherUsername(data?.profiles?.username ?? null);
+        setBitmojiPose(data?.profiles?.bitmoji_pose ?? null);
+        console.log("Botmoji pose:", profiles.bitmoji_pose);
     };
     fetchOtherUser();
   }, [conversationId, currentUserId]);
@@ -259,7 +261,7 @@ useEffect(() => {
       >
         {/* background bitmoji */}
         <Image
-          source={require("../../assets/conversationProfilePic/bestFriend.png")}
+          source={{uri: BitmojiPose}}
           style={styles.bitmojiImage}
           resizeMode="contain"
         />
@@ -280,15 +282,15 @@ useEffect(() => {
           {/* Identity Info */}
           <View style={styles.identityRow}>
             <View style={styles.avatarWrapper}>
-              <Image
+              {/* <Image
                 source={require("../../assets/conversationProfilePic/bestFriend.png")}
                 style={styles.avatarImage}
-              />
-              <View style={styles.presenceDot} />
+              /> */}
+              {/* <View style={styles.presenceDot} /> */}
             </View>
-            <View style={{ marginLeft: 12 }}>
+            {/* <View style={{ marginLeft: 12 }}>
               <Text style={styles.nameTextDark}>{otherUsername}</Text>
-            </View>
+            </View> */}
           </View>
 
           {/* Info Pills */}
@@ -546,7 +548,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     position: "absolute",
-    top: 200,
+    top: 150,
     left: 0,
     right: 0,
     bottom: 0,
@@ -802,24 +804,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
-  bitmojiContainer: {
-  width: "100%",
-  aspectRatio: 1,
-  position: "relative",
-  alignItems: "center",
-  justifyContent: "flex-start",
+    bitmojiContainer: {
+    width: "100%",
+    height: 420,
+    position: "relative",
+    alignItems: "center",
   },
-
   bitmojiImage: {
-  width: "150%",
-  height: undefined,
-  aspectRatio: 1,
+     width: "170%",
+    height: undefined,
+    aspectRatio: 1,
   },
-  bitmojiNameOverlay: {
+   bitmojiNameOverlay: {
     position: "absolute",
     left: 16,
     right: 16,
-    bottom: 0,
+    bottom: 70,
   },
     bitmojiNameText: {
     fontSize: 30,

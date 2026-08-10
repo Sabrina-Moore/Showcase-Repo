@@ -171,7 +171,7 @@ export default function ProfileScreen() {
           {userBitmoji ? (
           <Image
             source={{ uri: userBitmoji }}
-            style={styles.avatar}
+            style={styles.bitmojiImage}
             resizeMode="contain"
           />
           ) : null}
@@ -253,7 +253,6 @@ const styles = StyleSheet.create({
   scrollContentContainer: {
     paddingTop: 400,
   },
-
   container: {
     minHeight: 800,
     backgroundColor: "#ffffff",
@@ -296,8 +295,8 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 70,
   },
-  avatar: {
-    width: "200%",
+   bitmojiImage: {
+     width: "170%",
     height: undefined,
     aspectRatio: 1,
   },
