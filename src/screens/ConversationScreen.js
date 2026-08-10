@@ -100,7 +100,7 @@ export default function ConversationScreen({ route, navigation }) {
 
   setTimeout(() => {
     setShowPills(false);
-  }, 6000);
+  }, 8000);
 };
 
 //onPress handler for navigation to map from Need Help button in HavenTools
@@ -373,7 +373,7 @@ const handleHelpPress = () => {
       {/* Chat area */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <FlatList
           ref={listRef}
@@ -383,13 +383,14 @@ const handleHelpPress = () => {
             item.message_id?.toString() ?? index.toString()
           }
           contentContainerStyle={styles.messages}
+          keyboardShouldPersistTaps="always"
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
         />
         {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, {paddingBottom: insets.bottom}]}>
           {showPills && (<HavenTools 
           onHelpPress={handleHelpPress} 
           onPromptSelect={(promptText) => sendPromptAsMessage(promptText, conversationId, currentUserId)}
@@ -545,21 +546,20 @@ const styles = StyleSheet.create({
   //bottom half wrapper
   inputContainer: {
     width: "100%",
-    overflow: "visible",
-    backgroundColor: "transparent",
-    zIndex: 10,
-    elevation: 10,
+    backgroundColor: "#fff",
+    zIndex: 100,
+    elevation: 100,
+    position: "relative",
   },
   //input bar
   inputBar: {
-    height: 55,
+    minHeight: 55,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
     gap: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: "#E5E5EA",
-    marginBottom: 20,
   },
   defaultPill: {
     flex: 1,

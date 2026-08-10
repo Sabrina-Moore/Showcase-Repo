@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,20 +12,23 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useFocusEffect } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Header from "../components/Header";
-
 import { supabase } from "../../utils/hooks/supabase";
 
+import getStatusLabel from "../../utils/hooks/getStatusLabel";
+import timeAgo from "../../utils/hooks/timeAgo";
+
 export default function ChatScreen({ navigation }) {
+  console.log("ChatScreen rendered/mounted");
+
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
   const [otherBitmojiIcon, setOtherBitmojiIcon] = useState(null); //set conversation members user bitmoji
-
-
   const [conversations, setConversations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   // Modal State
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,63 +36,90 @@ export default function ChatScreen({ navigation }) {
 
   const username = selectedChat?.otherParticipant?.username || "User";
 
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
+  //render conversations
   async function loadConversations() {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return;
 
-    //get current user 
-    const { data: currentProfile, error: profileError } = await supabase
-  .from("profiles")
-  .select("user_id, username, bitmoji_icon")
-  .eq("user_id", user.id)
-  .single();
+  const { data, error } = await supabase
+    .from("conversation_members")
+    .select(`conversation_id, user_id, profiles (user_id, username, bitmoji_icon)`);
+  if (error) return;
 
-  if (profileError) {
-    console.error("Profile fetch error:", profileError);
-    return;
-  }
-
-
-    if (userError || !user) return;
-
-    const { data, error } = await supabase
-      .from("conversation_members")
-      .select(
-        `conversation_id, user_id, profiles (user_id, username, bitmoji_icon)`,
+  const searchConversations = data
+    .filter((member) => member.user_id === user.id)
+    .map((myConversation) => {
+      const otherParticipant = data.find(
+        (member) =>
+          member.conversation_id === myConversation.conversation_id &&
+          member.user_id !== user.id,
       );
+      return {
+        conversation_id: myConversation.conversation_id,
+        otherParticipant: otherParticipant?.profiles,
+      };
+    });
+  console.log("searchConversations", searchConversations);
 
-    if (error) {
-      console.error(error);
-      return;
+  const conversationIds = searchConversations.map((c) => c.conversation_id);
+
+  //fetch if is_haven is true for conversation
+  const { data: conversationRows, error: havenError } = await supabase
+  .from("conversations")
+  .select("conversation_id, is_haven")
+  .in("conversation_id", conversationIds);
+
+if (havenError) {
+  console.error("Error fetching Haven status:", havenError);
+}
+
+const havenByConversation = {};
+(conversationRows ?? []).forEach((c) => {
+  havenByConversation[c.conversation_id] = c.is_haven === true;
+});
+
+
+  //search for latest message
+  const { data: latestMessages, error: msgError } = await supabase
+    .from("messages")
+    .select("conversation_id, text, sender_id, created_at, is_prompt")
+    .in("conversation_id", conversationIds)
+    .order("created_at", { ascending: false });
+  console.log("6: latestMessages", latestMessages, "error", msgError);
+
+  const latestByConversation = {};
+  (latestMessages ?? []).forEach((msg) => {
+    if (!latestByConversation[msg.conversation_id]) {
+      latestByConversation[msg.conversation_id] = msg;
     }
+  });
 
-    //filtering for other participants in conversation - for conversation name and bitmoji rendering
-    const searchConversations = data
-      .filter((member) => member.user_id === user.id) //filter for conversations user is in
-      .map((myConversation) => {
-        const otherParticipant = data.find(
-          (member) =>
-            member.conversation_id === myConversation.conversation_id &&
-            member.user_id !== user.id,
-        ); //find users not me
+  const withStatus = searchConversations.map((c) => {
+    const latestMsg = latestByConversation[c.conversation_id];
+    return {
+      ...c,
+      latest_message_sent: latestMsg?.created_at ?? null,
+      status_label: getStatusLabel(latestMsg, user.id),
+      time_ago: timeAgo(latestMsg?.created_at),
+      is_haven: havenByConversation[c.conversation_id] ?? false,
+    };
+  });
+  console.log("7: withStatus", withStatus);
 
-        return {
-          conversation_id: myConversation.conversation_id,
-          otherParticipant: otherParticipant?.profiles,
-        };
-      });
+  withStatus.sort((a, b) => {
+    if (!a.latest_message_sent) return 1;
+    if (!b.latest_message_sent) return -1;
+    return new Date(b.latest_message_sent) - new Date(a.latest_message_sent);
+  });
 
-    setConversations(searchConversations);
-    setLoading(false);
-  }
+  setConversations(withStatus);
+}
 
-
+  useFocusEffect (
+    React.useCallback(() => {
+      loadConversations();
+    }, [])
+  );
 
   const handleLongPress = (chat) => {
     setSelectedChat(chat);
@@ -97,6 +127,9 @@ export default function ChatScreen({ navigation }) {
     setModalVisible(true);
   };
 
+  const handleNewChat = (chat) => {
+    console.log("Pressed new chat");
+  };
 
 
   return (
@@ -111,13 +144,15 @@ export default function ChatScreen({ navigation }) {
     >
       <Header title="Chat" />
 
+      {/* renders the chat */}
       {/* navigating to conversation profile with press*/}
+      {/* renders status "New Chat time" and "Sent time" */}
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.conversation_id.toString()}
         renderItem={({ item: chat }) => (
           <TouchableOpacity
-            style={styles.userButton}
+            style={ styles.chatBorder}
             onPress={() =>
               navigation.navigate("Conversation", {
                 conversationId: chat.conversation_id,
@@ -127,17 +162,37 @@ export default function ChatScreen({ navigation }) {
             delayLongPress={300}
           >
           {chat.otherParticipant?.bitmoji_icon ? (
-            <Image source={{ uri: chat.otherParticipant.bitmoji_icon }} style={styles.listAvatar} />
+            <Image source={{ uri: chat.otherParticipant.bitmoji_icon }} style={[styles.listAvatar, chat.is_haven && styles.havenAvatarBorder]} />
           ) : (
             <Ionicons name="person-circle" size={48} color="#D8D8D8" />
           )}
-            <Text style={styles.username}>
-              {chat.otherParticipant?.username}
-            </Text>
+          <View style={{ flex: 1, marginLeft: 15 }}>
+              <Text style={styles.username}>
+                {chat.otherParticipant?.username}
+              </Text>
+              {chat.latest_message_sent && (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {chat.is_haven ? (
+                  <Image source={require("../../assets/HavenLogo.png")} style={styles.havenIcon} />
+                ) : (
+                  <Ionicons name="chatbox" size={16} color="#0A84FF" style={{ marginRight: 4, transform: [{ scaleX: -1 }]}}  />
+                )}
+                <Text style={chat.is_haven ? styles.statusTextHaven : styles.statusText}>
+                  {chat.status_label}{chat.time_ago ? ` · ${chat.time_ago}` : ""}
+                </Text>
+              </View>
+              )}
+            </View>
             <Ionicons name="camera-outline" size={24} color="#999" />
           </TouchableOpacity>
         )}
       />
+      {/* new chat button */}
+      <Pressable
+      style={styles.newChatButton}
+      onPress={handleNewChat}>
+        <MaterialCommunityIcons name="message-draw" size={24} color="black" style={{ transform: [{ scaleX: -1 }] }} />
+      </Pressable>
 
       {/* --- Snapchat Style Modal --- */}
       <Modal
@@ -283,14 +338,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  userButton: {
+  chatBorder: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 18,
     borderBottomWidth: 1,
-    borderColor: "#EFEFEF",
+    borderColor: "#D1D1D6",
   },
   username: {
     flex: 1,
@@ -298,7 +353,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-
+  newChatButton: {
+  position: "absolute",
+  bottom: 20,
+  right: 20,
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  backgroundColor: "#FFDE59", // Snapchat-yellow, swap for your own accent
+  justifyContent: "center",
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+  elevation: 5,
+  },
   // --- Modal Styles ---
   modalOverlay: {
     flex: 1,
@@ -412,5 +482,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#000",
+  },
+//haven
+  havenAvatarBorder: {
+    borderWidth: 2,
+    borderColor: "#a5bEA8",
+    backgroundColor: "rgba(165, 190, 168, 0.25)",
+  },
+  //statusLabel Haven
+  havenIcon: {
+    width: 16, 
+    height: 16,
+    marginRight: 4,
+  },
+  statusText: {
+  fontSize: 13,
+  color: "#0A84FF",
+  marginTop: 2,
+  },
+  statusTextHaven: {
+    fontSize: 13,
+  color: "#2E5A44",
+  marginTop: 2,
   },
 });
