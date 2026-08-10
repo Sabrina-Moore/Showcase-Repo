@@ -147,31 +147,31 @@ You will need to have access to and some familiarity with terminal commands.
 3. Open terminal on your computer. 
 4. Install [Node.js](https://nodejs.org/en/download) to run other dependencies
 5. List the files and folders inside your current directory, move into a sub-folder or file, or move backwards to a parent directory
-   ```sh
-    ls
-    cd filename
-    cd ..
-    ```
+```sh
+  ls
+  cd filename
+  cd ..
+```
 6. In your terminal (or documents folder), make a new folder directory to house the code
-  ```sh
-  mkdir foldername
-  ```
+```sh
+mkdir foldername
+```
 7. Move terminal location into the folder
-  ```sh
-  cd foldername
-   ```
+```sh
+cd foldername
+```
 8. Clone this repository
-   ```sh
-    git clone 
-   ```
+```sh
+git clone https://github.com/your-github-name/Showcase-Repo.git .
+```
 9. Install project dependencies with the code 
-   ```sh
-   npm install
-   ```
+```sh
+npm install
+```
 10. Run the code
-   ```sh
-   code .
-   ```
+```sh
+code .
+```
 11. Open your Expo Go app
 
 
