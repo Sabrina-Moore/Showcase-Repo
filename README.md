@@ -198,36 +198,36 @@ Before contributing, ensure you have the following installed:
 
 ### Getting Started
 1. Check your installations
-  ```bash
-  node --version
-  npm --version
-  git --version
-  ```
+```bash
+node --version
+npm --version
+git --version
+```
 2. Fork the repository 
    - Navigate to Showcase-Repo and click the fork button on the top right corner
    - Choose your own account as the owner
 3. Create a local folder on your computer and navigate inside that folder in your terminal
 4. Clone your forked repository inside that folder
-   ```sh
-   git clone https://github.com/github_username/repo_name.git .
-   ```
+ ```sh
+ git clone https://github.com/github_username/repo_name.git .
+ ```
 5. Install NPM packages/dependencies
-   ```sh
-   npm install
-   ```
+```sh
+npm install
+```
 6. Open the code
-   ```sh
-   code .
-   ```
+```sh
+code .
+```
 5. Create your own .env.local file to connect to a supabase project
-   ```js
-   EXPO_PUBLIC_SUPABASE_URL=
-   EXPO_PUBLIC_SUPABASE_KEY=
-   ```
+```js
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_KEY=
+```
 7. Run the code with Expo Go (or another simulator)
-   ```sh
-   npx expo start
-   ```
+```sh
+npx expo start
+```
 9. After running the above command:
 - The development server will start, and you'll see a QR code inside the terminal window.
 - Scan that QR code to open the app on the device. On Android, use the Expo Go > Scan QR code option. On iOS, use the default camera app.
@@ -239,37 +239,37 @@ Before contributing, ensure you have the following installed:
 ### How to make code changes in the terminal
 
 1. Create and switch to a new development branch
-   ```sh
-   git switch -c branch-name
-   ```
+```sh
+git switch -c branch-name
+```
 3. Make your code changes on that branch
    - Save the individual file
 5. Stage the changed files. While you could use the shortcut "." after the file name to add all changed files, I encourage you to be careful of what files you push.
-   ```sh
-   git add fileName otherFileName
-   ```
+```sh
+git add fileName otherFileName
+```
 6. Make your commit
-   ```sh
-   git commit -m "Description of code"
-   ```
+```sh
+git commit -m "Description of code"
+```
 7. Push your code
-   ```sh
-   git push origin branch-name
-   ```
+```sh
+git push origin branch-name
+```
 9. On this repository, navigate to the "Pull Requests" tab inside your github repo and create a new request. Be aware that you will need to change the branches to be set to your own forked repo not the original forked repo called "Starter26" or this repo called "Showcase-Repo."
 10. After your Pull request is made and has been merged, you will then want to update your local main. Move from your development branch to main.
-    ```sh
-    git switch main
-    ```
+```sh
+git switch main
+```
 12. Pull the remote main to your local main.
-    ```sh
-    git pull origin main
-    ```
+```sh
+git pull origin main
+```
 14. If you are not the one who made the code changes, you will need to update your local development branch now. Switch to your development branch to merge with main. 
-    ```sh
-    git switch branch-name
-    git merge main
-    ```
+```sh
+git switch branch-name
+git merge main
+```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### File Structure
@@ -323,7 +323,7 @@ Most of the tables will need RLS policies:
 
 SQL Prompts:
 Randomize prompts (random order with unique categories, limit of 3)
-```sh
+```sql
 DROP FUNCTION IF EXISTS get_random_prompts();
 DROP FUNCTION IF EXISTS get_random_prompts(integer);
 DROP FUNCTION IF EXISTS get_random_unique_category_prompts();
@@ -342,7 +342,7 @@ as $$
 $$;
 ```
 Allow user_id to be in multiple conversations
-```sh
+```sql
 ALTER TABLE public.conversation_members
 DROP CONSTRAINT conversation_members_pkey;
 
@@ -351,7 +351,7 @@ ADD CONSTRAINT conversation_members_pkey
 PRIMARY KEY (user_id, conversation_id);
 ```
 Members can update their conversations
-```sh
+```sql
 create policy "Members can update their conversations"
 on conversations for update
 using (auth.uid() in (
