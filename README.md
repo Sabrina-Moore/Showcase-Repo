@@ -386,11 +386,6 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 
 
 
-## Let's talk resources
-
-🌳 If you want to implement a table or bold text or even bullet point, use this [documentation](https://google.github.io/styleguide/docguide/style.html) to get the right syntax. Don't be afraid to look at other templates and pull the parts and types you like! Sharing is caring.
-
-
 
 
 
