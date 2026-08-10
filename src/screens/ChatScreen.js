@@ -535,22 +535,6 @@ const styles = StyleSheet.create({
     borderColor: "#a5bEA8",
     backgroundColor: "rgba(165, 190, 168, 0.25)",
   },
-  //statusLabel Haven
-  havenIcon: {
-    width: 16, 
-    height: 16,
-    marginRight: 4,
-  },
-  statusText: {
-  fontSize: 13,
-  color: "#0A84FF",
-  marginTop: 2,
-  },
-  statusTextHaven: {
-    fontSize: 13,
-  color: "#2E5A44",
-  marginTop: 2,
-  },
   //filters/topics 
   badgesSection: {
   paddingTop: 2,

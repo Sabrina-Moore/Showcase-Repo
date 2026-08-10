@@ -1,3 +1,5 @@
+//feature pills on ConversationScreen
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -16,7 +18,7 @@ import RBSheet from "react-native-raw-bottom-sheet";
 import { supabase } from "../../utils/hooks/supabase";
 
 
-export default function HavenTools ({onHelpPress, onPromptSelect}) {
+export default function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPromptSelect}) {
 
   const [activePill, setActivePill] = useState(null);
   const ptrRBSheet = useRef(null); //pointer to dom element 
@@ -59,6 +61,7 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
 
 
 
+
      {/* feature pills from plus symbol Haven */}
     {/* only renders if showPills is true */}
     return (
@@ -81,6 +84,16 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
               onPress={handlePromptPress}>
                 <Entypo name="chat" size={18} color="#000" />
                 <Text style={styles.pillText}>Prompts</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pill}
+              onPress={onNudgePress}>
+                <Entypo name="location-pin" size={18} color="#000" />
+                <Text style={styles.pillText}>Nudge </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pill}
+              onPress={onCheckinPress}>
+                <Entypo name="location-pin" size={18} color="#000" />
+                <Text style={styles.pillText}>Mood | Need </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pill}
               onPress={onHelpPress}>

@@ -21,6 +21,7 @@ import { supabase } from "../../utils/hooks/supabase";
 
 import CameraScreen from "./CameraScreen"; //functionality for camera button
 import HavenTools from "../components/HavenTools";
+import MessageStatus from "../components/MessageStatus";
 
 //global colors for users
 // Color used for the current user's own messages ("ME" label + border).
@@ -105,6 +106,18 @@ export default function ConversationScreen({ route, navigation }) {
         initialFilter: "resources",
       },
     });
+  };
+
+   //onPress handler for navigation to conversationHavenProfileScreen from pill button in HavenTools
+  const handleCheckinPress = () => {
+  navigation.navigate("ConversationHavenProfileScreen", {
+    conversationId,
+  });
+  };
+  const handleNudgePress = () => {
+    navigation.navigate("ConversationHavenProfileScreen", {
+    conversationId,
+  });
   };
 
   //--------------------------------------
@@ -349,6 +362,7 @@ export default function ConversationScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
+        {/* custom header */}
         <View style={styles.header}>
           <View style={styles.leftSection}>
             <Pressable
@@ -422,6 +436,8 @@ export default function ConversationScreen({ route, navigation }) {
           {showPills && (
             <HavenTools
               onHelpPress={handleHelpPress}
+              onNudgePress={handleNudgePress}
+              onCheckinPress={handleCheckinPress}
               onPromptSelect={(promptText) =>
                 sendPromptAsMessage(promptText, conversationId, currentUserId)
               }
