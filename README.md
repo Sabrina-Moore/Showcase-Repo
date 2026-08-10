@@ -335,14 +335,15 @@ Foreign keys:
 
 <br/>
 
-Most of the tables will need RLS policies:
+**Row Level Security Policies**
 - Enable read access for all users: every table
 - Enable insert for users based on user_id: profiles
 - Enable insert for authenticated users only: conversations, messages
 
 <br/>
-SQL Prompts:
-Randomize prompts (random order with unique categories, limit of 3)
+
+**SQL Prompts**
+- Randomize prompts (random order with unique categories, limit of 3)
 ```sql
 DROP FUNCTION IF EXISTS get_random_prompts();
 DROP FUNCTION IF EXISTS get_random_prompts(integer);
@@ -361,7 +362,7 @@ as $$
   limit 3;
 $$;
 ```
-Allow user_id to be in multiple conversations
+- Allow user_id to be in multiple conversations
 ```sql
 ALTER TABLE public.conversation_members
 DROP CONSTRAINT conversation_members_pkey;
@@ -370,7 +371,7 @@ ALTER TABLE public.conversation_members
 ADD CONSTRAINT conversation_members_pkey
 PRIMARY KEY (user_id, conversation_id);
 ```
-Members can update their conversations
+- Members can update their conversations
 ```sql
 create policy "Members can update their conversations"
 on conversations for update
