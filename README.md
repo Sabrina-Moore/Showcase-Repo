@@ -12,8 +12,6 @@
 
 <h3 align="center">Snap Haven</h3>
 
-<br />
-
 <h3 align="center">
   A little nudge. A bigger connection.
 </h3>
