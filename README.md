@@ -99,23 +99,22 @@ Haven lives on ConversationScreen.js, ConversationProfileScreen.js and HavenTool
 **Chat screen**
 - New UI to represent chats with this feature
 - Can long press already existing conversations to convert to a Haven conversation (adds these features without requiring a new chatroom)
-- Notification system called "nudges" to remind users to reach out when the conversation becomes inactive for too long
-- Nudges can also remind the user of important milestones and birthdays
-
 
 **conversation creation screen**
 - New tab for starting a Haven conversation
 
-
 **Conversation screen**
 - Users needing help to bridge a lull in conversation can get "conversation starting" prompts
-- Users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
-- Instead of the regular buttons next to the text input and keyboard, a plus button opens access to the main Haven Toolkit
-
+- Instead of the regular game button next to the text input and keyboard, a plus button opens access to the main Haven toolkit
 
 **Conversation group profile screen**
+- Users can send "nudges" to their Haven conversation to check-in, send a reminder about an anniversary, and more. 
+- Users can choose to update their mood + need status to be sent to their Haven conversation
+
+**Stretch Milestones**
+- "Nudges" expanded to remind users to reach out when the conversation becomes inactive for too long (based on lastest message timer)
 - Users can customize settings for all added features (changing interval if applicable, or turning off and on features)
-- Users can choose to update their "life banner" status to be seen by their Haven connections
+- Users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
 - Users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
 
 
