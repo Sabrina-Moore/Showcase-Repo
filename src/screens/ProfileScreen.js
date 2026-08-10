@@ -9,6 +9,33 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
+// hardcoded fake story
+const storyItems = [
+  {
+    id: "story-1",
+    title: "Add to My Story · Friends Only",
+    description: "Visible to friends only",
+    icon: "📷",
+  },
+  {
+    id: "story-2",
+    title: "Add to My Story · Public",
+    description: "Friends, followers, and more",
+    icon: "🌎",
+  },
+];
+
+//hardcoded countdown
+const countdownItems = [
+  {
+    id: "countdown-1",
+    title: "Create a new countdown",
+    description: "Invite friends or create one privately",
+    icon: "📅",
+  },
+];
+
+
 const handleSignOut = async () => {
   try {
     const { error } = await supabase.auth.signOut();
@@ -34,6 +61,11 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState(null);
   const [snapScore, setSnapScore] = useState(null);
   const [userBirthday, setUserBirthday] = useState(null);
+   const [astrologySign, setAstrologySign] = useState(null);
+  const [city, setCity] = useState(null);
+  const [state, setState] = useState(null);
+  const [school, setSchool] = useState(null);
+
 
   
   //fetch user profile from profiles (bitmoji_icon, username, email)
@@ -51,7 +83,8 @@ export default function ProfileScreen() {
         if (uid) {
           const { data: profile, error:profileError } = await supabase
             .from("profiles")
-            .select("username, email, birthday, snap_score, bitmoji_icon, bitmoji_pose")
+            .select(`username, email, birthday, snap_score, bitmoji_icon, bitmoji_pose,
+              astrology_sign, city, state, school`)
             .eq("user_id", uid)
             .single();
 
@@ -68,42 +101,69 @@ export default function ProfileScreen() {
             setUsername(profile.username);
             setSnapScore(profile.snap_score);
             setUserBirthday(profile.birthday);
+            setAstrologySign(profile.astrology_sign);
+            setCity(profile.city);
+            setState(profile.state);
+            setSchool(profile.school);
           }
-
         }
-
       };
       fetchProfile();
     }, []);
 
+    const handleMoreOptions = (item) => {
+      console.log("Open more options for:", item.title);
+    };
+
+     const renderDynamicRow = (item) => {
+    return (
+      <View key={item.id} style={styles.dynamicRow}>
+        <View style={styles.rowIconContainer}>
+          <Text style={styles.rowIcon}>{item.icon}</Text>
+        </View>
  
+        <View style={styles.rowTextContainer}>
+          <Text style={styles.rowTitle}>{item.title}</Text>
+          <Text style={styles.rowDescription}>{item.description}</Text>
+        </View>
+ 
+        <Pressable
+          style={styles.moreButton}
+          onPress={() => handleMoreOptions(item)}
+        >
+          <Text style={styles.moreButtonText}>•••</Text>
+        </Pressable>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.screen}>
       {/* custom header */}
 
-            <View style={[styles.headerOverlay, { paddingTop: insets.top + 6 }]}
-              pointerEvents="box-none"
-            >
-              <Pressable
-                onPress={() => navigation?.goBack()}
-                style={styles.iconCircle}
-              >
-                <Ionicons name="chevron-back" size={24} color="#fff" />
-              </Pressable>
-      
-              <View style={styles.headerRightIcons}>
-                <Pressable style={styles.iconCircle}>
-                  <Ionicons name="share-outline" size={18} color="#fff" />
-                </Pressable>
-                <Pressable style={styles.iconCircle}>
-                  <MaterialCommunityIcons name="hanger" size={24} color="white" />
-                </Pressable>
-                <Pressable style={styles.iconCircle}
-                onPress={() => navigation.navigate("Settings")}>
-                  <EvilIcons name="gear" size={24} color="white" />
-                </Pressable>
-              </View>
-            </View>
+      <View style={[styles.headerOverlay, { paddingTop: insets.top + 6 }]}
+        pointerEvents="box-none"
+      >
+        <Pressable
+          onPress={() => navigation?.goBack()}
+          style={styles.iconCircle}
+        >
+          <Ionicons name="chevron-back" size={24} color="#fff" />
+        </Pressable>
+
+        <View style={styles.headerRightIcons}>
+          <Pressable style={styles.iconCircle}>
+            <Ionicons name="share-outline" size={18} color="#fff" />
+          </Pressable>
+          <Pressable style={styles.iconCircle}>
+            <MaterialCommunityIcons name="hanger" size={24} color="white" />
+          </Pressable>
+          <Pressable style={styles.iconCircle}
+          onPress={() => navigation.navigate("Settings")}>
+            <EvilIcons name="gear" size={24} color="white" />
+          </Pressable>
+        </View>
+      </View>
   
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 54 }}>
         {/* bitomji image */}
@@ -123,32 +183,85 @@ export default function ProfileScreen() {
         <View style={styles.contentContainer}>
           <View style={styles.topHandle} />
 
-          {/* User information */}
-          <View style={styles.profileRow}>
-
-            {/* Profile information buttons */}
+            {/* Profile information tags*/}
           <View style={styles.tagRow}>
-            <View style={styles.tag}>
-              <Ionicons name="balloon" size={24} color="red" />
-              <Text style={styles.tagText}> {userBirthday} </Text>
+            {userBirthday ? (
+              <View style={styles.tag}>
+                <Ionicons name="balloon" size={16} color="red" />
+                <Text style={styles.tagText}> {userBirthday}</Text>
+              </View>
+            ) : null}
+            {astrologySign ? (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>{astrologySign}</Text>
+              </View>
+            ) : null}
+            {city && state ? (
+              <View style={styles.tag}>
+                <Ionicons name="location-outline" size={14} color="#555" />
+                <Text style={styles.tagText}>
+                  {" "}
+                  {city}, {state}
+                </Text>
+              </View>
+            ) : null}
+             {school ? (
+              <View style={styles.tag}>
+                <Ionicons name="school-outline" size={14} color="#555" />
+                <Text style={styles.tagText}> {school}</Text>
+              </View>
+            ) : null}
+ 
+            {snapScore != null ? (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>🔥 {snapScore}</Text>
+              </View>
+            ) : null}
+        </View> 
+            {/* gold feature card */}
+        <Pressable style={styles.goldFeatureCard}>
+            <View style={styles.goldFeatureImage} />
+            <View style={styles.goldFeatureText}>
+              <Text style={styles.goldFeatureTitle}>Haven+</Text>
+              <Text style={styles.goldFeatureDescription} numberOfLines={1}>
+                Try custom themes, icons, and exclusive features
+              </Text>
             </View>
-
-            <View style={styles.tag}>
-              <Text style={styles.tagText}> {snapScore} </Text>
+            <View style={styles.featureBadge}>
+              <Text style={styles.featureBadgeText}>New</Text>
             </View>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
 
-            {/* <View style={styles.tag}>
-              <Text style={styles.tagText}>♓ Pisces</Text>
-            </View> */}
-
-            {/* <View style={styles.tag}>
-              <Text style={styles.tagText}>💜 Cancer</Text>
-            </View> */}
-          </View> 
+          {/* stories section */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>My Stories</Text>
+            <Pressable style={styles.sectionButton}>
+              <Text style={styles.sectionButtonText}>＋ New Story</Text>
+            </Pressable>
           </View>
-        </View>
-      </ScrollView>
-    
+ 
+          <View style={styles.rowsContainer}>
+            {storyItems.map(renderDynamicRow)}
+          </View>
+
+          {/* countdowns section */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Countdowns</Text>
+            <Pressable style={styles.sectionButton}>
+              <Text style={styles.sectionButtonText}>＋ New</Text>
+            </Pressable>
+          </View>
+ 
+          <View style={styles.rowsContainer}>
+            {countdownItems.map(renderDynamicRow)}
+          </View>
+
+           <View style={styles.logoutContainer}>
+            <Button title="Log Out" onPress={handleSignOut} />
+          </View>
+      </View>
+    </ScrollView>
     </View>
   );
 }
@@ -157,6 +270,9 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: "#ffff",
+  },
+   scrollContent: {
+    flexGrow: 1,
   },
   container: {
     width: "100%",
@@ -187,25 +303,72 @@ const styles = StyleSheet.create({
   },
   bitmojiContainer: {
     width: "100%",
-    height: 320,
+    height: 420,
+  },
+   bitmojiNameOverlay: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
+    marginBottom: 20,
   },
   avatar: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
   },
+    bitmojiNameText: {
+    fontSize: 30,
+    fontWeight: "500",
+    color: "#FFFFFF",
+    textShadowColor: "rgba(0,0,0,0.4)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  contentContainer: {
+    marginTop: -26,
+    paddingTop: 10,
+    paddingHorizontal: 18,
+    paddingBottom: 50,
+    backgroundColor: "rgba(248, 248, 248, 0.98)",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  topHandle: {
+    width: 54,
+    height: 5,
+    backgroundColor: "#D3D3D3",
+    borderRadius: 4,
+    alignSelf: "center",
+    marginBottom: 18,
+  },
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 18,
   },
+   profileText: {
+    flex: 1,
+  },
+   profileName: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#111111",
+  },
+  profileEmail: {
+    marginTop: 4,
+    fontSize: 15,
+    color: "#777777",
+  },
+  //tags
   tagRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginBottom: 18,
-    
   },
   tag: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#DDDDDD",
@@ -214,7 +377,6 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     marginRight: 8,
     marginBottom: 8,
-    flexDirection: "row",
     
   },
   tagText: {
@@ -367,6 +529,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
   },
+  moreButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+  },
+  moreButtonText: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#777777",
+  },
   chevron: {
     fontSize: 28,
     color: "#999999",
@@ -375,18 +546,4 @@ const styles = StyleSheet.create({
   logoutContainer: {
     marginTop: 18,
   },
-  bitmojiNameOverlay: {
-  position: "absolute",
-  bottom: 16,
-  left: 16,
-  right: 16,
-},
-bitmojiNameText: {
-  fontSize: 30,
-  fontWeight: "500",
-  color: "#FFFFFF",
-  textShadowColor: "rgba(0,0,0,0.4)",
-  textShadowOffset: { width: 0, height: 1 },
-  textShadowRadius: 4,
-},
 });

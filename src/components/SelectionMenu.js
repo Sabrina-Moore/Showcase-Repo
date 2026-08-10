@@ -17,6 +17,14 @@ const SelectionMenu = ({ showMenu, setShowMenu }) => {
 
       },
     },
+    {
+      title: "New Haven Chat",
+      onPress: () => {
+        navigation.navigate("Conversation");
+        setShowMenu(false);
+
+      },
+    },
     { title: "New Shortcut" },
     { title: "Manage Chats" },
     { title: "Manage Friendships" },

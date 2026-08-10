@@ -8,35 +8,16 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
-import AntDesign from "@expo/vector-icons/AntDesign";
 import RBSheet from "react-native-raw-bottom-sheet";
-
 import { supabase } from "../../utils/hooks/supabase";
 
 
-
-
-//for Haven feature pills for plus button
-const havenPills= [
-{ id: "games", label: "Games", library: Ionicons, name: "game-controller-outline"},
-{ id: "prompts", label: "Prompts", library: Entypo, name: "chat" },
-{ id: "help", label: "Need Help?", library: Entypo, name: "location-pin" },
-];
-
-
 export default function HavenTools ({onHelpPress, onPromptSelect}) {
-  console.log(Ionicons);
-  console.log(Entypo);
-  console.log(havenPills);
 
-  const navigation = useNavigation();
   const [activePill, setActivePill] = useState(null);
   const ptrRBSheet = useRef(null); //pointer to dom element 
 
@@ -86,25 +67,8 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.pillScroll}
-                contentContainerStyle={styles.pillContainer}
+                contentContainerStyle={styles.pillRow}
             >
-            {/* dynamically handles pills and rendering */}
-            {/* {havenPills.map((pill) => {
-              const IconLibrary = pill.library;
-              return (
-                <View 
-                key={pill.id} 
-                styles={styles.pillShadow}> 
-                <TouchableOpacity
-                style={styles.pill}
-                onPress={() => handlePillPress(pill)}
-                >
-                <IconLibrary name={pill.name} size={18} color="#000" />
-                <Text style={styles.pillText}>{pill.label}</Text>
-                </TouchableOpacity>
-                </View>
-            );
-            })} */}
 
             {/* not dynamic pills */}
             <View style={styles.pillRow}>
@@ -198,19 +162,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     overflow: "visible",
   },
-  pillContainer: {
-    backgroundColor: "transparent",
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    gap: 12,
-    alignItems: "center",
+  pillRow: {
+    flexDirection: "row",
   },
   pill: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#a5BEA8",
     paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    margin: 2,
     borderRadius: 25,
     gap: 8,
     //shadow
@@ -225,27 +186,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ffffff",
     letterSpacing: -0.2,
-  },
-   //input bar
-  inputBar: {
-    height: 55,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    gap: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: "#3a3a3a",
-    backgroundColor: "#a5BEA8",
-  },
-   inputPill: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    height: 40,
-    backgroundColor: "#a5BEA8",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    gap: 8,
   },
   input: {
     flex: 1,
@@ -263,11 +203,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginBottom: 8,
     backgroundColor: "transparent",
-  },
-  drawerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
   },
    //prompts
   promptContainer: {
