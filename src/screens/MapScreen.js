@@ -120,7 +120,7 @@ export default function MapScreen({ route, navigation }) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("avatar_url")
+        .select("bitmoji_icon")
         .eq("user_id", user.id)
         .single();
 
@@ -129,8 +129,8 @@ export default function MapScreen({ route, navigation }) {
         return;
       }
 
-      if (data?.avatar_url) {
-        setUserAvatar(data.avatar_url);
+      if (data?.bitmoji_icon) {
+        setUserAvatar(data.bitmoji_icon);
       }
     } catch (err) {
       console.error("Failed to load user profile:", err);
