@@ -12,7 +12,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"; //gesture-tap icon, handshake icon
@@ -93,6 +93,10 @@ export default function ConversationScreen({ route, navigation }) {
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  //chevron next to "Me" message label for mood/need status
+  const [expandedMoodUserId, setExpandedMoodUserId] = useState(null);
+
+
   const listRef = useRef();
 
   // kept in sync so the realtime callback below (created once per conversationId)
@@ -156,8 +160,30 @@ export default function ConversationScreen({ route, navigation }) {
   );
   //feature pills persist for only a few seconds and goes away
   const handleTogglePills = () => {
-    setShowPills(true);
+    setShowPills((prev) => !prev);
   };
+
+  const CHECKIN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+  //check for lastest checkin (mood/need) status
+  const getLatestCheckinForUser = (userId) => {
+  for (let i = sortedMessages.length - 1; i >= 0; i--) {
+    const msg = sortedMessages[i];
+    if (msg.sender_id === userId && msg.is_checkin) {
+      const age = Date.now() - new Date(msg.created_at).getTime();
+      if (age > CHECKIN_EXPIRY_MS) {
+        return null; 
+      }
+      return msg;
+    }
+  }
+  return null;
+};
+
+  //handle the mood/need status - fetches latest checkin and affixes it to "Me" label in message
+  const handleToggleMoodStatus = (userId) => {
+  setExpandedMoodUserId((prev) => (prev === userId ? null : userId));
+};
 
   //onPress handler for navigation to map from Need Help button in HavenTools
   //Resources filter open on navigation
@@ -499,58 +525,88 @@ export default function ConversationScreen({ route, navigation }) {
     const isNudge = item.is_nudge === true;
 
     return (
-      <View style={styles.messageWrapper}>
+      <View style={styles.senderRowWrapper}>
+        <Pressable
+        style={styles.senderRow}
+        onPress={() => handleToggleMoodStatus(item.sender_id)}
+      >
         <Text style={[styles.sender, { color: senderColor }]}>
           {senderLabel}
         </Text>
+        <Ionicons
+          name={
+            expandedMoodUserId === item.sender_id
+              ? "chevron-back"
+              : "chevron-forward"
+          }
+          size={14}
+          color={senderColor}
+          style={{ marginLeft: 4 }}
+        />
+      </Pressable>
 
-        <View style={styles.messageRow}>
-            <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
-            <View
-      style={[
-        styles.messageBubble,
-        isPrompt && styles.promptMessageBubble,
-        isCheckin && styles.checkinMessageBubble,
-        isNudge && styles.nudgeMessageBubble,
-      ]}
-    >
-          {isPrompt && (
-            <View style={styles.promptBadge}>
-              <Entypo name="chat" size={20} color="white" />
-              <Text style={styles.promptBadgeText}>Prompt</Text>
-            </View>
-          )}
-          {/* rendering respond to notification message  */}
-          {isCheckin && (
-            <View style={styles.checkinBadge}>
-              <MaterialCommunityIcons
-                name="hand-wave"
-                size={20}
-                color="white"
-              />
-              <Text style={styles.checkinBadgeText}>Mood | Need </Text>
-            </View>
-          )}
-          {isNudge && (
-            <View style={styles.nudgeBadge}>
-              <MaterialCommunityIcons
-                name="gesture-tap"
-                size={22}
-                color="white"
-              />
-              <Text style={styles.nudgeBadgeText}>Nudge</Text>
-            </View>
-          )}
-          <Text
-            style={
-            isPrompt ? styles.promptMessageText
-            : isCheckin ? styles.checkinMessageText
-            : isNudge ? styles.nudgeMessageText
-            : styles.messageText
-            }
-          >
-            {item.text}
-          </Text>
+      {expandedMoodUserId === item.sender_id && (
+        <View style={styles.moodStatusBox}>
+          {(() => {
+            const latestCheckin = getLatestCheckinForUser(item.sender_id);
+            return (
+              <Text style={styles.moodStatusText}>
+                {latestCheckin
+                  ? latestCheckin.text
+                  : `No check-in yet from ${senderLabel === "ME" ? "you" : senderLabel}`}
+              </Text>
+            );
+          })()}
+        </View>
+      )}
+
+      <View style={styles.messageRow}>
+        <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
+          <View
+            style={[
+              styles.messageBubble,
+              isPrompt && styles.promptMessageBubble,
+              isCheckin && styles.checkinMessageBubble,
+              isNudge && styles.nudgeMessageBubble,
+            ]}
+            >
+            {isPrompt && (
+              <View style={styles.promptBadge}>
+                <Entypo name="chat" size={20} color="white" />
+                <Text style={styles.promptBadgeText}>Prompt</Text>
+              </View>
+            )}
+            {/* rendering respond to notification message  */}
+            {isCheckin && (
+              <View style={styles.checkinBadge}>
+                <MaterialCommunityIcons
+                  name="hand-wave"
+                  size={20}
+                  color="white"
+                />
+                <Text style={styles.checkinBadgeText}>Mood | Need </Text>
+              </View>
+            )}
+            {isNudge && (
+              <View style={styles.nudgeBadge}>
+                <MaterialCommunityIcons
+                  name="gesture-tap"
+                  size={22}
+                  color="white"
+                />
+                <Text style={styles.nudgeBadgeText}>Nudge</Text>
+              </View>
+            )}
+            <Text
+              style={
+              isPrompt ? styles.promptMessageText
+              : isCheckin ? styles.checkinMessageText
+              : isNudge ? styles.nudgeMessageText
+              : styles.messageText
+              }
+            >
+              {item.text}
+            </Text>
           
 
             {(isNudge || isCheckin) && (
@@ -647,6 +703,9 @@ export default function ConversationScreen({ route, navigation }) {
             listRef.current?.scrollToEnd({ animated: true })
           }
         />
+        {/* wrapper for preventing inputbar from overlapping underneath android buttons */}
+        <SafeAreaView edges={["bottom"]} style={styles.safeBottomArea}> 
+
        {/* bottom of page */}
           {/* Input bar */}
           <View style={styles.inputBar}>
@@ -701,7 +760,7 @@ export default function ConversationScreen({ route, navigation }) {
           </View>
            {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
+        <View style={styles.inputContainer}>
           {showPills && (
             <HavenTools
               onHelpPress={handleHelpPress}
@@ -714,6 +773,7 @@ export default function ConversationScreen({ route, navigation }) {
           )}
 
         </View>
+        </SafeAreaView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -1060,5 +1120,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     color: "#B47100",
+  },
+  //checkins inside "Me" label
+  senderRowWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    flexWrap: "wrap",
+  },
+  senderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  moodStatusBox: {
+    backgroundColor: "#F1F1F5",
+    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginLeft: 8,
+    flexShrink: 1,
+    maxWidth: 220, 
+  },
+  moodStatusText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#555",
   },
 });
