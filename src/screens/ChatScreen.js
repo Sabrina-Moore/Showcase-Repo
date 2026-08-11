@@ -21,6 +21,7 @@ import { supabase } from "../../utils/hooks/supabase";
 import getStatusLabel from "../../utils/hooks/getStatusLabel";
 import timeAgo from "../../utils/hooks/timeAgo";
 import CreateChat from "../components/CreateChat";
+import MessageStatus from "../components/MessageStatus";
 
 const badges = [
   {
@@ -121,12 +122,12 @@ export default function ChatScreen({ navigation }) {
     });
 
     const withStatus = searchConversations.map((c) => {
-      const latestMsg = latestByConversation[c.conversation_id];
+      const latestMessage = latestByConversation[c.conversation_id];
       return {
         ...c,
-        latest_message_sent: latestMsg?.created_at ?? null,
-        status_label: getStatusLabel(latestMsg, user.id),
-        time_ago: timeAgo(latestMsg?.created_at),
+        latest_message_sent: latestMessage ?.created_at ?? null,
+        status_label: getStatusLabel(latestMessage, user.id),
+        time_ago: timeAgo(latestMessage?.created_at),
         is_haven: havenByConversation[c.conversation_id] ?? false,
       };
     });
@@ -251,10 +252,11 @@ export default function ChatScreen({ navigation }) {
         keyExtractor={(item) => item.conversation_id.toString()}
         renderItem={({ item: chat }) => (
           <TouchableOpacity
-            style={styles.chatBorder}
+            style={[styles.chatBorder, chat.is_haven && styles.havenChatBorder]}
             onPress={() =>
               navigation.navigate("Conversation", {
                 conversationId: chat.conversation_id,
+                isHaven: chat.is_haven,
               })
             }
             onLongPress={() => handleLongPress(chat)}
@@ -265,7 +267,7 @@ export default function ChatScreen({ navigation }) {
                 source={{ uri: chat.otherParticipant.bitmoji_icon }}
                 style={[
                   styles.listAvatar,
-                  chat.is_haven && styles.havenAvatarBorder,
+                  styles.avatarImage
                 ]}
               />
             ) : (
@@ -275,31 +277,11 @@ export default function ChatScreen({ navigation }) {
               <Text style={styles.username}>
                 {chat.otherParticipant?.username}
               </Text>
-              {chat.latest_message_sent && (
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  {chat.is_haven ? (
-                    <Image
-                      source={require("../../assets/HavenLogo.png")}
-                      style={styles.havenIcon}
-                    />
-                  ) : (
-                    <Ionicons
-                      name="chatbox"
-                      size={16}
-                      color="#0A84FF"
-                      style={{ marginRight: 4, transform: [{ scaleX: -1 }] }}
-                    />
-                  )}
-                  <Text
-                    style={
-                      chat.is_haven ? styles.statusTextHaven : styles.statusText
-                    }
-                  >
-                    {chat.status_label}
-                    {chat.time_ago ? ` · ${chat.time_ago}` : ""}
-                  </Text>
-                </View>
-              )}
+              <MessageStatus 
+                statusLabel={chat.status_label}
+                timeAgo={chat.time_ago}
+                latestMessageSent={chat.latest_message_sent}
+                isHaven={chat.is_haven}/>
             </View>
             <Ionicons name="camera-outline" size={24} color="#999" />
           </TouchableOpacity>
@@ -468,6 +450,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#D1D1D6",
   },
+  havenChatBorder: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 16,
+  paddingVertical: 18,
+  borderBottomWidth: 1,
+  borderColor: "#D1D1D6",
+  backgroundColor: "#F8F3E6",
+  },
   username: {
     flex: 1,
     marginLeft: 15,
@@ -605,9 +597,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   //haven
-  havenAvatarBorder: {
+  AvatarBorder: {
     borderWidth: 2,
-    borderColor: "#a5bEA8",
+    borderColor: "#C7C7CC",
     backgroundColor: "rgba(165, 190, 168, 0.25)",
   },
   //statusLabel Haven

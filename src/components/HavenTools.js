@@ -1,25 +1,24 @@
+//feature pills on ConversationScreen
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   FlatList,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   Pressable,
   Image,
   StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
-import RBSheet from "react-native-raw-bottom-sheet";
+import { Ionicons, Entypo, AntDesign, MaterialCommunityIcons } from "@expo/vector-icons"; //icons for feature pills
 import { supabase } from "../../utils/hooks/supabase";
 
 
-export default function HavenTools ({onHelpPress, onPromptSelect}) {
+export default function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPromptSelect}) {
 
   const [activePill, setActivePill] = useState(null);
-  const ptrRBSheet = useRef(null); //pointer to dom element 
 
   //prompts
   const [prompts, setPrompts] = useState([]);
@@ -45,17 +44,17 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
     }
   };
 
+
   //open pills
-  const handleGamesPress = () => {
-      setActivePill({ id: "games"});
-    ptrRBSheet.current?.open(); // Open bottom sheet
-  };
+  const handleGamePress = () => {
+    setActivePill({ id: "games" });
+};
 
   const handlePromptPress = () => {
       setActivePill({ id: "prompts"});
       fetchRandomPrompts();
-    ptrRBSheet.current?.open(); // Open bottom sheet
   };
+
 
 
 
@@ -73,7 +72,7 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
             {/* not dynamic pills */}
             <View style={styles.pillRow}>
               <TouchableOpacity style={styles.pill}
-              onPress={handleGamesPress}>
+              onPress={handleGamePress}>
                 <Ionicons name="game-controller-outline" size={18} color="#000" />
                 <Text style={styles.pillText}>Games</Text>
               </TouchableOpacity>
@@ -83,49 +82,49 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
                 <Text style={styles.pillText}>Prompts</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pill}
+              onPress={onNudgePress}>
+                <MaterialCommunityIcons name="gesture-tap" size={24} color="black" />
+                <Text style={styles.pillText}>Nudge </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pill}
+              onPress={onCheckinPress}>
+                <MaterialCommunityIcons name="hand-wave" size={18} color="black" />
+                <Text style={styles.pillText}>Mood | Need </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pill}
               onPress={onHelpPress}>
-                <Entypo name="location-pin" size={18} color="#000" />
+                <Ionicons name="alert-circle" size={24} color="black" />
                 <Text style={styles.pillText}>Need Help?</Text>
               </TouchableOpacity>
             </View>
 
-        </ScrollView>
-        {/* Add bottom sheet of some sort for games and prompts */}
-      <RBSheet
-        ref={ptrRBSheet}
-        useNativeDriver={false}
-        height={300}
-        customStyles={{
-          wrapper: {
-            backgroundColor: "rgba(0,0,0,0.5)",
-          },
-          container: {
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            padding: 20,
-          },
-        }}
-      >
+      </ScrollView>
+
+      
         {/* prompts pill */}
-        {activePill?.id === "prompts" && (
-          <View style={styles.drawerContainer}>
-            <View style={styles.promptContainer}>
-              <Text style={styles.promptLabel}>Daily Prompts</Text>
-              <TouchableOpacity onPress={fetchRandomPrompts}>
-                <Ionicons name="refresh" size={20} color="#79a78c" />
-              </TouchableOpacity>
-            </View>
+       {activePill?.id === "prompts" && (
+        <View style={styles.promptPanel}>
+          <View style={styles.topHandle} />
+          <View style={styles.promptContainer}>
+            <Text style={styles.promptLabel}>Daily Prompts</Text>
+            <TouchableOpacity onPress={fetchRandomPrompts}>
+              <Ionicons name="refresh" size={20} color="#79a78c" />
+            </TouchableOpacity>
+          </View>
+
               <FlatList
                 data={prompts}
                 keyExtractor={(item, index) =>
                   item?.prompt_id?.toString() || item?.id?.toString() || index.toString()
                 }
+                styles={styles.promptScroll}
                 contentContainerStyle={styles.promptList}
+                showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                   <TouchableOpacity style={styles.promptItem}
                   onPress={() => {
                     onPromptSelect?.(item.prompt_text);
-                    ptrRBSheet.current?.close();
+                    setActivePill(null);
                   }}>
                     <Text style={styles.promptItemText}>{item?.prompt_text}</Text>
                   </TouchableOpacity>
@@ -134,21 +133,25 @@ export default function HavenTools ({onHelpPress, onPromptSelect}) {
           </View>
         )}
 
-        {/* games pill */}
-         {activePill?.id === "games" && (
-          <View style={styles.drawerContainer}>
-            <View style={styles.promptContainer}>
-              <Text style={styles.promptLabel}>Games</Text>
-              <TouchableOpacity >
-                <Ionicons name="refresh" size={20} color="#79a78c" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        
-      </RBSheet>
-    
-    </View>
+        {/* games scrollview */}
+                {/* Games panel */}
+                {activePill?.id === "games" && (
+                  <View style={styles.gamePanel}>
+                    <View style={styles.topHandle} />
+                    <TouchableOpacity style={styles.gameItem}
+                  onPress={() => {
+                    setActivePill(null);
+                  }}>
+                     <Image
+                      source={require("../../assets/HavenIcons/GamesImage.jpeg")}
+                      style={styles.gameImage}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+            
+                  </View>
+                )}
+              </View>
     );
 }
 
@@ -168,7 +171,7 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#a5BEA8",
+    backgroundColor: "#ffff",
     paddingHorizontal: 18,
     paddingVertical: 14,
     margin: 2,
@@ -177,20 +180,15 @@ const styles = StyleSheet.create({
     //shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
   },
   pillText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#ffffff",
+    color: "#4a4a4a",
     letterSpacing: -0.2,
-  },
-  input: {
-    flex: 1,
-    fontSize: 17,
-    color: "#fff",
   },
   //bottom sheet drawer
   drawerContainer: {
@@ -205,6 +203,17 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
    //prompts
+  promptPanel: {
+    width: "100%",
+    height: 300,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    overflow: "hidden",
+    marginTop: 8,
+    marginBottom: 8,
+    paddingTop: 20,
+    paddingHorizontal: 10,
+  },
   promptContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -236,4 +245,52 @@ promptItemText: {
   textAlign: "center",
   lineHeight: 20,
 },
+gameContainer: {
+    borderWidth: 1,
+    borderColor: "#4a4a4a",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 10,
+    marginHorizontal: 10,
+    marginBottom: 8,
+    backgroundColor: "transparent",
+  },
+
+  //scrollview for game
+  scrollContent: {
+    flex: 1,
+    backgroundColor: "#ffff",
+    borderColor: "#606060", 
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+  },
+  contentContainer: {
+    flex: 1,
+    position: "relative",
+  },
+  gamePanel: {
+  width: "100%",
+  height: 400,              
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  overflow: "hidden",
+  marginTop: 8,
+  marginBottom: 8,
+},
+  gameImage: {
+    width: "100%",
+    height: "100%",
+  },
+  topHandle: {
+    position: "absolute",
+    top: 8,
+    alignSelf: "center",
+    width: 45,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.8)",
+    zIndex: 10,
+  },
 });

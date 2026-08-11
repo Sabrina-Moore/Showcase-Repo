@@ -110,7 +110,7 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
         {/* Top Logo Container */}
         <View style={styles.imageContainer}>
           <Image
-            source={require("../../assets/HavenLogo.png")}
+            source={require("../../assets/HavenLogos/HavenLogoTransparent.png")}
             style={styles.logoImage}
             resizeMode="contain"
           />
