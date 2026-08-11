@@ -89,7 +89,7 @@ export default function WelcomeToHavenScreen({ route, navigation }) {
       return;
     }
 
-    navigation.navigate("Conversation", { conversationId, isHaven: true });
+    navigation.goBack(); // pops WelcomeToHaven, reveals the existing Conversation screen
   };
 
   return (
