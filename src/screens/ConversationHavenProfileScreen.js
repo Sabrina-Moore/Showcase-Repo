@@ -10,9 +10,10 @@ import {
   StyleSheet,
   Dimensions,
   Linking,
+  Switch,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Ionicons, Entypo, AntDesign, MaterialCommunityIcons } from "@expo/vector-icons"; 
 import { supabase } from "../../utils/hooks/supabase"; 
 import { ProfileTags } from "../components/ProfileTags";
 
@@ -130,6 +131,14 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
   const toggleField = (field) =>
     setOpenField((cur) => (cur === field ? null : field));
 
+  //visual toggles for Haven settings
+  const [featureToggles, setFeatureToggles] = useState({
+  nudges: true,
+  prompts: true,
+  needHelp: true,
+  moodNeed: true,
+});
+
 //fetch current user id
 useEffect(() => {
   const fetchCurrentUser = async () => {
@@ -205,8 +214,7 @@ useEffect(() => {
       }
   };
 
-
-  //leaving as they are so that the user can still make selections
+  //notification handling
   const handleSelectMood = (value) => {
     setMood(value);
     setOpenField(null);
@@ -228,6 +236,57 @@ useEffect(() => {
   const handleOpenLink = (url) => {
     if (url) Linking.openURL(url);
   };
+
+  
+//fake Haven settings
+const toggleHavenFeature = (key) => {
+  setFeatureToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+};
+
+const HavenFeatureSettings = [
+  {
+    key: "nudges",
+    title: "Nudges",
+    iconLibrary: "materialCommunityIcons",
+    icon: "gesture-tap",
+  },
+  {
+    key: "prompts",
+    title: "Prompts",
+    iconLibrary: "entypo",
+    icon: "chat",
+  },
+  {
+    key: "needHelp",
+    title: "Need Help",
+    iconLibrary: "ionicons",
+    icon: "alert-circle",
+  },
+  {
+    key: "moodNeed",
+    title: "Mood | Need",
+    iconLibrary: "materialCommunityIcons",
+    icon: "hand-wave",
+  },
+];
+
+const renderFeatureIcon = (feature) => {
+  const color = HAVEN_DARK;
+  const size = 24;
+  switch (feature.iconLibrary) {
+    case "materialCommunityIcons":
+      return (
+        <MaterialCommunityIcons name={feature.icon} size={size} color={color} />
+      );
+    case "entypo":
+      return <Entypo name={feature.icon} size={size} color={color} />;
+    case "ionicons":
+    default:
+      return <Ionicons name={feature.icon} size={size} color={color} />;
+  }
+};
+
+  
 
   return (
     <View style={styles.container}>
@@ -335,7 +394,7 @@ useEffect(() => {
 
           {/* Friendships are Private */}
           <View style={styles.section}>
-            <TouchableOpacity style={styles.privacyCard}>
+            <TouchableOpacity style={[styles.privacyCard, styles.cardshadow]}>
               <View style={styles.privacyIcon}>
                 <Ionicons
                   name="shield-checkmark-outline"
@@ -357,7 +416,7 @@ useEffect(() => {
           {/* Nudge */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Nudge</Text>
-            <View style={styles.havenCard}>
+            <View style={[styles.havenCard, styles.cardshadow]}>
               <SelectField
                 label="Category"
                 placeholder="Choose Here"
@@ -393,7 +452,7 @@ useEffect(() => {
           {/* Mood and Need */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Mood and Need</Text>
-            <View style={[styles.havenCard, { flexDirection: "row", gap: 12 }]}>
+            <View style={[styles.havenCard, styles.cardshadow, { flexDirection: "row", gap: 12 }]}>
               <View style={{ flex: 1 }}>
                 <SelectField
                   label="Mood"
@@ -430,6 +489,7 @@ useEffect(() => {
           {/* Links */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Links</Text>
+            <View style={styles.cardShadow}>
             <View style={styles.card}>
               {LINKS.map((link, index) => (
                 <TouchableOpacity
@@ -453,11 +513,13 @@ useEffect(() => {
                 </TouchableOpacity>
               ))}
             </View>
+            </View>
           </View>
 
           {/* Snap Map */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Snap Map</Text>
+            <View style={styles.cardShadow}>
             <View style={styles.card}>
               <TouchableOpacity
                 style={styles.mapPreview}
@@ -509,7 +571,42 @@ useEffect(() => {
                 <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
               </TouchableOpacity>
             </View>
+            </View>
           </View>
+
+          {/* Haven Feature Toggles for settings*/}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Haven Features</Text>
+              <View style={styles.cardShadow}>
+              <View style={styles.featureCard}>
+                {HavenFeatureSettings.map((feature, index) => (
+                  <View
+                    key={feature.key}
+                    style={[
+                      styles.featureRow,
+                      index < HavenFeatureSettings.length - 1 && styles.rowDivider,
+                    ]}
+                  >
+                    <View style={styles.featureIconCircle}>
+                      {renderFeatureIcon(feature)}
+                    </View>
+                    <View style={styles.rowTextWrapper}>
+                      <Text style={styles.rowTitle}>{feature.title}</Text>
+                      <Text style={styles.rowSubtitle}>{feature.subtitle}</Text>
+                    </View>
+                    <Switch
+                      value={featureToggles[feature.key]}
+                      onValueChange={() => toggleHavenFeature(feature.key)}
+                      trackColor={{ false: "#E5E5EA", true: HAVEN_LIGHT }}
+                      thumbColor={featureToggles[feature.key] ? HAVEN_DARK : "#fff"}
+                      ios_backgroundColor="#E5E5EA"
+                    />
+                  </View>
+                ))}
+
+              </View>
+              </View>
+            </View>
         </View>
       </ScrollView>
     </View>
@@ -521,7 +618,7 @@ const AVATAR_SIZE = 58;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fcf9f9",
+    backgroundColor: "#F8F3E6",
   },
   headerOverlay: {
     position: "absolute",
@@ -541,7 +638,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 34,
     height: 34,
-    borderRadius: 17,
+    borderRadius: 20,
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
@@ -558,7 +655,7 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     minHeight: 800,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F8F3E6",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 16,
@@ -601,8 +698,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   pillsRow: {
-    marginTop: 8,
-    paddingHorizontal: 16,
+    marginTop: 2,
+    paddingHorizontal: 4,
   },
   pill: {
     flexDirection: "row",
@@ -611,7 +708,7 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: "#F2F2F7",
     borderRadius: 12,
-    paddingVertical: 6,
+    paddingVertical: 2,
     paddingHorizontal: 10,
   },
   moodPill: {
@@ -639,18 +736,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
-    paddingVertical: 14,
-    marginTop: 10,
+    paddingVertical: 0,
+    marginTop: 0,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
   actionButton: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 30,
     backgroundColor: "#F2F2F7",
     justifyContent: "center",
     alignItems: "center",
+     borderWidth: 1,
+  borderColor: "#dfdddd",
+  borderRadius: 14,
   },
   section: {
     paddingHorizontal: 16,
@@ -667,17 +767,22 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: "hidden",
   },
+  //nudges and mood/need
   havenCard: {
     backgroundColor: "#F7F7F9",
     borderRadius: 14,
     padding: 14,
+    borderWidth: 1,
+    borderColor: "#dfdddd",
+    borderRadius: 14,
   },
+  //friends are private
   privacyCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F1F6F2",
     borderWidth: 1,
-    borderColor: HAVEN_LIGHT,
+    borderColor: "#dfdddd",
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -685,7 +790,6 @@ const styles = StyleSheet.create({
   privacyIcon: {
     width: 30,
     height: 30,
-    borderRadius: 8,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
@@ -824,9 +928,42 @@ const styles = StyleSheet.create({
     bitmojiNameText: {
     fontSize: 30,
     fontWeight: "500",
-    color: "#FFFFFF",
+    color: "#ffff",
     textShadowColor: "rgba(0,0,0,0.4)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+  },
+  //Haven setting toggles
+  featureCard: {
+  backgroundColor: "#ffff", 
+  borderWidth: 1,
+  borderColor: "#dfdddd",
+  borderRadius: 14,
+  overflow: "hidden",
+},
+featureRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+},
+featureIconCircle: {
+  width: 30,
+  height: 30,
+  borderRadius: 8,
+  backgroundColor: "#ffff",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+},
+//shadow effect
+  cardShadow: {
+    backgroundColor: "#fff", 
+  borderRadius: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });
