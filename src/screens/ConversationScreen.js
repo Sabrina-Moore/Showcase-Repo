@@ -97,15 +97,14 @@ export default function ConversationScreen({ route, navigation }) {
   // prevents navigating to WelcomeToHavenScreen more than once per conversation visit
   const hasNavigatedToWelcomeRef = useRef(false);
   const wasHavenRef = useRef(HavenMode ?? false);
+  const hasFetchedHavenStatusRef = useRef(false); // NEW
 
   useEffect(() => {
     hasNavigatedToWelcomeRef.current = false;
     wasHavenRef.current = HavenMode ?? false;
+    hasFetchedHavenStatusRef.current = false; // NEW — reset per conversation
   }, [conversationId]);
 
-  //Haven conditional Rendering logic
-  //-----------------------------------------------------
-  //check if isHaven is true in supabase
   const fetchHavenStatus = async () => {
     if (!conversationId) {
       setIsHaven(false);
@@ -122,14 +121,19 @@ export default function ConversationScreen({ route, navigation }) {
       console.error("Error fetching Haven status:", error);
       return;
     }
+
     const nowHaven = data?.is_haven === true;
-    const justBecameHaven = nowHaven && !wasHavenRef.current;
+    const isFirstFetch = !hasFetchedHavenStatusRef.current; // NEW
+    hasFetchedHavenStatusRef.current = true; // NEW
+
+    // Only count it as "just became a Haven" if we'd already established
+    // a baseline (i.e. this isn't just us discovering the current state
+    // for the first time on load).
+    const justBecameHaven = nowHaven && !wasHavenRef.current && !isFirstFetch; // CHANGED
+
     wasHavenRef.current = nowHaven;
     setIsHaven(nowHaven);
 
-    // Fires for whichever screen (sender or recipient) sees the flip first —
-    // covers the sender's side, which only learns Haven turned on via
-    // focus/realtime rather than tapping Accept directly.
     if (justBecameHaven && !hasNavigatedToWelcomeRef.current) {
       hasNavigatedToWelcomeRef.current = true;
       navigation.navigate("WelcomeToHavenScreen", { conversationId });
@@ -546,7 +550,7 @@ export default function ConversationScreen({ route, navigation }) {
         <View style={styles.header}>
           <View style={styles.leftSection}>
             <Pressable
-              onPress={() => navigation?.goBack()}
+              onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
               <Ionicons name="chevron-back" size={28} color="#0b0b0b" />
