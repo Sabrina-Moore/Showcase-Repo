@@ -12,7 +12,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets} from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"; //gesture-tap icon, handshake icon
@@ -87,6 +87,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [participantBitmojiIcon, setParticipantBitmojiIcon] = useState(null);
   const [otherUserUsername, setOtherUserUsername] = useState(null);
   const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
+  const [activePill, setActivePill] = useState(null);
 
   const realtimeChannelRef = useRef(null); //so that when returnign to conversation screen, we don't have a duplicate channel
   const [isLoading, setIsLoading] = useState(true);
@@ -630,7 +631,11 @@ export default function ConversationScreen({ route, navigation }) {
   //-----------------------------------
 
   return (
-    <View style={styles.container}>
+         <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
         {/* custom header */}
         <View style={styles.header}>
@@ -690,10 +695,7 @@ export default function ConversationScreen({ route, navigation }) {
       </View>
 
       {/* Chat area */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+ 
         <FlatList
           ref={listRef}
           data={sortedMessages}
@@ -707,8 +709,6 @@ export default function ConversationScreen({ route, navigation }) {
             listRef.current?.scrollToEnd({ animated: true })
           }
         />
-        {/* wrapper for preventing inputbar from overlapping underneath android buttons */}
-        <SafeAreaView edges={["bottom"]} style={styles.safeBottomArea}> 
              {/* feature pills from plus symbol Haven */}
         {/* only renders if showPills is true */}
         <View style={styles.inputContainer}>
@@ -725,7 +725,8 @@ export default function ConversationScreen({ route, navigation }) {
        {/* bottom of page */}
           {/* Input bar */}
           
-          <View style={[styles.inputBar, isHaven && styles.havenInputBar]}>
+          <View style={[styles.inputBar, isHaven && styles.havenInputBar,
+            { paddingBottom: Math.max(insets.bottom, 8) },]}>
             <TouchableOpacity>
               <Pressable onPress={() => navigation.navigate("Camera")}>
                 <Ionicons name="camera" size={27} color="#000" />
@@ -785,11 +786,7 @@ export default function ConversationScreen({ route, navigation }) {
             onPromptSelect={haven.handlePromptSelect}
           />
         )}
-
-        
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </View>
+   </KeyboardAvoidingView>
   );
 }
 
@@ -897,7 +894,7 @@ const styles = StyleSheet.create({
   //bottom half wrapper
   inputContainer: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
     zIndex: 100,
     elevation: 100,
     position: "relative",
@@ -907,6 +904,7 @@ const styles = StyleSheet.create({
     minHeight: 55,
     flexDirection: "row",
     alignItems: "center",
+    paddingTop: 8,
     paddingHorizontal: 10,
     gap: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -915,13 +913,6 @@ const styles = StyleSheet.create({
   },
   //haven input bar
    havenInputBar: {
-    minHeight: 55,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    gap: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E5E5EA",
     backgroundColor: "#F8F3E6",
   },
   //text input

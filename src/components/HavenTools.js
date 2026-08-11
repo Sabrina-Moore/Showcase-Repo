@@ -115,11 +115,11 @@ export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPro
   if (!activePill) return null;
 
   return (
-    <View>
-      {/* prompts pill */}
+   
+    <View style={styles.panelContainer}>
+           {/* prompts pill */}
       {activePill.id === "prompts" && (
         <View style={styles.promptPanel}>
-          <View style={styles.topHandle} />
           <View style={styles.promptContainer}>
             <Text style={styles.promptLabel}>Daily Prompts</Text>
             <TouchableOpacity onPress={fetchRandomPrompts}>
@@ -143,7 +143,7 @@ export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPro
               </TouchableOpacity>
             )}
           />
-        </View>
+      </View>
       )}
 
       {activePill.id === "games" && (
@@ -161,13 +161,17 @@ export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPro
           </TouchableOpacity>
         </View>
       )}
-    </View>
+  </View>
   );
 }
 
 
 const styles = StyleSheet.create({
     //haven specific visuals - make sure to match green
+  panelContainer: {
+    width: "100%",
+    backgroundColor: "#f8f3e6",
+  },
   pillScroll: {
     backgroundColor: "transparent",
     marginBottom: 8,
@@ -179,8 +183,8 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ffff",
-    paddingHorizontal: 12,
+    backgroundColor: "#F8F3E6",
+    paddingHorizontal: 16,
     paddingVertical: 2,
     margin: 2,
     borderRadius: 25,
@@ -193,35 +197,20 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   pillText: {
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#4a4a4a",
     letterSpacing: -0.2,
   },
-  //bottom sheet drawer
-  drawerContainer: {
-    borderWidth: 1,
-    borderColor: "#4a4a4a",
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 10,
-    marginHorizontal: 10,
-    marginBottom: 8,
-    backgroundColor: "transparent",
-  },
    //prompts
   promptPanel: {
     width: "100%",
     height: 300,
-    backgroundColor: "#fff",
+    backgroundColor: "#F8F3E6",
     borderRadius: 20,
     overflow: "hidden",
-    marginTop: 8,
-    marginBottom: 8,
-    paddingTop: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
   promptContainer: {
     flexDirection: "row",
@@ -230,9 +219,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   promptList: {
-  gap: 16,        
-  paddingBottom: 4,
-},
+    gap: 16,        
+    paddingBottom: 4,
+  },
   promptLabel: {
    textAlign: "center",
   fontSize: 12,
@@ -256,35 +245,10 @@ promptItemText: {
   textAlign: "center",
   lineHeight: 20,
 },
-gameContainer: {
-    borderWidth: 1,
-    borderColor: "#4a4a4a",
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 10,
-    marginHorizontal: 10,
-    marginBottom: 8,
-    backgroundColor: "transparent",
-  },
-
-  //scrollview for game
-  scrollContent: {
-    flex: 1,
-    backgroundColor: "#ffff",
-    borderColor: "#606060", 
-  },
-  scrollContentContainer: {
-    flexGrow: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    position: "relative",
-  },
   gamePanel: {
   width: "100%",
   height: 400,              
-  backgroundColor: "#fff",
+  backgroundColor: "#F8F3E6",
   borderRadius: 20,
   overflow: "hidden",
   marginTop: 4,
