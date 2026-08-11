@@ -73,27 +73,27 @@ export default function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, 
             <View style={styles.pillRow}>
               <TouchableOpacity style={styles.pill}
               onPress={handleGamePress}>
-                <Ionicons name="game-controller-outline" size={18} color="#000" />
+                <Ionicons name="game-controller-outline" size={20} color="black" />
                 <Text style={styles.pillText}>Games</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pill}
               onPress={handlePromptPress}>
-                <Entypo name="chat" size={18} color="#000" />
+                <Entypo name="chat" size={22} color="#000" />
                 <Text style={styles.pillText}>Prompts</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pill}
               onPress={onNudgePress}>
-                <MaterialCommunityIcons name="gesture-tap" size={24} color="black" />
+                <MaterialCommunityIcons name="gesture-tap" size={22} color="black" />
                 <Text style={styles.pillText}>Nudge </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pill}
               onPress={onCheckinPress}>
-                <MaterialCommunityIcons name="hand-wave" size={18} color="black" />
+                <MaterialCommunityIcons name="hand-wave" size={20} color="black" />
                 <Text style={styles.pillText}>Mood | Need </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pill}
               onPress={onHelpPress}>
-                <Ionicons name="alert-circle" size={24} color="black" />
+                <Ionicons name="alert-circle" size={22} color="black" />
                 <Text style={styles.pillText}>Need Help?</Text>
               </TouchableOpacity>
             </View>
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   pillScroll: {
     backgroundColor: "transparent",
     marginBottom: 8,
-    overflow: "visible",
+    height: 60,
   },
   pillRow: {
     flexDirection: "row",
@@ -276,12 +276,15 @@ gameContainer: {
   backgroundColor: "#fff",
   borderRadius: 20,
   overflow: "hidden",
-  marginTop: 8,
+  marginTop: 4,
   marginBottom: 8,
 },
   gameImage: {
     width: "100%",
-    height: "100%",
+    height: 500,
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   topHandle: {
     position: "absolute",
