@@ -6,9 +6,9 @@
 <br />
 <div align="center">
   <a>
-    <img src="./assets/HavenLogo2.png" alt="Logo" width="180" height="180">
+    <img src="./assets/HavenLogos/Haven-Logo-Full.png" alt="Logo" width="180" height="180">
   </a>
-
+  
 <h1 align="center">Snap Haven</h1>
 
 <h3 align="center">

@@ -153,10 +153,6 @@ export default function ConversationScreen({ route, navigation }) {
   //feature pills persist for only a few seconds and goes away
   const handleTogglePills = () => {
     setShowPills(true);
-
-    setTimeout(() => {
-      setShowPills(false);
-    }, 8000);
   };
 
   //onPress handler for navigation to map from Need Help button in HavenTools
@@ -448,16 +444,17 @@ export default function ConversationScreen({ route, navigation }) {
             {senderLabel}
           </Text>
 
-          <View style={[styles.messageRow, { borderLeftColor: senderColor }]}>
+          <View style={styles.messageRow}>
+            <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
             <View style={styles.inviteCard}>
               <View style={styles.inviteHeaderRow}>
                 <View style={styles.inviteIconWrapper}>
                   <Image
-                    source={require("../../assets/HavenLogoTransparent.png")}
+                    source={require("../../assets/HavenLogos/HavenLogoTransparent.png")}
                     style={{ width: 22, height: 22, resizeMode: "contain" }}
                   />
                 </View>
-                <Text style={styles.inviteTitleText}>{item.text}</Text>
+                <Text style={styles.inviteText}>{item.text}</Text>
               </View>
 
               {ismMyData ? (
@@ -503,21 +500,23 @@ export default function ConversationScreen({ route, navigation }) {
           {senderLabel}
         </Text>
 
-        <View
-          style={[
-            styles.messageRow,
-            { borderLeftColor: senderColor },
-            isPrompt && styles.promptMessageBubble,
-            isCheckin && styles.checkinMessageBubble,
-            isNudge && styles.nudgeMessageBubble,
-          ]}
-        >
+        <View style={styles.messageRow}>
+            <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
+            <View
+      style={[
+        styles.messageBubble,
+        isPrompt && styles.promptMessageBubble,
+        isCheckin && styles.checkinMessageBubble,
+        isNudge && styles.nudgeMessageBubble,
+      ]}
+    >
           {isPrompt && (
             <View style={styles.promptBadge}>
               <Entypo name="chat" size={12} color="#a5BEA8" />
               <Text style={styles.promptBadgeText}>Prompt</Text>
             </View>
           )}
+          {/* rendering respond to notification message  */}
           {isCheckin && (
             <View style={styles.checkinBadge}>
               <MaterialCommunityIcons
@@ -525,7 +524,7 @@ export default function ConversationScreen({ route, navigation }) {
                 size={12}
                 color="black"
               />
-              <Text style={styles.promptBadgeText}>Mood | Need </Text>
+              <Text style={styles.checkinBadgeText}>Mood | Need </Text>
             </View>
           )}
           {isNudge && (
@@ -535,33 +534,31 @@ export default function ConversationScreen({ route, navigation }) {
                 size={12}
                 color="black"
               />
-              <Text style={styles.promptBadgeText}>Nudge</Text>
+              <Text style={styles.nudgeBadgeText}>Nudge</Text>
             </View>
           )}
           <Text
             style={
-              isPrompt
-                ? styles.promptMessageText
-                : isCheckin
-                  ? styles.checkinMessageText
-                  : isNudge
-                    ? styles.nudgeMessageText
-                    : styles.messageText
+            isPrompt ? styles.promptMessageText
+            : isCheckin ? styles.checkinMessageText
+            : isNudge ? styles.nudgeMessageText
+            : styles.messageText
             }
           >
             {item.text}
           </Text>
-          <TouchableOpacity
-            style={styles.sendUpdateButton}
-            onPress={console.log("Pressed")}
-          >
+          
+
             {(isNudge || isCheckin) && (
+              <TouchableOpacity
+                style={styles.sendUpdateButton}
+              >
               <Text style={styles.sendUpdateText}>
-                {" "}
-                Respond to {otherUserUsername}'s message{" "}
+                Respond to {otherUserUsername}'s message
               </Text>
-            )}
           </TouchableOpacity>
+          )}
+        </View>
         </View>
       </View>
     );
@@ -646,20 +643,7 @@ export default function ConversationScreen({ route, navigation }) {
             listRef.current?.scrollToEnd({ animated: true })
           }
         />
-        {/* feature pills from plus symbol Haven */}
-        {/* only renders if showPills is true */}
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
-          {showPills && (
-            <HavenTools
-              onHelpPress={handleHelpPress}
-              onNudgePress={handleNudgePress}
-              onCheckinPress={handleCheckinPress}
-              onPromptSelect={(promptText) =>
-                sendPromptAsMessage(promptText, conversationId, currentUserId)
-              }
-            />
-          )}
-
+       {/* bottom of page */}
           {/* Input bar */}
           <View style={styles.inputBar}>
             <TouchableOpacity>
@@ -711,6 +695,20 @@ export default function ConversationScreen({ route, navigation }) {
               )}
             </TouchableOpacity>
           </View>
+           {/* feature pills from plus symbol Haven */}
+        {/* only renders if showPills is true */}
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
+          {showPills && (
+            <HavenTools
+              onHelpPress={handleHelpPress}
+              onNudgePress={handleNudgePress}
+              onCheckinPress={handleCheckinPress}
+              onPromptSelect={(promptText) =>
+                sendPromptAsMessage(promptText, conversationId, currentUserId)
+              }
+            />
+          )}
+
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -796,15 +794,22 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   messageRow: {
-    borderLeftWidth: 3,
-    paddingLeft: 10,
+  flexDirection: "row",
+  alignItems: "stretch",
   },
-
+  senderLine: {
+    width: 3,
+    borderRadius: 2,
+    marginRight: 12, 
+  },
   messageText: {
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: 14,
+    fontWeight: "600",
     color: "#222",
   },
+  messageBubble: {
+  flex: 1,
+},
 
   //bottom half wrapper
   inputContainer: {
@@ -823,6 +828,7 @@ const styles = StyleSheet.create({
     gap: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: "#E5E5EA",
+    backgroundColor: "#F8F3E6",
   },
   defaultPill: {
     flex: 1,
@@ -853,17 +859,18 @@ const styles = StyleSheet.create({
   },
   sendUpdateButton: {
     marginTop: 10,
-    width: "75%",
+    width: 250,
+    height: 30,
     borderRadius: 30,
-    backgroundColor: "#F8F3E6",
+    backgroundColor: "#F8F3E6", //haven offwhite "#F8F3E6"
     justifyContent: "center",
-    alignItems: "center",
     alignSelf: "center",
   },
   sendUpdateText: {
-    fontSize: 14,
-    lineHeight: 24,
+    fontSize: 12,
+    fontWeight: "600",
     color: "#808080",
+    textAlign: "center",
   },
   profileInfoTouchable: {
     flexDirection: "row",
@@ -896,23 +903,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   promptBadgeText: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "700",
-    color: "#a5BEA8",
+    color: "#0b0b0b", //black "#0b0b0b"
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   promptMessageText: {
-    fontSize: 15,
-    color: "#F8F3E6",
+    fontSize: 14,
     fontWeight: "600",
-  },
-  checkinMessageText: {
-    fontSize: 15,
     color: "#F8F3E6",
-    fontWeight: "600",
   },
-  //mood need nudges
+  //haven mood need
   checkinMessageBubble: {
     backgroundColor: "#B47100",
     borderRadius: 18,
@@ -928,17 +930,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   checkinBadgeText: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "700",
-    color: "#a5BEA8",
+    color: "#0b0b0b", //grey "#8E8E93"
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   checkinMessageText: {
-    fontSize: 15,
-    color: "#F8F3E6",
+    fontSize: 14,
     fontWeight: "600",
+    color: "#F8F3E6",
   },
+  //haven nudges
   nudgeMessageBubble: {
     backgroundColor: "#2E5A44",
     borderRadius: 18,
@@ -954,21 +957,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   nudgeBadgeText: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "700",
-    color: "#a5BEA8",
+    color: "#0b0b0b",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   nudgeMessageText: {
-    fontSize: 15,
-    color: "#F8F3E6",
+    fontSize: 14,
     fontWeight: "600",
+    color: "#F8F3E6",
   },
   //haven invite card
   inviteSystemLabel: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "700",
     color: "#8E8E93",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -980,11 +983,11 @@ const styles = StyleSheet.create({
     borderColor: "#E5E5EA",
     borderRadius: 16,
     padding: 14,
-    maxWidth: 300,
+    width: 300,
   },
   inviteHeaderRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 10,
     marginBottom: 12,
   },
@@ -996,9 +999,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  inviteTitleText: {
+  inviteText: {
     flex: 1,
-    fontSize: 16,
+    flexShrink: 1,
+    fontSize: 14,
     fontWeight: "700",
     color: "#0b0b0b",
     lineHeight: 21,
@@ -1023,7 +1027,7 @@ const styles = StyleSheet.create({
   },
   inviteButtonText: {
     color: "#fff",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "700",
   },
   inviteStatusPill: {

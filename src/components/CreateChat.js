@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
+  Image,
   TextInput,
   TouchableOpacity,
   Pressable,
@@ -22,16 +23,19 @@ export default function CreateChat({ visible, onClose }) {
       id: "chat",
       label: "New Chat",
       icon: "chatbubble-outline",
+      image: null,
     },
     {
       id: "haven",
       label: "New Haven Chat",
-      icon: "shield-checkmark-outline",
+      icon: null, 
+      image: require("../../assets/HavenLogos/HavenLogoTransparent.png"),
     },
     {
       id: "call",
       label: "New Call",
       icon: "call-outline",
+      image: null,
     },
   ];
 
@@ -52,6 +56,7 @@ export default function CreateChat({ visible, onClose }) {
       case "haven":
         return (
           <View style={styles.content}>
+
             <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -138,11 +143,19 @@ export default function CreateChat({ visible, onClose }) {
                   onPress={() => setActiveTab(tab.id)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons
-                    name={tab.icon}
-                    size={19}
-                    color={isActive ? "#000" : "#8E8E93"}
-                  />
+                   {tab.image ? (
+                    <Image
+                      source={tab.image}
+                      style={[styles.havenLogo, {opacity: isActive ? 1 : 0.5 }]}
+                      resizeMode="contain"
+                    />
+                    ) : (
+                      <Ionicons
+                        name={tab.icon}
+                        size={22}
+                        color={isActive ? "#000" : "#8E8E93"}
+                      />
+                    )}
 
                   <Text
                     style={[
@@ -234,5 +247,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
     marginBottom: 20,
+  },
+  havenLogo: {
+    width: 22,
+    height: 22,
+    alignSelf: "center",
+    marginBottom: 0,
   },
 });

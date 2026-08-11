@@ -122,12 +122,12 @@ export default function ChatScreen({ navigation }) {
     });
 
     const withStatus = searchConversations.map((c) => {
-      const latestMsg = latestByConversation[c.conversation_id];
+      const latestMessage = latestByConversation[c.conversation_id];
       return {
         ...c,
-        latest_message_sent: latestMsg?.created_at ?? null,
-        status_label: getStatusLabel(latestMsg, user.id),
-        time_ago: timeAgo(latestMsg?.created_at),
+        latest_message_sent: latestMessage ?.created_at ?? null,
+        status_label: getStatusLabel(latestMessage, user.id),
+        time_ago: timeAgo(latestMessage?.created_at),
         is_haven: havenByConversation[c.conversation_id] ?? false,
       };
     });
@@ -267,7 +267,7 @@ export default function ChatScreen({ navigation }) {
                 source={{ uri: chat.otherParticipant.bitmoji_icon }}
                 style={[
                   styles.listAvatar,
-                  chat.is_haven && styles.havenAvatarBorder,
+                  styles.avatarImage
                 ]}
               />
             ) : (
@@ -597,9 +597,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   //haven
-  havenAvatarBorder: {
+  AvatarBorder: {
     borderWidth: 2,
-    borderColor: "#a5bEA8",
+    borderColor: "#C7C7CC",
     backgroundColor: "rgba(165, 190, 168, 0.25)",
   },
   //statusLabel Haven

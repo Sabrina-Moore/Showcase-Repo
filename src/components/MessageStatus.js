@@ -32,7 +32,7 @@ export default function MessageStatus({  latestMessageSent,
     <View>
         <View style={styles.container}>
             {isHaven ? (
-                <Image source={require("../../assets/HavenLogo.png")} style={styles.havenIcon} />
+                <Image source={require("../../assets/HavenLogos/HavenLogoTransparent.png")} style={styles.havenIcon} />
             ) : (
                 <Ionicons name="chatbox" size={16} color="#0A84FF" style={{ marginRight: 4, transform: [{ scaleX: -1 }]}}  />
             )}
