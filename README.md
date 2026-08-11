@@ -100,7 +100,8 @@ Video of feature here.
 
 
 **Stretch Milestones**
-- "Nudges" expanded to remind users to reach out when the conversation becomes inactive for too long (based on lastest message timer)
+- "Nudges" expanded to remind users to reach out when the conversation becomes inactive for too long (based on lastest message timer) as a visible pop up in the ChatScreen
+- Nudge updates (set in the ConversationProfileScreen) also send a push notification to the user
 - Users can customize settings for all added features (changing interval if applicable, or turning off and on features)
 - Users can invite friends to their already existing Haven conversation, but must be approved by the members of that Haven
 - Users can set an optional passcode for the chat so it cannot be opened on their phone app without that passcode for additional privacy (restricted to users with verified ages over 17)
