@@ -16,7 +16,7 @@ import { Ionicons, Entypo, AntDesign, MaterialCommunityIcons } from "@expo/vecto
 import { supabase } from "../../utils/hooks/supabase";
 
 
-export default function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPromptSelect}) {
+export function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPromptSelect}) {
 
   const [activePill, setActivePill] = useState(null);
 
@@ -55,54 +55,69 @@ export default function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, 
       fetchRandomPrompts();
   };
 
+  const handlePromptSelect = (promptText) => {
+    onPromptSelect?.(promptText);
+    setActivePill(null);
+  };
+
+  return {
+    activePill,
+    setActivePill,
+    prompts,
+    loading,
+    fetchRandomPrompts,
+    handleGamePress,
+    handlePromptPress,
+    handlePromptSelect,
+
+  }
+
+}
+
+export function HavenPillsRow ({onGamePress, onNudgePress, onPromptPress, onCheckinPress, onHelpPress}) {
+ /* feature pills from plus symbol Haven */
+ /* only renders if showPills is true */
+ 
+  return (
+  <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.pillScroll}
+      contentContainerStyle={styles.pillRow}
+    >
+      <TouchableOpacity style={styles.pill} onPress={onGamePress}>
+        <Ionicons name="game-controller-outline" size={20} color="black" />
+        <Text style={styles.pillText}>Games</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.pill} onPress={onPromptPress}>
+        <Entypo name="chat" size={22} color="#000" />
+        <Text style={styles.pillText}>Prompts</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.pill} onPress={onNudgePress}>
+        <MaterialCommunityIcons name="gesture-tap" size={22} color="black" />
+        <Text style={styles.pillText}>Nudge </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.pill} onPress={onCheckinPress}>
+        <MaterialCommunityIcons name="hand-wave" size={20} color="black" />
+        <Text style={styles.pillText}>Mood + Need </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.pill} onPress={onHelpPress}>
+        <Ionicons name="alert-circle" size={22} color="black" />
+        <Text style={styles.pillText}>Need Help?</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
 
 
+// Panel content (prompts list / games) - below textinput
+export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPrompts, onPromptSelect}) {
+  if (!activePill) return null;
 
-     {/* feature pills from plus symbol Haven */}
-    {/* only renders if showPills is true */}
-    return (
-        <View>
-        <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.pillScroll}
-                contentContainerStyle={styles.pillRow}
-            >
-
-            {/* not dynamic pills */}
-            <View style={styles.pillRow}>
-              <TouchableOpacity style={styles.pill}
-              onPress={handleGamePress}>
-                <Ionicons name="game-controller-outline" size={20} color="black" />
-                <Text style={styles.pillText}>Games</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.pill}
-              onPress={handlePromptPress}>
-                <Entypo name="chat" size={22} color="#000" />
-                <Text style={styles.pillText}>Prompts</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.pill}
-              onPress={onNudgePress}>
-                <MaterialCommunityIcons name="gesture-tap" size={22} color="black" />
-                <Text style={styles.pillText}>Nudge </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.pill}
-              onPress={onCheckinPress}>
-                <MaterialCommunityIcons name="hand-wave" size={20} color="black" />
-                <Text style={styles.pillText}>Mood | Need </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.pill}
-              onPress={onHelpPress}>
-                <Ionicons name="alert-circle" size={22} color="black" />
-                <Text style={styles.pillText}>Need Help?</Text>
-              </TouchableOpacity>
-            </View>
-
-      </ScrollView>
-
-      
-        {/* prompts pill */}
-       {activePill?.id === "prompts" && (
+  return (
+    <View>
+      {/* prompts pill */}
+      {activePill.id === "prompts" && (
         <View style={styles.promptPanel}>
           <View style={styles.topHandle} />
           <View style={styles.promptContainer}>
@@ -112,50 +127,43 @@ export default function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, 
             </TouchableOpacity>
           </View>
 
-              <FlatList
-                data={prompts}
-                keyExtractor={(item, index) =>
-                  item?.prompt_id?.toString() || item?.id?.toString() || index.toString()
-                }
-                styles={styles.promptScroll}
-                contentContainerStyle={styles.promptList}
-                showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.promptItem}
-                  onPress={() => {
-                    onPromptSelect?.(item.prompt_text);
-                    setActivePill(null);
-                  }}>
-                    <Text style={styles.promptItemText}>{item?.prompt_text}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-          </View>
-        )}
+          <FlatList
+            data={prompts}
+            keyExtractor={(item, index) =>
+              item?.prompt_id?.toString() || item?.id?.toString() || index.toString()
+            }
+            contentContainerStyle={styles.promptList}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.promptItem}
+                onPress={() => onPromptSelect?.(item.prompt_text)}
+              >
+                <Text style={styles.promptItemText}>{item?.prompt_text}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
 
-        {/* games scrollview */}
-                {/* Games panel */}
-                {activePill?.id === "games" && (
-                  <View style={styles.gamePanel}>
-                    <View style={styles.topHandle} />
-                    <TouchableOpacity style={styles.gameItem}
-                  onPress={() => {
-                    setActivePill(null);
-                  }}>
-                     <Image
-                      source={require("../../assets/HavenIcons/GamesImage.jpeg")}
-                      style={styles.gameImage}
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-            
-                  </View>
-                )}
-              </View>
-    );
+      {activePill.id === "games" && (
+        <View style={styles.gamePanel}>
+          <View style={styles.topHandle} />
+          <TouchableOpacity
+            style={styles.gameItem}
+            onPress={() => setActivePill(null)}
+          >
+            <Image
+              source={require("../../assets/HavenIcons/GamesImage.jpeg")}
+              style={styles.gameImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 }
-
-
 
 
 const styles = StyleSheet.create({
@@ -163,7 +171,7 @@ const styles = StyleSheet.create({
   pillScroll: {
     backgroundColor: "transparent",
     marginBottom: 8,
-    height: 60,
+    height: 40,
   },
   pillRow: {
     flexDirection: "row",
@@ -172,11 +180,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffff",
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
     margin: 2,
     borderRadius: 25,
-    gap: 8,
+    gap: 2,
     //shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -186,6 +194,7 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontSize: 15,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#4a4a4a",
     letterSpacing: -0.2,
@@ -227,6 +236,7 @@ const styles = StyleSheet.create({
   promptLabel: {
    textAlign: "center",
   fontSize: 12,
+  fontFamily: "Avenir-Next",
   color: "#8a8a8a",
   marginBottom: 4,
   letterSpacing: 0.5,
@@ -240,6 +250,7 @@ const styles = StyleSheet.create({
 },
 promptItemText: {
   fontSize: 15,
+  fontFamily: "Avenir-Next",
   fontWeight: "500",
   color: "#ffffff",
   textAlign: "center",

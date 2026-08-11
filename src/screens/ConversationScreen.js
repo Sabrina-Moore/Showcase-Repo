@@ -20,7 +20,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
 
 import CameraScreen from "./CameraScreen"; //functionality for camera button
-import HavenTools from "../components/HavenTools";
+import { HavenTools, HavenPillsRow, HavenPanels}  from "../components/HavenTools";
 import MessageStatus from "../components/MessageStatus";
 import getStatusLabel from "../../utils/hooks/getStatusLabel";
 import timeAgo from "../../utils/hooks/timeAgo";
@@ -96,8 +96,11 @@ export default function ConversationScreen({ route, navigation }) {
   //chevron next to "Me" message label for mood/need status
   const [expandedMoodUserId, setExpandedMoodUserId] = useState(null);
 
-
   const listRef = useRef();
+
+  const haven = HavenTools((promptText) =>
+  sendPromptAsMessage(promptText, conversationId, currentUserId)
+);
 
   // kept in sync so the realtime callback below (created once per conversationId)
   // always sees the latest currentUserId instead of a stale closure value
@@ -524,6 +527,7 @@ export default function ConversationScreen({ route, navigation }) {
     const isCheckin = item.is_checkin === true;
     const isNudge = item.is_nudge === true;
 
+
     return (
       <View style={styles.senderRowWrapper}>
         <Pressable
@@ -584,7 +588,7 @@ export default function ConversationScreen({ route, navigation }) {
                   size={20}
                   color="white"
                 />
-                <Text style={styles.checkinBadgeText}>Mood | Need </Text>
+                <Text style={styles.checkinBadgeText}>Mood + Need </Text>
               </View>
             )}
             {isNudge && (
@@ -705,17 +709,30 @@ export default function ConversationScreen({ route, navigation }) {
         />
         {/* wrapper for preventing inputbar from overlapping underneath android buttons */}
         <SafeAreaView edges={["bottom"]} style={styles.safeBottomArea}> 
-
+             {/* feature pills from plus symbol Haven */}
+        {/* only renders if showPills is true */}
+        <View style={styles.inputContainer}>
+          {showPills && (
+            <HavenPillsRow
+              onGamePress={haven.handleGamePress}
+              onPromptPress={haven.handlePromptPress}
+              onNudgePress={handleNudgePress}
+              onCheckinPress={handleCheckinPress}
+              onHelpPress={handleHelpPress}
+            />
+          )}
+        </View>
        {/* bottom of page */}
           {/* Input bar */}
-          <View style={styles.inputBar}>
+          
+          <View style={[styles.inputBar, isHaven && styles.havenInputBar]}>
             <TouchableOpacity>
               <Pressable onPress={() => navigation.navigate("Camera")}>
                 <Ionicons name="camera" size={27} color="#000" />
               </Pressable>
             </TouchableOpacity>
             {/* moved arrow up send and mic into textinput */}
-            <View style={[styles.defaultPill, isHaven && styles.havenPill]}>
+            <View style={[styles.defaultPill, isHaven && styles.defaultHavenPill]}>
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
@@ -758,21 +775,18 @@ export default function ConversationScreen({ route, navigation }) {
               )}
             </TouchableOpacity>
           </View>
-           {/* feature pills from plus symbol Haven */}
-        {/* only renders if showPills is true */}
-        <View style={styles.inputContainer}>
+          {/* <HavenPanels for under the input bar */}
           {showPills && (
-            <HavenTools
-              onHelpPress={handleHelpPress}
-              onNudgePress={handleNudgePress}
-              onCheckinPress={handleCheckinPress}
-              onPromptSelect={(promptText) =>
-                sendPromptAsMessage(promptText, conversationId, currentUserId)
-              }
-            />
-          )}
+          <HavenPanels
+            activePill={haven.activePill}
+            setActivePill={haven.setActivePill}
+            prompts={haven.prompts}
+            fetchRandomPrompts={haven.fetchRandomPrompts}
+            onPromptSelect={haven.handlePromptSelect}
+          />
+        )}
 
-        </View>
+        
         </SafeAreaView>
       </KeyboardAvoidingView>
     </View>
@@ -811,11 +825,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 18,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#000",
   },
   userStatus: {
     fontSize: 11,
+    fontFamily: "Avenir-Next",
     color: "#8E8E93",
     marginTop: 1,
   },
@@ -844,6 +860,7 @@ const styles = StyleSheet.create({
   dayDivider: {
     alignSelf: "center",
     fontSize: 12,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     letterSpacing: 0.5,
     color: "#A9A9AE",
@@ -854,6 +871,7 @@ const styles = StyleSheet.create({
   },
   sender: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     marginBottom: 4,
   },
@@ -868,6 +886,7 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#222",
   },
@@ -892,8 +911,20 @@ const styles = StyleSheet.create({
     gap: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: "#E5E5EA",
+    backgroundColor: "#ffff",
+  },
+  //haven input bar
+   havenInputBar: {
+    minHeight: 55,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    gap: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: "#E5E5EA",
     backgroundColor: "#F8F3E6",
   },
+  //text input
   defaultPill: {
     flex: 1,
     flexDirection: "row",
@@ -904,9 +935,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 8,
   },
+  defaultHavenPill: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    height: 40,
+    backgroundColor: "#a5BEA8",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
   input: {
     flex: 1,
     fontSize: 17,
+    fontFamily: "Avenir-Next",
     color: "#000",
   },
   //icons and buttons
@@ -932,6 +974,7 @@ const styles = StyleSheet.create({
   },
   sendUpdateText: {
     fontSize: 12,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#808080",
     textAlign: "center",
@@ -946,7 +989,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     height: 40,
-    backgroundColor: "#a5BEA8",
+    backgroundColor: "#a5BEA8", //haven light green #a5BEA8
     borderRadius: 20,
     paddingHorizontal: 16,
     gap: 8,
@@ -968,6 +1011,7 @@ const styles = StyleSheet.create({
   },
   promptBadgeText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#F8F3E6", //black "#0b0b0b"
     textTransform: "uppercase",
@@ -975,6 +1019,7 @@ const styles = StyleSheet.create({
   },
   promptMessageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#F8F3E6",
   },
@@ -995,6 +1040,7 @@ const styles = StyleSheet.create({
   },
   checkinBadgeText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#F8F3E6", //grey "#8E8E93"
     textTransform: "uppercase",
@@ -1002,6 +1048,7 @@ const styles = StyleSheet.create({
   },
   checkinMessageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#F8F3E6",
   },
@@ -1022,6 +1069,7 @@ const styles = StyleSheet.create({
   },
   nudgeBadgeText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#F8F3E6",
     textTransform: "uppercase",
@@ -1029,12 +1077,14 @@ const styles = StyleSheet.create({
   },
   nudgeMessageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#F8F3E6",
   },
   //haven invite card
   inviteSystemLabel: {
     fontSize: 14,
+    fontFamily: "Avenir-Next-Bold",
     fontWeight: "700",
     color: "#8E8E93",
     textTransform: "uppercase",
@@ -1067,6 +1117,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#0b0b0b",
     lineHeight: 21,
@@ -1092,6 +1143,7 @@ const styles = StyleSheet.create({
   inviteButtonText: {
     color: "#fff",
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
   },
   inviteStatusPill: {
@@ -1108,16 +1160,19 @@ const styles = StyleSheet.create({
   },
   inviteStatusTextPending: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#8E8E93",
   },
   inviteStatusTextAccepted: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#2E5A44",
   },
   inviteStatusTextDeclined: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#B47100",
   },
