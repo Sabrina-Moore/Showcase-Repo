@@ -516,7 +516,7 @@ export default function ConversationScreen({ route, navigation }) {
     >
           {isPrompt && (
             <View style={styles.promptBadge}>
-              <Entypo name="chat" size={12} color="#a5BEA8" />
+              <Entypo name="chat" size={20} color="white" />
               <Text style={styles.promptBadgeText}>Prompt</Text>
             </View>
           )}
@@ -525,8 +525,8 @@ export default function ConversationScreen({ route, navigation }) {
             <View style={styles.checkinBadge}>
               <MaterialCommunityIcons
                 name="hand-wave"
-                size={12}
-                color="black"
+                size={20}
+                color="white"
               />
               <Text style={styles.checkinBadgeText}>Mood | Need </Text>
             </View>
@@ -535,8 +535,8 @@ export default function ConversationScreen({ route, navigation }) {
             <View style={styles.nudgeBadge}>
               <MaterialCommunityIcons
                 name="gesture-tap"
-                size={12}
-                color="black"
+                size={22}
+                color="white"
               />
               <Text style={styles.nudgeBadgeText}>Nudge</Text>
             </View>
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
   promptBadgeText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#0b0b0b", //black "#0b0b0b"
+    color: "#F8F3E6", //black "#0b0b0b"
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
@@ -936,7 +936,7 @@ const styles = StyleSheet.create({
   checkinBadgeText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#0b0b0b", //grey "#8E8E93"
+    color: "#F8F3E6", //grey "#8E8E93"
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
@@ -963,7 +963,7 @@ const styles = StyleSheet.create({
   nudgeBadgeText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#0b0b0b",
+    color: "#F8F3E6",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
