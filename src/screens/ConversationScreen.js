@@ -462,9 +462,7 @@ export default function ConversationScreen({ route, navigation }) {
   );
 
   // hide nudges from the sender — only the recipient should see them
-  const visibleMessages = sortedMessages.filter(
-    (msg) => !(msg.is_nudge === true && msg.sender_id === currentUserId),
-  );
+  const visibleMessages = sortedMessages;
 
   //-----------------------------------
   //rendering messages
@@ -535,6 +533,24 @@ export default function ConversationScreen({ route, navigation }) {
     const isPrompt = item.is_prompt === true;
     const isCheckin = item.is_checkin === true;
     const isNudge = item.is_nudge === true;
+
+    if (isNudge && ismMyData) {
+      return (
+        <View style={styles.senderRowWrapper}>
+          <View style={styles.sentNudgeRow}>
+            <MaterialCommunityIcons
+              name="gesture-tap"
+              size={14}
+              color="#8E8E93"
+            />
+            <Text style={styles.sentNudgeText}>
+              You sent a nudge:{" "}
+              <Text style={styles.sentNudgeQuote}>{item.text}</Text>
+            </Text>
+          </View>
+        </View>
+      );
+    }
 
     return (
       <View style={styles.senderRowWrapper}>
@@ -1198,5 +1214,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#555",
+  },
+  sentNudgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    backgroundColor: "#a5BEA8",
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  sentNudgeText: {
+    fontSize: 12,
+    fontFamily: "Avenir-Next",
+    color: "#ffffff",
+    fontStyle: "italic",
+  },
+  sentNudgeQuote: {
+    fontStyle: "normal",
+    color: "#ffffff",
   },
 });
