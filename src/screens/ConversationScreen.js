@@ -12,10 +12,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import {
-  useSafeAreaInsets,
-  SafeAreaView,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets} from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"; //gesture-tap icon, handshake icon
@@ -23,8 +20,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
 
 import CameraScreen from "./CameraScreen"; //functionality for camera button
-// import HavenTools from "../components/HavenTools";
-import { HavenPillsRow, HavenPanel } from "../components/HavenTools";
+import { HavenTools, HavenPillsRow, HavenPanels}  from "../components/HavenTools";
 import MessageStatus from "../components/MessageStatus";
 import getStatusLabel from "../../utils/hooks/getStatusLabel";
 import timeAgo from "../../utils/hooks/timeAgo";
@@ -79,10 +75,10 @@ export default function ConversationScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState([]);
   const [conversationStatus, setConversationStatus] = useState({
-    latest_message_sent: null,
-    status_label: "",
-    time_ago: "",
-  });
+  latest_message_sent: null,
+  status_label: "",
+  time_ago: "",
+});
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null);
@@ -102,6 +98,10 @@ export default function ConversationScreen({ route, navigation }) {
   const [expandedMoodUserId, setExpandedMoodUserId] = useState(null);
 
   const listRef = useRef();
+
+  const haven = HavenTools((promptText) =>
+  sendPromptAsMessage(promptText, conversationId, currentUserId)
+);
 
   // kept in sync so the realtime callback below (created once per conversationId)
   // always sees the latest currentUserId instead of a stale closure value
@@ -171,23 +171,23 @@ export default function ConversationScreen({ route, navigation }) {
 
   //check for lastest checkin (mood/need) status
   const getLatestCheckinForUser = (userId) => {
-    for (let i = sortedMessages.length - 1; i >= 0; i--) {
-      const msg = sortedMessages[i];
-      if (msg.sender_id === userId && msg.is_checkin) {
-        const age = Date.now() - new Date(msg.created_at).getTime();
-        if (age > CHECKIN_EXPIRY_MS) {
-          return null;
-        }
-        return msg;
+  for (let i = sortedMessages.length - 1; i >= 0; i--) {
+    const msg = sortedMessages[i];
+    if (msg.sender_id === userId && msg.is_checkin) {
+      const age = Date.now() - new Date(msg.created_at).getTime();
+      if (age > CHECKIN_EXPIRY_MS) {
+        return null; 
       }
+      return msg;
     }
-    return null;
-  };
+  }
+  return null;
+};
 
   //handle the mood/need status - fetches latest checkin and affixes it to "Me" label in message
   const handleToggleMoodStatus = (userId) => {
-    setExpandedMoodUserId((prev) => (prev === userId ? null : userId));
-  };
+  setExpandedMoodUserId((prev) => (prev === userId ? null : userId));
+};
 
   //onPress handler for navigation to map from Need Help button in HavenTools
   //Resources filter open on navigation
@@ -200,16 +200,16 @@ export default function ConversationScreen({ route, navigation }) {
     });
   };
 
-  //onPress handler for navigation to conversationHavenProfileScreen from pill button in HavenTools
+   //onPress handler for navigation to conversationHavenProfileScreen from pill button in HavenTools
   const handleCheckinPress = () => {
-    navigation.navigate("ConversationHavenProfileScreen", {
-      conversationId,
-    });
+  navigation.navigate("ConversationHavenProfileScreen", {
+    conversationId,
+  });
   };
   const handleNudgePress = () => {
     navigation.navigate("ConversationHavenProfileScreen", {
-      conversationId,
-    });
+    conversationId,
+  });
   };
 
   //--------------------------------------
@@ -298,20 +298,21 @@ export default function ConversationScreen({ route, navigation }) {
     if (error) {
       console.error("Error fetching chat messages:", error);
       setMessages([]);
-    }
+    } 
 
-    setMessages(data ?? []);
+      setMessages(data ?? []);
 
-    const latestMessage = data?.length ? data[data.length - 1] : null;
-
-    const withStatus = {
-      latest_message_sent: latestMessage?.created_at ?? null,
-      status_label: getStatusLabel(latestMessage, currentUserId),
-      time_ago: timeAgo(latestMessage?.created_at),
-    };
+      const latestMessage = data?.length ? data[data.length - 1] : null;
+    
+        const withStatus = {
+            latest_message_sent: latestMessage?.created_at ?? null,
+            status_label: getStatusLabel(latestMessage, currentUserId),
+            time_ago: timeAgo(latestMessage?.created_at),
+          };
     setConversationStatus(withStatus);
     setIsLoading(false);
   };
+
 
   useEffect(() => {
     fetchMessages();
@@ -478,9 +479,7 @@ export default function ConversationScreen({ route, navigation }) {
           </Text>
 
           <View style={styles.messageRow}>
-            <View
-              style={[styles.senderLine, { backgroundColor: senderColor }]}
-            />
+            <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
             <View style={styles.inviteCard}>
               <View style={styles.inviteHeaderRow}>
                 <View style={styles.inviteIconWrapper}>
@@ -529,44 +528,45 @@ export default function ConversationScreen({ route, navigation }) {
     const isCheckin = item.is_checkin === true;
     const isNudge = item.is_nudge === true;
 
+
     return (
       <View style={styles.senderRowWrapper}>
         <Pressable
-          style={styles.senderRow}
-          onPress={() => handleToggleMoodStatus(item.sender_id)}
-        >
-          <Text style={[styles.sender, { color: senderColor }]}>
-            {senderLabel}
-          </Text>
-          <Ionicons
-            name={
-              expandedMoodUserId === item.sender_id
-                ? "chevron-back"
-                : "chevron-forward"
-            }
-            size={14}
-            color={senderColor}
-            style={{ marginLeft: 4 }}
-          />
-        </Pressable>
+        style={styles.senderRow}
+        onPress={() => handleToggleMoodStatus(item.sender_id)}
+      >
+        <Text style={[styles.sender, { color: senderColor }]}>
+          {senderLabel}
+        </Text>
+        <Ionicons
+          name={
+            expandedMoodUserId === item.sender_id
+              ? "chevron-back"
+              : "chevron-forward"
+          }
+          size={14}
+          color={senderColor}
+          style={{ marginLeft: 4 }}
+        />
+      </Pressable>
 
-        {expandedMoodUserId === item.sender_id && (
-          <View style={styles.moodStatusBox}>
-            {(() => {
-              const latestCheckin = getLatestCheckinForUser(item.sender_id);
-              return (
-                <Text style={styles.moodStatusText}>
-                  {latestCheckin
-                    ? latestCheckin.text
-                    : `No check-in yet from ${senderLabel === "ME" ? "you" : senderLabel}`}
-                </Text>
-              );
-            })()}
-          </View>
-        )}
+      {expandedMoodUserId === item.sender_id && (
+        <View style={styles.moodStatusBox}>
+          {(() => {
+            const latestCheckin = getLatestCheckinForUser(item.sender_id);
+            return (
+              <Text style={styles.moodStatusText}>
+                {latestCheckin
+                  ? latestCheckin.text
+                  : `No check-in yet from ${senderLabel === "ME" ? "you" : senderLabel}`}
+              </Text>
+            );
+          })()}
+        </View>
+      )}
 
-        <View style={styles.messageRow}>
-          <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
+      <View style={styles.messageRow}>
+        <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
           <View
             style={[
               styles.messageBubble,
@@ -574,7 +574,7 @@ export default function ConversationScreen({ route, navigation }) {
               isCheckin && styles.checkinMessageBubble,
               isNudge && styles.nudgeMessageBubble,
             ]}
-          >
+            >
             {isPrompt && (
               <View style={styles.promptBadge}>
                 <Entypo name="chat" size={20} color="white" />
@@ -589,7 +589,7 @@ export default function ConversationScreen({ route, navigation }) {
                   size={20}
                   color="white"
                 />
-                <Text style={styles.checkinBadgeText}>Mood | Need </Text>
+                <Text style={styles.checkinBadgeText}>Mood + Need </Text>
               </View>
             )}
             {isNudge && (
@@ -604,36 +604,38 @@ export default function ConversationScreen({ route, navigation }) {
             )}
             <Text
               style={
-                isPrompt
-                  ? styles.promptMessageText
-                  : isCheckin
-                    ? styles.checkinMessageText
-                    : isNudge
-                      ? styles.nudgeMessageText
-                      : styles.messageText
+              isPrompt ? styles.promptMessageText
+              : isCheckin ? styles.checkinMessageText
+              : isNudge ? styles.nudgeMessageText
+              : styles.messageText
               }
             >
               {item.text}
             </Text>
+          
 
             {(isNudge || isCheckin) && (
-              <TouchableOpacity style={styles.sendUpdateButton}>
-                <Text style={styles.sendUpdateText}>
-                  Respond to {otherUserUsername}'s message
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+              <TouchableOpacity
+                style={styles.sendUpdateButton}
+              >
+              <Text style={styles.sendUpdateText}>
+                Respond to {otherUserUsername}'s message
+              </Text>
+          </TouchableOpacity>
+          )}
+        </View>
         </View>
       </View>
     );
   }
+  //-----------------------------------
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-    >
+         <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
         {/* custom header */}
         <View style={styles.header}>
@@ -670,12 +672,12 @@ export default function ConversationScreen({ route, navigation }) {
                     .join(" and ")}
                 </Text>
                 {/* messageStatus */}
-                <MessageStatus
-                  latestMessageSent={conversationStatus.latest_message_sent}
-                  statusLabel={conversationStatus.status_label}
-                  timeAgo={conversationStatus.time_ago}
-                  isHaven={isHaven}
-                />
+                 <MessageStatus
+                latestMessageSent={conversationStatus.latest_message_sent}
+                statusLabel={conversationStatus.status_label}
+                timeAgo={conversationStatus.time_ago}
+                isHaven={isHaven}
+              />
               </View>
             </TouchableOpacity>
           </View>
@@ -693,94 +695,98 @@ export default function ConversationScreen({ route, navigation }) {
       </View>
 
       {/* Chat area */}
-      <FlatList
-        ref={listRef}
-        data={sortedMessages}
-        renderItem={renderMessage}
-        keyExtractor={(item, index) =>
-          item.message_id?.toString() ?? index.toString()
-        }
-        contentContainerStyle={styles.messages}
-        keyboardShouldPersistTaps="always"
-        onContentSizeChange={() =>
-          listRef.current?.scrollToEnd({ animated: true })
-        }
-      />
-
-      {/* feature pills from plus symbol Haven */}
-      {showPills && (
-        <View style={styles.inputContainer}>
-          <HavenPillsRow
-            activePill={activePill}
-            setActivePill={setActivePill}
-            onHelpPress={handleHelpPress}
-            onNudgePress={handleNudgePress}
-            onCheckinPress={handleCheckinPress}
-          />
-        </View>
-      )}
-
-      {/* Input bar pinned with safe area handling */}
-      <View
-        style={[
-          styles.inputBar,
-          isHaven && styles.havenInputBar,
-          { paddingBottom: Math.max(insets.bottom, 8) },
-        ]}
-      >
-        <TouchableOpacity>
-          <Pressable onPress={() => navigation.navigate("Camera")}>
-            <Ionicons name="camera" size={27} color="#000" />
-          </Pressable>
-        </TouchableOpacity>
-
-        <View style={[styles.defaultPill, isHaven && styles.havenPill]}>
-          <TextInput
-            value={draft}
-            onChangeText={setDraft}
-            placeholder="Chat"
-            style={[styles.input, isHaven && styles.havenInput]}
-            onSubmitEditing={handleSend}
-          />
-          {draft.trim().length > 0 ? (
-            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-              <Ionicons name="arrow-up" size={22} color="white" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity>
-              <Ionicons name="mic" size={24} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <TouchableOpacity>
-          <Entypo name="emoji-happy" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Entypo name="images" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          {isHaven ? (
-            <Pressable style={styles.iconCircle} onPress={handleTogglePills}>
-              <AntDesign name="plus-circle" size={28} />
-            </Pressable>
-          ) : (
-            <Pressable style={styles.iconCircle}>
-              <Ionicons name="game-controller-outline" size={28} />
-            </Pressable>
-          )}
-        </TouchableOpacity>
-      </View>
-      {showPills && (
-        <HavenPanel
-          activePill={activePill}
-          setActivePill={setActivePill}
-          onPromptSelect={(promptText) =>
-            sendPromptAsMessage(promptText, conversationId, currentUserId)
+ 
+        <FlatList
+          ref={listRef}
+          data={sortedMessages}
+          renderItem={renderMessage}
+          keyExtractor={(item, index) =>
+            item.message_id?.toString() ?? index.toString()
+          }
+          contentContainerStyle={styles.messages}
+          keyboardShouldPersistTaps="always"
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd({ animated: true })
           }
         />
-      )}
-    </KeyboardAvoidingView>
+             {/* feature pills from plus symbol Haven */}
+        {/* only renders if showPills is true */}
+        <View style={styles.inputContainer}>
+          {showPills && (
+            <HavenPillsRow
+              onGamePress={haven.handleGamePress}
+              onPromptPress={haven.handlePromptPress}
+              onNudgePress={handleNudgePress}
+              onCheckinPress={handleCheckinPress}
+              onHelpPress={handleHelpPress}
+            />
+          )}
+        </View>
+       {/* bottom of page */}
+          {/* Input bar */}
+          
+          <View style={[styles.inputBar, isHaven && styles.havenInputBar,
+            { paddingBottom: Math.max(insets.bottom, 8) },]}>
+            <TouchableOpacity>
+              <Pressable onPress={() => navigation.navigate("Camera")}>
+                <Ionicons name="camera" size={27} color="#000" />
+              </Pressable>
+            </TouchableOpacity>
+            {/* moved arrow up send and mic into textinput */}
+            <View style={[styles.defaultPill, isHaven && styles.defaultHavenPill]}>
+              <TextInput
+                value={draft}
+                onChangeText={setDraft}
+                placeholder="Chat"
+                style={[styles.input, isHaven && styles.havenInput]}
+                onSubmitEditing={handleSend}
+              />
+              {draft.trim().length > 0 ? (
+                <TouchableOpacity
+                  onPress={handleSend}
+                  style={styles.sendButton}
+                >
+                  <Ionicons name="arrow-up" size={22} color="white" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity>
+                  <Ionicons name="mic" size={24} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity>
+              <Entypo name="emoji-happy" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Entypo name="images" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              {/* show haven plus symbol or regular game controller, setShowPills*/}
+              {isHaven ? (
+                <Pressable
+                  style={styles.iconCircle}
+                  onPress={handleTogglePills}
+                >
+                  <AntDesign name="plus-circle" size={28} />
+                </Pressable>
+              ) : (
+                <Pressable style={styles.iconCircle}>
+                  <Ionicons name="game-controller-outline" size={28} />
+                </Pressable>
+              )}
+            </TouchableOpacity>
+          </View>
+          {/* <HavenPanels for under the input bar */}
+          {showPills && (
+          <HavenPanels
+            activePill={haven.activePill}
+            setActivePill={haven.setActivePill}
+            prompts={haven.prompts}
+            fetchRandomPrompts={haven.fetchRandomPrompts}
+            onPromptSelect={haven.handlePromptSelect}
+          />
+        )}
+   </KeyboardAvoidingView>
   );
 }
 
@@ -816,11 +822,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 18,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#000",
   },
   userStatus: {
     fontSize: 11,
+    fontFamily: "Avenir-Next",
     color: "#8E8E93",
     marginTop: 1,
   },
@@ -849,6 +857,7 @@ const styles = StyleSheet.create({
   dayDivider: {
     alignSelf: "center",
     fontSize: 12,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     letterSpacing: 0.5,
     color: "#A9A9AE",
@@ -859,31 +868,33 @@ const styles = StyleSheet.create({
   },
   sender: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     marginBottom: 4,
   },
   messageRow: {
-    flexDirection: "row",
-    alignItems: "stretch",
+  flexDirection: "row",
+  alignItems: "stretch",
   },
   senderLine: {
     width: 3,
     borderRadius: 2,
-    marginRight: 12,
+    marginRight: 12, 
   },
   messageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#222",
   },
   messageBubble: {
-    flex: 1,
-  },
+  flex: 1,
+},
 
   //bottom half wrapper
   inputContainer: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
     zIndex: 100,
     elevation: 100,
     position: "relative",
@@ -893,15 +904,18 @@ const styles = StyleSheet.create({
     minHeight: 55,
     flexDirection: "row",
     alignItems: "center",
+    paddingTop: 8,
     paddingHorizontal: 10,
     gap: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: "#E5E5EA",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#ffff",
   },
-  havenInputBar: {
-    backgroundColor: "#f8f3e6", // haven-only beige
+  //haven input bar
+   havenInputBar: {
+    backgroundColor: "#F8F3E6",
   },
+  //text input
   defaultPill: {
     flex: 1,
     flexDirection: "row",
@@ -912,9 +926,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 8,
   },
+  defaultHavenPill: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    height: 40,
+    backgroundColor: "#a5BEA8",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
   input: {
     flex: 1,
     fontSize: 17,
+    fontFamily: "Avenir-Next",
     color: "#000",
   },
   //icons and buttons
@@ -940,6 +965,7 @@ const styles = StyleSheet.create({
   },
   sendUpdateText: {
     fontSize: 12,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#808080",
     textAlign: "center",
@@ -954,7 +980,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     height: 40,
-    backgroundColor: "#a5BEA8",
+    backgroundColor: "#a5BEA8", //haven light green #a5BEA8
     borderRadius: 20,
     paddingHorizontal: 16,
     gap: 8,
@@ -976,6 +1002,7 @@ const styles = StyleSheet.create({
   },
   promptBadgeText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#F8F3E6", //black "#0b0b0b"
     textTransform: "uppercase",
@@ -983,6 +1010,7 @@ const styles = StyleSheet.create({
   },
   promptMessageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#F8F3E6",
   },
@@ -1003,6 +1031,7 @@ const styles = StyleSheet.create({
   },
   checkinBadgeText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#F8F3E6", //grey "#8E8E93"
     textTransform: "uppercase",
@@ -1010,6 +1039,7 @@ const styles = StyleSheet.create({
   },
   checkinMessageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#F8F3E6",
   },
@@ -1030,6 +1060,7 @@ const styles = StyleSheet.create({
   },
   nudgeBadgeText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#F8F3E6",
     textTransform: "uppercase",
@@ -1037,12 +1068,14 @@ const styles = StyleSheet.create({
   },
   nudgeMessageText: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#F8F3E6",
   },
   //haven invite card
   inviteSystemLabel: {
     fontSize: 14,
+    fontFamily: "Avenir-Next-Bold",
     fontWeight: "700",
     color: "#8E8E93",
     textTransform: "uppercase",
@@ -1075,6 +1108,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#0b0b0b",
     lineHeight: 21,
@@ -1100,6 +1134,7 @@ const styles = StyleSheet.create({
   inviteButtonText: {
     color: "#fff",
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
   },
   inviteStatusPill: {
@@ -1116,16 +1151,19 @@ const styles = StyleSheet.create({
   },
   inviteStatusTextPending: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#8E8E93",
   },
   inviteStatusTextAccepted: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#2E5A44",
   },
   inviteStatusTextDeclined: {
     fontSize: 14,
+    fontFamily: "Avenir-Next",
     fontWeight: "700",
     color: "#B47100",
   },
@@ -1148,7 +1186,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginLeft: 8,
     flexShrink: 1,
-    maxWidth: 220,
+    maxWidth: 220, 
   },
   moodStatusText: {
     fontSize: 12,
