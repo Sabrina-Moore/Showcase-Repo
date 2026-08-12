@@ -12,29 +12,36 @@ import {
   StyleSheet,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, Entypo, AntDesign, MaterialCommunityIcons } from "@expo/vector-icons"; //icons for feature pills
+import {
+  Ionicons,
+  Entypo,
+  AntDesign,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons"; //icons for feature pills
 import { supabase } from "../../utils/hooks/supabase";
 
-
-export function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPromptSelect}) {
-
+export function HavenTools({
+  onHelpPress,
+  onNudgePress,
+  onCheckinPress,
+  onPromptSelect,
+}) {
   const [activePill, setActivePill] = useState(null);
 
   //prompts
   const [prompts, setPrompts] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-//fetch prompts
+
+  //fetch prompts
   useEffect(() => {
-      fetchRandomPrompts();
-    }, []);
+    fetchRandomPrompts();
+  }, []);
 
   const fetchRandomPrompts = async () => {
-      try {
-        setLoading(true);
-        const { data, error: apiError } = await supabase.rpc(
-        "get_random_prompts"
-      );
+    try {
+      setLoading(true);
+      const { data, error: apiError } =
+        await supabase.rpc("get_random_prompts");
       if (apiError) throw apiError;
       setPrompts(data || []);
     } catch (err) {
@@ -44,15 +51,14 @@ export function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPrompt
     }
   };
 
-
   //open pills
   const handleGamePress = () => {
     setActivePill({ id: "games" });
-};
+  };
 
   const handlePromptPress = () => {
-      setActivePill({ id: "prompts"});
-      fetchRandomPrompts();
+    setActivePill({ id: "prompts" });
+    fetchRandomPrompts();
   };
 
   const handlePromptSelect = (promptText) => {
@@ -69,17 +75,21 @@ export function HavenTools ({onHelpPress, onNudgePress, onCheckinPress, onPrompt
     handleGamePress,
     handlePromptPress,
     handlePromptSelect,
-
-  }
-
+  };
 }
 
-export function HavenPillsRow ({onGamePress, onNudgePress, onPromptPress, onCheckinPress, onHelpPress}) {
- /* feature pills from plus symbol Haven */
- /* only renders if showPills is true */
- 
+export function HavenPillsRow({
+  onGamePress,
+  onNudgePress,
+  onPromptPress,
+  onCheckinPress,
+  onHelpPress,
+}) {
+  /* feature pills from plus symbol Haven */
+  /* only renders if showPills is true */
+
   return (
-  <ScrollView
+    <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.pillScroll}
@@ -109,15 +119,19 @@ export function HavenPillsRow ({onGamePress, onNudgePress, onPromptPress, onChec
   );
 }
 
-
 // Panel content (prompts list / games) - below textinput
-export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPrompts, onPromptSelect}) {
+export function HavenPanels({
+  activePill,
+  setActivePill,
+  prompts,
+  fetchRandomPrompts,
+  onPromptSelect,
+}) {
   if (!activePill) return null;
 
   return (
-   
     <View style={styles.panelContainer}>
-           {/* prompts pill */}
+      {/* prompts pill */}
       {activePill.id === "prompts" && (
         <View style={styles.promptPanel}>
           <View style={styles.promptContainer}>
@@ -130,7 +144,9 @@ export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPro
           <FlatList
             data={prompts}
             keyExtractor={(item, index) =>
-              item?.prompt_id?.toString() || item?.id?.toString() || index.toString()
+              item?.prompt_id?.toString() ||
+              item?.id?.toString() ||
+              index.toString()
             }
             contentContainerStyle={styles.promptList}
             showsVerticalScrollIndicator={false}
@@ -143,7 +159,7 @@ export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPro
               </TouchableOpacity>
             )}
           />
-      </View>
+        </View>
       )}
 
       {activePill.id === "games" && (
@@ -161,13 +177,12 @@ export function HavenPanels({ activePill, setActivePill, prompts, fetchRandomPro
           </TouchableOpacity>
         </View>
       )}
-  </View>
+    </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-    //haven specific visuals - make sure to match green
+  //haven specific visuals - make sure to match green
   panelContainer: {
     width: "100%",
     backgroundColor: "#f8f3e6",
@@ -203,7 +218,7 @@ const styles = StyleSheet.create({
     color: "#4a4a4a",
     letterSpacing: -0.2,
   },
-   //prompts
+  //prompts
   promptPanel: {
     width: "100%",
     height: 300,
@@ -219,41 +234,41 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   promptList: {
-    gap: 16,        
+    gap: 16,
     paddingBottom: 4,
   },
   promptLabel: {
-   textAlign: "center",
-  fontSize: 12,
-  fontFamily: "Avenir-Next",
-  color: "#8a8a8a",
-  marginBottom: 4,
-  letterSpacing: 0.5,
+    textAlign: "center",
+    fontSize: 12,
+    fontFamily: "Avenir-Next",
+    color: "#8a8a8a",
+    marginBottom: 4,
+    letterSpacing: 0.5,
   },
   promptItem: {
-  width: "100%",
-  paddingVertical: 10,
-  paddingHorizontal: 10,
-  borderRadius: 18,
-  backgroundColor: "#2E5A44",
-},
-promptItemText: {
-  fontSize: 15,
-  fontFamily: "Avenir-Next",
-  fontWeight: "500",
-  color: "#ffffff",
-  textAlign: "center",
-  lineHeight: 20,
-},
+    width: "100%",
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    backgroundColor: "#2E5A44",
+  },
+  promptItemText: {
+    fontSize: 15,
+    fontFamily: "Avenir-Next",
+    fontWeight: "500",
+    color: "#ffffff",
+    textAlign: "center",
+    lineHeight: 20,
+  },
   gamePanel: {
-  width: "100%",
-  height: 400,              
-  backgroundColor: "#F8F3E6",
-  borderRadius: 20,
-  overflow: "hidden",
-  marginTop: 4,
-  marginBottom: 8,
-},
+    width: "100%",
+    height: 400,
+    backgroundColor: "#F8F3E6",
+    borderRadius: 20,
+    overflow: "hidden",
+    marginTop: 4,
+    marginBottom: 8,
+  },
   gameImage: {
     width: "100%",
     height: 500,

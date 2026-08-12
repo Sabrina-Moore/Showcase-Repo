@@ -12,7 +12,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { useSafeAreaInsets} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native"; //instead of useEffect for checking isHaven on re-run
 import { Ionicons, Entypo } from "@expo/vector-icons"; //entypo for importing happy face emoji and images icon
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"; //gesture-tap icon, handshake icon
@@ -20,7 +20,11 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "../../utils/hooks/supabase";
 
 import CameraScreen from "./CameraScreen"; //functionality for camera button
-import { HavenTools, HavenPillsRow, HavenPanels}  from "../components/HavenTools";
+import {
+  HavenTools,
+  HavenPillsRow,
+  HavenPanels,
+} from "../components/HavenTools";
 import MessageStatus from "../components/MessageStatus";
 import getStatusLabel from "../../utils/hooks/getStatusLabel";
 import timeAgo from "../../utils/hooks/timeAgo";
@@ -70,15 +74,15 @@ function HavenInviteStatusPill({ status, isRecipient }) {
 
 export default function ConversationScreen({ route, navigation }) {
   const { conversationId, isHaven: HavenMode } = route.params ?? {};
-  const [isHaven, setIsHaven] = useState(HavenMode ?? false); //flag for haven toolkit toggle
+  const [isHaven, setIsHaven] = useState(HavenMode ?? false);
 
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState([]);
   const [conversationStatus, setConversationStatus] = useState({
-  latest_message_sent: null,
-  status_label: "",
-  time_ago: "",
-});
+    latest_message_sent: null,
+    status_label: "",
+    time_ago: "",
+  });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState("Me");
   const [currentUserBitmojiIcon, setCurrentUserBitmojiIcon] = useState(null);
@@ -86,25 +90,23 @@ export default function ConversationScreen({ route, navigation }) {
   const [participant, setParticipant] = useState([]);
   const [participantBitmojiIcon, setParticipantBitmojiIcon] = useState(null);
   const [otherUserUsername, setOtherUserUsername] = useState(null);
-  const [showPills, setShowPills] = useState(false); //sets feature pills toggle from plus symbol
+  const [showPills, setShowPills] = useState(false);
   const [activePill, setActivePill] = useState(null);
 
-  const realtimeChannelRef = useRef(null); //so that when returnign to conversation screen, we don't have a duplicate channel
+  const realtimeChannelRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  //chevron next to "Me" message label for mood/need status
   const [expandedMoodUserId, setExpandedMoodUserId] = useState(null);
 
   const listRef = useRef();
 
-  const haven = HavenTools((promptText) =>
-  sendPromptAsMessage(promptText, conversationId, currentUserId)
-);
+  const haven = HavenTools({
+    onPromptSelect: (promptText) =>
+      sendPromptAsMessage(promptText, conversationId, currentUserId),
+  });
 
-  // kept in sync so the realtime callback below (created once per conversationId)
-  // always sees the latest currentUserId instead of a stale closure value
   const currentUserIdRef = useRef(currentUserId);
   useEffect(() => {
     currentUserIdRef.current = currentUserId;
@@ -171,23 +173,23 @@ export default function ConversationScreen({ route, navigation }) {
 
   //check for lastest checkin (mood/need) status
   const getLatestCheckinForUser = (userId) => {
-  for (let i = sortedMessages.length - 1; i >= 0; i--) {
-    const msg = sortedMessages[i];
-    if (msg.sender_id === userId && msg.is_checkin) {
-      const age = Date.now() - new Date(msg.created_at).getTime();
-      if (age > CHECKIN_EXPIRY_MS) {
-        return null; 
+    for (let i = sortedMessages.length - 1; i >= 0; i--) {
+      const msg = sortedMessages[i];
+      if (msg.sender_id === userId && msg.is_checkin) {
+        const age = Date.now() - new Date(msg.created_at).getTime();
+        if (age > CHECKIN_EXPIRY_MS) {
+          return null;
+        }
+        return msg;
       }
-      return msg;
     }
-  }
-  return null;
-};
+    return null;
+  };
 
   //handle the mood/need status - fetches latest checkin and affixes it to "Me" label in message
   const handleToggleMoodStatus = (userId) => {
-  setExpandedMoodUserId((prev) => (prev === userId ? null : userId));
-};
+    setExpandedMoodUserId((prev) => (prev === userId ? null : userId));
+  };
 
   //onPress handler for navigation to map from Need Help button in HavenTools
   //Resources filter open on navigation
@@ -200,16 +202,16 @@ export default function ConversationScreen({ route, navigation }) {
     });
   };
 
-   //onPress handler for navigation to conversationHavenProfileScreen from pill button in HavenTools
+  //onPress handler for navigation to conversationHavenProfileScreen from pill button in HavenTools
   const handleCheckinPress = () => {
-  navigation.navigate("ConversationHavenProfileScreen", {
-    conversationId,
-  });
+    navigation.navigate("ConversationHavenProfileScreen", {
+      conversationId,
+    });
   };
   const handleNudgePress = () => {
     navigation.navigate("ConversationHavenProfileScreen", {
-    conversationId,
-  });
+      conversationId,
+    });
   };
 
   //--------------------------------------
@@ -298,21 +300,20 @@ export default function ConversationScreen({ route, navigation }) {
     if (error) {
       console.error("Error fetching chat messages:", error);
       setMessages([]);
-    } 
+    }
 
-      setMessages(data ?? []);
+    setMessages(data ?? []);
 
-      const latestMessage = data?.length ? data[data.length - 1] : null;
-    
-        const withStatus = {
-            latest_message_sent: latestMessage?.created_at ?? null,
-            status_label: getStatusLabel(latestMessage, currentUserId),
-            time_ago: timeAgo(latestMessage?.created_at),
-          };
+    const latestMessage = data?.length ? data[data.length - 1] : null;
+
+    const withStatus = {
+      latest_message_sent: latestMessage?.created_at ?? null,
+      status_label: getStatusLabel(latestMessage, currentUserId),
+      time_ago: timeAgo(latestMessage?.created_at),
+    };
     setConversationStatus(withStatus);
     setIsLoading(false);
   };
-
 
   useEffect(() => {
     fetchMessages();
@@ -460,6 +461,11 @@ export default function ConversationScreen({ route, navigation }) {
     (a, b) => new Date(a.created_at) - new Date(b.created_at),
   );
 
+  // hide nudges from the sender — only the recipient should see them
+  const visibleMessages = sortedMessages.filter(
+    (msg) => !(msg.is_nudge === true && msg.sender_id === currentUserId),
+  );
+
   //-----------------------------------
   //rendering messages
   function renderMessage({ item }) {
@@ -479,7 +485,9 @@ export default function ConversationScreen({ route, navigation }) {
           </Text>
 
           <View style={styles.messageRow}>
-            <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
+            <View
+              style={[styles.senderLine, { backgroundColor: senderColor }]}
+            />
             <View style={styles.inviteCard}>
               <View style={styles.inviteHeaderRow}>
                 <View style={styles.inviteIconWrapper}>
@@ -528,45 +536,44 @@ export default function ConversationScreen({ route, navigation }) {
     const isCheckin = item.is_checkin === true;
     const isNudge = item.is_nudge === true;
 
-
     return (
       <View style={styles.senderRowWrapper}>
         <Pressable
-        style={styles.senderRow}
-        onPress={() => handleToggleMoodStatus(item.sender_id)}
-      >
-        <Text style={[styles.sender, { color: senderColor }]}>
-          {senderLabel}
-        </Text>
-        <Ionicons
-          name={
-            expandedMoodUserId === item.sender_id
-              ? "chevron-back"
-              : "chevron-forward"
-          }
-          size={14}
-          color={senderColor}
-          style={{ marginLeft: 4 }}
-        />
-      </Pressable>
+          style={styles.senderRow}
+          onPress={() => handleToggleMoodStatus(item.sender_id)}
+        >
+          <Text style={[styles.sender, { color: senderColor }]}>
+            {senderLabel}
+          </Text>
+          <Ionicons
+            name={
+              expandedMoodUserId === item.sender_id
+                ? "chevron-back"
+                : "chevron-forward"
+            }
+            size={14}
+            color={senderColor}
+            style={{ marginLeft: 4 }}
+          />
+        </Pressable>
 
-      {expandedMoodUserId === item.sender_id && (
-        <View style={styles.moodStatusBox}>
-          {(() => {
-            const latestCheckin = getLatestCheckinForUser(item.sender_id);
-            return (
-              <Text style={styles.moodStatusText}>
-                {latestCheckin
-                  ? latestCheckin.text
-                  : `No check-in yet from ${senderLabel === "ME" ? "you" : senderLabel}`}
-              </Text>
-            );
-          })()}
-        </View>
-      )}
+        {expandedMoodUserId === item.sender_id && (
+          <View style={styles.moodStatusBox}>
+            {(() => {
+              const latestCheckin = getLatestCheckinForUser(item.sender_id);
+              return (
+                <Text style={styles.moodStatusText}>
+                  {latestCheckin
+                    ? latestCheckin.text
+                    : `No check-in yet from ${senderLabel === "ME" ? "you" : senderLabel}`}
+                </Text>
+              );
+            })()}
+          </View>
+        )}
 
-      <View style={styles.messageRow}>
-        <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
+        <View style={styles.messageRow}>
+          <View style={[styles.senderLine, { backgroundColor: senderColor }]} />
           <View
             style={[
               styles.messageBubble,
@@ -574,7 +581,7 @@ export default function ConversationScreen({ route, navigation }) {
               isCheckin && styles.checkinMessageBubble,
               isNudge && styles.nudgeMessageBubble,
             ]}
-            >
+          >
             {isPrompt && (
               <View style={styles.promptBadge}>
                 <Entypo name="chat" size={20} color="white" />
@@ -604,26 +611,26 @@ export default function ConversationScreen({ route, navigation }) {
             )}
             <Text
               style={
-              isPrompt ? styles.promptMessageText
-              : isCheckin ? styles.checkinMessageText
-              : isNudge ? styles.nudgeMessageText
-              : styles.messageText
+                isPrompt
+                  ? styles.promptMessageText
+                  : isCheckin
+                    ? styles.checkinMessageText
+                    : isNudge
+                      ? styles.nudgeMessageText
+                      : styles.messageText
               }
             >
               {item.text}
             </Text>
-          
 
             {(isNudge || isCheckin) && (
-              <TouchableOpacity
-                style={styles.sendUpdateButton}
-              >
-              <Text style={styles.sendUpdateText}>
-                Respond to {otherUserUsername}'s message
-              </Text>
-          </TouchableOpacity>
-          )}
-        </View>
+              <TouchableOpacity style={styles.sendUpdateButton}>
+                <Text style={styles.sendUpdateText}>
+                  Respond to {otherUserUsername}'s message
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -631,11 +638,11 @@ export default function ConversationScreen({ route, navigation }) {
   //-----------------------------------
 
   return (
-         <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-      >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    >
       <View style={{ paddingTop: insets.top, backgroundColor: "#fff" }}>
         {/* custom header */}
         <View style={styles.header}>
@@ -672,12 +679,12 @@ export default function ConversationScreen({ route, navigation }) {
                     .join(" and ")}
                 </Text>
                 {/* messageStatus */}
-                 <MessageStatus
-                latestMessageSent={conversationStatus.latest_message_sent}
-                statusLabel={conversationStatus.status_label}
-                timeAgo={conversationStatus.time_ago}
-                isHaven={isHaven}
-              />
+                <MessageStatus
+                  latestMessageSent={conversationStatus.latest_message_sent}
+                  statusLabel={conversationStatus.status_label}
+                  timeAgo={conversationStatus.time_ago}
+                  isHaven={isHaven}
+                />
               </View>
             </TouchableOpacity>
           </View>
@@ -695,98 +702,97 @@ export default function ConversationScreen({ route, navigation }) {
       </View>
 
       {/* Chat area */}
- 
-        <FlatList
-          ref={listRef}
-          data={sortedMessages}
-          renderItem={renderMessage}
-          keyExtractor={(item, index) =>
-            item.message_id?.toString() ?? index.toString()
-          }
-          contentContainerStyle={styles.messages}
-          keyboardShouldPersistTaps="always"
-          onContentSizeChange={() =>
-            listRef.current?.scrollToEnd({ animated: true })
-          }
-        />
-             {/* feature pills from plus symbol Haven */}
-        {/* only renders if showPills is true */}
-        <View style={styles.inputContainer}>
-          {showPills && (
-            <HavenPillsRow
-              onGamePress={haven.handleGamePress}
-              onPromptPress={haven.handlePromptPress}
-              onNudgePress={handleNudgePress}
-              onCheckinPress={handleCheckinPress}
-              onHelpPress={handleHelpPress}
-            />
-          )}
-        </View>
-       {/* bottom of page */}
-          {/* Input bar */}
-          
-          <View style={[styles.inputBar, isHaven && styles.havenInputBar,
-            { paddingBottom: Math.max(insets.bottom, 8) },]}>
-            <TouchableOpacity>
-              <Pressable onPress={() => navigation.navigate("Camera")}>
-                <Ionicons name="camera" size={27} color="#000" />
-              </Pressable>
-            </TouchableOpacity>
-            {/* moved arrow up send and mic into textinput */}
-            <View style={[styles.defaultPill, isHaven && styles.defaultHavenPill]}>
-              <TextInput
-                value={draft}
-                onChangeText={setDraft}
-                placeholder="Chat"
-                style={[styles.input, isHaven && styles.havenInput]}
-                onSubmitEditing={handleSend}
-              />
-              {draft.trim().length > 0 ? (
-                <TouchableOpacity
-                  onPress={handleSend}
-                  style={styles.sendButton}
-                >
-                  <Ionicons name="arrow-up" size={22} color="white" />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity>
-                  <Ionicons name="mic" size={24} />
-                </TouchableOpacity>
-              )}
-            </View>
-            <TouchableOpacity>
-              <Entypo name="emoji-happy" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Entypo name="images" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              {/* show haven plus symbol or regular game controller, setShowPills*/}
-              {isHaven ? (
-                <Pressable
-                  style={styles.iconCircle}
-                  onPress={handleTogglePills}
-                >
-                  <AntDesign name="plus-circle" size={28} />
-                </Pressable>
-              ) : (
-                <Pressable style={styles.iconCircle}>
-                  <Ionicons name="game-controller-outline" size={28} />
-                </Pressable>
-              )}
-            </TouchableOpacity>
-          </View>
-          {/* <HavenPanels for under the input bar */}
-          {showPills && (
-          <HavenPanels
-            activePill={haven.activePill}
-            setActivePill={haven.setActivePill}
-            prompts={haven.prompts}
-            fetchRandomPrompts={haven.fetchRandomPrompts}
-            onPromptSelect={haven.handlePromptSelect}
+
+      <FlatList
+        ref={listRef}
+        data={visibleMessages}
+        renderItem={renderMessage}
+        keyExtractor={(item, index) =>
+          item.message_id?.toString() ?? index.toString()
+        }
+        contentContainerStyle={styles.messages}
+        keyboardShouldPersistTaps="always"
+        onContentSizeChange={() =>
+          listRef.current?.scrollToEnd({ animated: true })
+        }
+      />
+      {/* feature pills from plus symbol Haven */}
+      {/* only renders if showPills is true */}
+      <View style={styles.inputContainer}>
+        {showPills && (
+          <HavenPillsRow
+            onGamePress={haven.handleGamePress}
+            onPromptPress={haven.handlePromptPress}
+            onNudgePress={handleNudgePress}
+            onCheckinPress={handleCheckinPress}
+            onHelpPress={handleHelpPress}
           />
         )}
-   </KeyboardAvoidingView>
+      </View>
+      {/* bottom of page */}
+      {/* Input bar */}
+
+      <View
+        style={[
+          styles.inputBar,
+          isHaven && styles.havenInputBar,
+          { paddingBottom: Math.max(insets.bottom, 8) },
+        ]}
+      >
+        <TouchableOpacity>
+          <Pressable onPress={() => navigation.navigate("Camera")}>
+            <Ionicons name="camera" size={27} color="#000" />
+          </Pressable>
+        </TouchableOpacity>
+        {/* moved arrow up send and mic into textinput */}
+        <View style={[styles.defaultPill, isHaven && styles.defaultHavenPill]}>
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder="Chat"
+            style={[styles.input, isHaven && styles.havenInput]}
+            onSubmitEditing={handleSend}
+          />
+          {draft.trim().length > 0 ? (
+            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+              <Ionicons name="arrow-up" size={22} color="white" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity>
+              <Ionicons name="mic" size={24} />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity>
+          <Entypo name="emoji-happy" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Entypo name="images" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          {/* show haven plus symbol or regular game controller, setShowPills*/}
+          {isHaven ? (
+            <Pressable style={styles.iconCircle} onPress={handleTogglePills}>
+              <AntDesign name="plus-circle" size={28} />
+            </Pressable>
+          ) : (
+            <Pressable style={styles.iconCircle}>
+              <Ionicons name="game-controller-outline" size={28} />
+            </Pressable>
+          )}
+        </TouchableOpacity>
+      </View>
+      {/* <HavenPanels for under the input bar */}
+      {showPills && (
+        <HavenPanels
+          activePill={haven.activePill}
+          setActivePill={haven.setActivePill}
+          prompts={haven.prompts}
+          fetchRandomPrompts={haven.fetchRandomPrompts}
+          onPromptSelect={haven.handlePromptSelect}
+        />
+      )}
+    </KeyboardAvoidingView>
   );
 }
 
@@ -873,23 +879,23 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   messageRow: {
-  flexDirection: "row",
-  alignItems: "stretch",
+    flexDirection: "row",
+    alignItems: "stretch",
   },
   senderLine: {
     width: 3,
     borderRadius: 2,
-    marginRight: 12, 
+    marginRight: 12,
   },
   messageText: {
-    fontSize: 14,
+    fontSize: 17,
     fontFamily: "Avenir-Next",
     fontWeight: "600",
     color: "#222",
   },
   messageBubble: {
-  flex: 1,
-},
+    flex: 1,
+  },
 
   //bottom half wrapper
   inputContainer: {
@@ -912,7 +918,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffff",
   },
   //haven input bar
-   havenInputBar: {
+  havenInputBar: {
     backgroundColor: "#F8F3E6",
   },
   //text input
@@ -1186,7 +1192,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginLeft: 8,
     flexShrink: 1,
-    maxWidth: 220, 
+    maxWidth: 220,
   },
   moodStatusText: {
     fontSize: 12,

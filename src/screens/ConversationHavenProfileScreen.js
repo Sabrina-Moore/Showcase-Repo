@@ -13,12 +13,16 @@ import {
   Switch,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, Entypo, AntDesign, MaterialCommunityIcons } from "@expo/vector-icons"; 
-import { supabase } from "../../utils/hooks/supabase"; 
+import {
+  Ionicons,
+  Entypo,
+  AntDesign,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import { supabase } from "../../utils/hooks/supabase";
 import { ProfileTags } from "../components/ProfileTags";
 
 const { width } = Dimensions.get("window");
-
 
 const NUDGE_CATEGORIES = [
   "Check-in",
@@ -119,7 +123,6 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
   const [BitmojiPose, setBitmojiPose] = useState(null);
   const [otherUsername, setOtherUsername] = useState("");
 
-
   //nudges and mood notifications
   const [nudgeCategory, setNudgeCategory] = useState(null);
   const [nudgeText, setNudgeText] = useState("");
@@ -133,92 +136,95 @@ export default function ConversationHavenProfileScreen({ route, navigation }) {
 
   //visual toggles for Haven settings
   const [featureToggles, setFeatureToggles] = useState({
-  nudges: true,
-  prompts: true,
-  needHelp: true,
-  moodNeed: true,
-});
+    nudges: true,
+    prompts: true,
+    needHelp: true,
+    moodNeed: true,
+  });
 
-//fetch current user id
-useEffect(() => {
-  const fetchCurrentUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.error("Error fetching current user:", error);
-      return;
-    }
-
-    setCurrentUserId(data?.user?.id ?? null);
-  };
-  fetchCurrentUser();
-}, []);
-
-
-//fetch other Participant profile from profiles (profile tags)
+  //fetch current user id
   useEffect(() => {
-    const fetchOtherUser= async () => {
-      if(!conversationId || !currentUserId) return;
+    const fetchCurrentUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Error fetching current user:", error);
+        return;
+      }
 
-        const { data, error } = await supabase
-          .from("conversation_members")
-          .select (`user_id, profiles (username, bitmoji_icon, bitmoji_pose)`)
-          .eq("conversation_id", conversationId)
-          .neq("user_id", currentUserId)
-          .single();
+      setCurrentUserId(data?.user?.id ?? null);
+    };
+    fetchCurrentUser();
+  }, []);
 
+  //fetch other Participant profile from profiles (profile tags)
+  useEffect(() => {
+    const fetchOtherUser = async () => {
+      if (!conversationId || !currentUserId) return;
 
-        if(error){
-          console.log("other participant fetch error:", error);
-          return;
-        }
-        setOtherUserId(data?.user_id ?? null);
-        setOtherUsername(data?.profiles?.username ?? null);
-        setBitmojiPose(data?.profiles?.bitmoji_pose ?? null);
-        console.log("Botmoji pose:", profiles.bitmoji_pose);
+      const { data, error } = await supabase
+        .from("conversation_members")
+        .select(`user_id, profiles (username, bitmoji_icon, bitmoji_pose)`)
+        .eq("conversation_id", conversationId)
+        .neq("user_id", currentUserId)
+        .single();
+
+      if (error) {
+        console.log("other participant fetch error:", error);
+        return;
+      }
+      setOtherUserId(data?.user_id ?? null);
+      setOtherUsername(data?.profiles?.username ?? null);
+      setBitmojiPose(data?.profiles?.bitmoji_pose ?? null);
+      console.log("Botmoji pose:", profiles.bitmoji_pose);
     };
     fetchOtherUser();
   }, [conversationId, currentUserId]);
 
   const handleSendUpdate = async () => {
-    if (!nudgeCategory || !nudgeText.trim() || !currentUserId || !conversationId) return;
+    if (
+      !nudgeCategory ||
+      !nudgeText.trim() ||
+      !currentUserId ||
+      !conversationId
+    )
+      return;
 
-    const  { error } = await supabase.from("messages").insert({
+    const { error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
-        sender_id: currentUserId,
-        text: nudgeText.trim(),
-        is_prompt: false,
-        is_nudge: true,
-        is_checkin: false,
-    })
-      if (error) {
-        console.log("Failed to send prompt:", error);
-      }
+      sender_id: currentUserId,
+      text: nudgeText.trim(),
+      is_prompt: false,
+      is_nudge: true,
+      is_checkin: false,
+    });
+    if (error) {
+      console.log("Failed to send prompt:", error);
+    }
 
     setNudgeText("");
     setNudgeCategory(null);
   };
 
   const handleSendMoodNeed = async () => {
-    if ( !mood || !need || !currentUserId || !conversationId) return;
+    if (!mood || !need || !currentUserId || !conversationId) return;
 
-    const  { error } = await supabase.from("messages").insert({
+    const { error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
-        sender_id: currentUserId,
-        text: `Feeling ${mood} and need to be ${need.toLowerCase()}`,
-        is_prompt: false,
-        is_nudge: false,
-        is_checkin: true,
-    })
-      if (error) {
-        console.log("Failed to send mood/need:", error);
-      }
+      sender_id: currentUserId,
+      text: `Feeling ${mood} and need to be ${need.toLowerCase()}`,
+      is_prompt: false,
+      is_nudge: false,
+      is_checkin: true,
+    });
+    if (error) {
+      console.log("Failed to send mood/need:", error);
+    }
   };
 
   //notification handling
   const handleSelectMood = (value) => {
     setMood(value);
     setOpenField(null);
-
   };
 
   const handleSelectNeed = (value) => {
@@ -237,56 +243,57 @@ useEffect(() => {
     if (url) Linking.openURL(url);
   };
 
-  
-//fake Haven settings
-const toggleHavenFeature = (key) => {
-  setFeatureToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-};
+  //fake Haven settings
+  const toggleHavenFeature = (key) => {
+    setFeatureToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
-const HavenFeatureSettings = [
-  {
-    key: "nudges",
-    title: "Nudges",
-    iconLibrary: "materialCommunityIcons",
-    icon: "gesture-tap",
-  },
-  {
-    key: "prompts",
-    title: "Prompts",
-    iconLibrary: "entypo",
-    icon: "chat",
-  },
-  {
-    key: "needHelp",
-    title: "Need Help",
-    iconLibrary: "ionicons",
-    icon: "alert-circle",
-  },
-  {
-    key: "moodNeed",
-    title: "Mood | Need",
-    iconLibrary: "materialCommunityIcons",
-    icon: "hand-wave",
-  },
-];
+  const HavenFeatureSettings = [
+    {
+      key: "nudges",
+      title: "Nudges",
+      iconLibrary: "materialCommunityIcons",
+      icon: "gesture-tap",
+    },
+    {
+      key: "prompts",
+      title: "Prompts",
+      iconLibrary: "entypo",
+      icon: "chat",
+    },
+    {
+      key: "needHelp",
+      title: "Need Help",
+      iconLibrary: "ionicons",
+      icon: "alert-circle",
+    },
+    {
+      key: "moodNeed",
+      title: "Mood | Need",
+      iconLibrary: "materialCommunityIcons",
+      icon: "hand-wave",
+    },
+  ];
 
-const renderFeatureIcon = (feature) => {
-  const color = HAVEN_DARK;
-  const size = 24;
-  switch (feature.iconLibrary) {
-    case "materialCommunityIcons":
-      return (
-        <MaterialCommunityIcons name={feature.icon} size={size} color={color} />
-      );
-    case "entypo":
-      return <Entypo name={feature.icon} size={size} color={color} />;
-    case "ionicons":
-    default:
-      return <Ionicons name={feature.icon} size={size} color={color} />;
-  }
-};
-
-  
+  const renderFeatureIcon = (feature) => {
+    const color = HAVEN_DARK;
+    const size = 24;
+    switch (feature.iconLibrary) {
+      case "materialCommunityIcons":
+        return (
+          <MaterialCommunityIcons
+            name={feature.icon}
+            size={size}
+            color={color}
+          />
+        );
+      case "entypo":
+        return <Entypo name={feature.icon} size={size} color={color} />;
+      case "ionicons":
+      default:
+        return <Ionicons name={feature.icon} size={size} color={color} />;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -315,16 +322,14 @@ const renderFeatureIcon = (feature) => {
         </View>
       </View>
 
-      <View
-        style={styles.bitmojiContainer}
-      >
+      <View style={styles.bitmojiContainer}>
         {/* background bitmoji */}
         <Image
-          source={{uri: BitmojiPose}}
+          source={{ uri: BitmojiPose }}
           style={styles.bitmojiImage}
           resizeMode="contain"
         />
-         <View style={styles.bitmojiNameOverlay}>
+        <View style={styles.bitmojiNameOverlay}>
           <Text style={styles.bitmojiNameText}>{otherUsername}</Text>
         </View>
       </View>
@@ -359,7 +364,7 @@ const renderFeatureIcon = (feature) => {
             style={styles.pillsRow}
             contentContainerStyle={{ gap: 8 }}
           >
-            <ProfileTags userId={otherUserId}/>
+            <ProfileTags userId={otherUserId} />
 
             {mood && (
               <View style={[styles.pill, styles.moodPill]}>
@@ -452,7 +457,13 @@ const renderFeatureIcon = (feature) => {
           {/* Mood and Need */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Mood and Need</Text>
-            <View style={[styles.havenCard, styles.cardshadow, { flexDirection: "row", gap: 12 }]}>
+            <View
+              style={[
+                styles.havenCard,
+                styles.cardshadow,
+                { flexDirection: "row", gap: 12 },
+              ]}
+            >
               <View style={{ flex: 1 }}>
                 <SelectField
                   label="Mood"
@@ -478,41 +489,45 @@ const renderFeatureIcon = (feature) => {
                 />
               </View>
             </View>
-             <TouchableOpacity
-                style={styles.sendUpdateButton}
-                onPress={handleSendMoodNeed}
-              >
-                <Text style={styles.sendUpdateText}>Send Update</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.sendUpdateButton}
+              onPress={handleSendMoodNeed}
+            >
+              <Text style={styles.sendUpdateText}>Send Update</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Links */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Links</Text>
             <View style={styles.cardShadow}>
-            <View style={styles.card}>
-              {LINKS.map((link, index) => (
-                <TouchableOpacity
-                  key={link.id}
-                  style={[
-                    styles.linkRow,
-                    index < LINKS.length - 1 && styles.rowDivider,
-                  ]}
-                  onPress={() => handleOpenLink(link.url)}
-                >
-                  <View style={styles.linkIconCircle}>
-                    <Ionicons name={link.icon} size={16} color="#5b5b5b" />
-                  </View>
-                  <View style={styles.rowTextWrapper}>
-                    <Text style={styles.rowTitle}>{link.title}</Text>
-                    <Text style={styles.rowSubtitle} numberOfLines={1}>
-                      {link.subtitle}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
-                </TouchableOpacity>
-              ))}
-            </View>
+              <View style={styles.card}>
+                {LINKS.map((link, index) => (
+                  <TouchableOpacity
+                    key={link.id}
+                    style={[
+                      styles.linkRow,
+                      index < LINKS.length - 1 && styles.rowDivider,
+                    ]}
+                    onPress={() => handleOpenLink(link.url)}
+                  >
+                    <View style={styles.linkIconCircle}>
+                      <Ionicons name={link.icon} size={16} color="#5b5b5b" />
+                    </View>
+                    <View style={styles.rowTextWrapper}>
+                      <Text style={styles.rowTitle}>{link.title}</Text>
+                      <Text style={styles.rowSubtitle} numberOfLines={1}>
+                        {link.subtitle}
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color="#C7C7CC"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
 
@@ -520,71 +535,80 @@ const renderFeatureIcon = (feature) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Snap Map</Text>
             <View style={styles.cardShadow}>
-            <View style={styles.card}>
-              <TouchableOpacity
-                style={styles.mapPreview}
-                onPress={handleFindResources}
-              >
-                <Ionicons name="map-outline" size={28} color="#8E8E93" />
-                <Text style={styles.mapPreviewText}>Tap to open Map</Text>
-              </TouchableOpacity>
+              <View style={styles.card}>
+                <TouchableOpacity
+                  style={styles.mapPreview}
+                  onPress={handleFindResources}
+                >
+                  <Ionicons name="map-outline" size={28} color="#8E8E93" />
+                  <Text style={styles.mapPreviewText}>Tap to open Map</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.linkRow, styles.rowDivider]}
-                onPress={handleFindResources}
-              >
-                <View style={styles.linkIconCircle}>
-                  <Ionicons name="location-outline" size={16} color="#5b5b5b" />
-                </View>
-                <View style={styles.rowTextWrapper}>
-                  <Text style={styles.rowTitle}>Find Resources</Text>
-                  <Text style={styles.rowSubtitle}>
-                    Emergency care, food banks, access points...
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.linkRow, styles.rowDivider]}
+                  onPress={handleFindResources}
+                >
+                  <View style={styles.linkIconCircle}>
+                    <Ionicons
+                      name="location-outline"
+                      size={16}
+                      color="#5b5b5b"
+                    />
+                  </View>
+                  <View style={styles.rowTextWrapper}>
+                    <Text style={styles.rowTitle}>Find Resources</Text>
+                    <Text style={styles.rowSubtitle}>
+                      Emergency care, food banks, access points...
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
+                </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.linkRow, styles.rowDivider]}>
-                <View style={styles.linkIconCircle}>
-                  <Ionicons name="navigate-outline" size={16} color="#5b5b5b" />
-                </View>
-                <View style={styles.rowTextWrapper}>
-                  <Text style={styles.rowTitle}>Sharing Location</Text>
-                  <Text style={styles.rowSubtitle}>with My Friends</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
-              </TouchableOpacity>
+                <TouchableOpacity style={[styles.linkRow, styles.rowDivider]}>
+                  <View style={styles.linkIconCircle}>
+                    <Ionicons
+                      name="navigate-outline"
+                      size={16}
+                      color="#5b5b5b"
+                    />
+                  </View>
+                  <View style={styles.rowTextWrapper}>
+                    <Text style={styles.rowTitle}>Sharing Location</Text>
+                    <Text style={styles.rowSubtitle}>with My Friends</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
+                </TouchableOpacity>
 
-              <TouchableOpacity style={styles.linkRow}>
-                <View style={styles.linkIconCircle}>
-                  <Ionicons
-                    name="notifications-outline"
-                    size={16}
-                    color="#5b5b5b"
-                  />
-                </View>
-                <View style={styles.rowTextWrapper}>
-                  <Text style={styles.rowTitle}>Arrival Notifications</Text>
-                  <Text style={styles.rowSubtitle}>with My Friends</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity style={styles.linkRow}>
+                  <View style={styles.linkIconCircle}>
+                    <Ionicons
+                      name="notifications-outline"
+                      size={16}
+                      color="#5b5b5b"
+                    />
+                  </View>
+                  <View style={styles.rowTextWrapper}>
+                    <Text style={styles.rowTitle}>Arrival Notifications</Text>
+                    <Text style={styles.rowSubtitle}>with My Friends</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#C7C7CC" />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
           {/* Haven Feature Toggles for settings*/}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Haven Features</Text>
-              <View style={styles.cardShadow}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Haven Features</Text>
+            <View style={styles.cardShadow}>
               <View style={styles.featureCard}>
                 {HavenFeatureSettings.map((feature, index) => (
                   <View
                     key={feature.key}
                     style={[
                       styles.featureRow,
-                      index < HavenFeatureSettings.length - 1 && styles.rowDivider,
+                      index < HavenFeatureSettings.length - 1 &&
+                        styles.rowDivider,
                     ]}
                   >
                     <View style={styles.featureIconCircle}>
@@ -598,15 +622,16 @@ const renderFeatureIcon = (feature) => {
                       value={featureToggles[feature.key]}
                       onValueChange={() => toggleHavenFeature(feature.key)}
                       trackColor={{ false: "#E5E5EA", true: HAVEN_LIGHT }}
-                      thumbColor={featureToggles[feature.key] ? HAVEN_DARK : "#fff"}
+                      thumbColor={
+                        featureToggles[feature.key] ? HAVEN_DARK : "#fff"
+                      }
                       ios_backgroundColor="#E5E5EA"
                     />
                   </View>
                 ))}
-
-              </View>
               </View>
             </View>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -748,9 +773,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F7",
     justifyContent: "center",
     alignItems: "center",
-     borderWidth: 1,
-  borderColor: "#dfdddd",
-  borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#dfdddd",
+    borderRadius: 14,
   },
   section: {
     paddingHorizontal: 16,
@@ -908,24 +933,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
-    bitmojiContainer: {
+  bitmojiContainer: {
     width: "100%",
     height: 420,
     position: "relative",
     alignItems: "center",
   },
   bitmojiImage: {
-     width: "170%",
+    width: "170%",
     height: undefined,
     aspectRatio: 1,
   },
-   bitmojiNameOverlay: {
+  bitmojiNameOverlay: {
     position: "absolute",
     left: 16,
     right: 16,
     bottom: 70,
   },
-    bitmojiNameText: {
+  bitmojiNameText: {
     fontSize: 30,
     fontWeight: "500",
     color: "#ffff",
@@ -935,31 +960,31 @@ const styles = StyleSheet.create({
   },
   //Haven setting toggles
   featureCard: {
-  backgroundColor: "#ffff", 
-  borderWidth: 1,
-  borderColor: "#dfdddd",
-  borderRadius: 14,
-  overflow: "hidden",
-},
-featureRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 12,
-  paddingVertical: 12,
-},
-featureIconCircle: {
-  width: 30,
-  height: 30,
-  borderRadius: 8,
-  backgroundColor: "#ffff",
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 12,
-},
-//shadow effect
+    backgroundColor: "#ffff",
+    borderWidth: 1,
+    borderColor: "#dfdddd",
+    borderRadius: 14,
+    overflow: "hidden",
+  },
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  featureIconCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: "#ffff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  //shadow effect
   cardShadow: {
-    backgroundColor: "#fff", 
-  borderRadius: 14,
+    backgroundColor: "#fff",
+    borderRadius: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
