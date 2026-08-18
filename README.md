@@ -48,6 +48,8 @@
       <ul>
         <li><a href="#getting-started">Getting Started</a></li>
       </ul>
+    </li>
+    <li>
       <a href="#getting-started">Contributions</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
