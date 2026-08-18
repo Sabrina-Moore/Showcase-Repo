@@ -23,12 +23,11 @@
   </p>
 
     
-  | Foster Youth   | Members                          |
-  | -------------- | ------------------------------   |
-  |  Storytelling  | Devan Jue and Hadassah Pryor     |
-  |  Design        | Kenner Valentin and              |
-  |                | Christopher Gonon-Maldonado      |
-  |  Engineering   | Sabrina Moore and Shawn Seo      |
+  | Foster Youth   | Members                                                      |
+  | -------------- | ------------------------------                               |
+  |  Storytelling  | Devan Jue and Hadassah Pryor                                 |
+  |  Design        | Kenner Valentin and Christopher Gonon-Maldonado              |
+  |  Engineering   | Sabrina Moore and Shawn Seo                                  |
     
 </div>
 
